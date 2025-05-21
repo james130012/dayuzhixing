@@ -1,0 +1,895 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>深度解读：史蒂芬·沃尔夫勒姆之《当我们拥有更大的大脑》</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.2/p5.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            font-size: 20px; /* 约等于三号字体 */
+            line-height: 1.8;
+            background-color: #f0f4f8; /* 淡雅的背景色 */
+            color: #333;
+        }
+        .content-wrapper {
+            max-width: 1100px; /* 模拟A3纸张在屏幕上的阅读宽度 */
+            margin: 0 auto;
+            padding: 20px; /* 普通页边距 */
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+        h1, h2, h3 {
+            font-family: 'ZCOOL KuaiLe', cursive;
+        }
+        h1 {
+            font-size: 2.8em; /* 大标题 */
+            color: #2c3e50; /* 深蓝灰色 */
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 10px;
+        }
+        h2 {
+            font-size: 2.2em;
+            color: #e67e22; /* 橙色系 */
+            margin-top: 2em;
+            margin-bottom: 1em;
+        }
+        h3 {
+            font-size: 1.8em;
+            color: #27ae60; /* 绿色系 */
+            margin-top: 1.5em;
+            margin-bottom: 0.8em;
+        }
+        p {
+            margin-bottom: 1.2em;
+            text-align: justify;
+        }
+        .highlight {
+            color: #e74c3c; /* 红色强调 */
+            font-weight: bold;
+        }
+        .concept {
+            font-weight: 500;
+            color: #3498db; /* 蓝色概念词 */
+            padding: 2px 5px;
+            background-color: #eaf2f8;
+            border-radius: 4px;
+            display: inline-block;
+        }
+        .formula {
+            display: block;
+            text-align: center;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 1.1em;
+            padding: 15px;
+            margin: 20px auto;
+            background-color: #ecf0f1;
+            border-radius: 8px;
+            color: #2c3e50;
+            max-width: 90%;
+            box-shadow: inset 0 0 5px rgba(0,0,0,0.05);
+        }
+        .animation-container {
+            width: 100%;
+            min-height: 350px; /* 保证 Canvas 有足够高度 */
+            height: auto;
+            margin: 25px auto;
+            border: 2px solid #bdc3c7;
+            border-radius: 8px;
+            overflow: hidden;
+            background-color: #f8f9fa;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 15px;
+        }
+        .animation-canvas-container { /* New container for the canvas itself */
+            width: 100%;
+            max-width: 600px; /* Max width for the canvas */
+            height: 300px; /* Fixed height for canvas drawing area */
+            margin-bottom: 15px;
+        }
+        .animation-canvas-container canvas {
+            display: block;
+            width: 100% !important; /* Ensure canvas fills container */
+            height: 100% !important; /* Ensure canvas fills container */
+            border-radius: 6px;
+        }
+
+        .controls {
+            text-align: center;
+            margin-top: 10px;
+        }
+        .controls button, .controls input[type="range"], .controls label {
+            padding: 10px 18px;
+            font-size: 0.9em;
+            font-family: 'Noto Sans SC', sans-serif;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            margin: 5px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .controls button:hover {
+            background-color: #2980b9;
+            transform: translateY(-2px);
+        }
+        .controls button:active {
+            transform: translateY(1px);
+        }
+        .controls input[type="range"] {
+            vertical-align: middle;
+            cursor: grab;
+            accent-color: #27ae60; /* Green for slider thumb */
+        }
+        .controls label {
+            background-color: transparent;
+            color: #333;
+            box-shadow: none;
+            padding: 5px;
+        }
+
+        /* Tailwind Customization */
+        .font-zh-body { font-family: 'Noto Sans SC', sans-serif; }
+        .font-zh-title { font-family: 'ZCOOL KuaiLe', cursive; }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding: 25px;
+            background-color: #2c3e50;
+            color: #ecf0f1;
+            width: 100%;
+        }
+    </style>
+</head>
+<body class="font-zh-body bg-gray-100">
+    <div class="content-wrapper my-8 p-6 md:p-10">
+        <header class="text-center mb-12">
+            <h1 class="font-zh-title">深度解读：史蒂芬·沃尔夫勒姆之<br class="md:hidden">《当我们拥有更大的大脑》</h1>
+            <p class="text-lg text-gray-600 mt-4">对超越人类心智的想象与物理逻辑的探索</p>
+        </header>
+
+        <main>
+            <section id="intro" class="mb-10">
+                <h2 class="font-zh-title">引言：心智的疆域与“猫为何不语”</h2>
+                <p>史蒂芬·沃尔夫勒姆在其引人深思的文章《假如我们拥有更大的大脑？——畅想超越吾辈的心智》中，向我们抛出了一个极具挑战性的问题：如果人类大脑的神经元数量，或者我们构建的人工智能系统的等效规模，远超现在的水平，世界将会怎样？他巧妙地以“猫有大约一亿个神经元，似乎无法掌握人类这样的组合式语言，而拥有一千亿神经元的人类则可以”作为引子，开启了一场关于<span class="concept">心智规模</span>与<span class="concept">能力边界</span>的宏大思辨。</p>
+                <p>这篇文章不仅仅是对未来科技的幻想，更是一次基于<span class="highlight">计算理论</span>、<span class="highlight">神经科学</span>以及<span class="highlight">人工智能最新进展</span>的深刻洞察。沃尔夫勒姆试图从物理和逻辑的根基出发，探讨更大、更复杂的心智结构可能带来的质变，以及我们是否能够理解这些潜在的“超级智能”。这不仅关乎AI的发展方向，更触及了我们对智能、意识乃至宇宙本质理解的极限。</p>
+            </section>
+
+            <section id="capability-thresholds" class="mb-10">
+                <h2 class="font-zh-title">第一章：能力阈值之梯 —— 规模的魔力与智慧的涌现</h2>
+                <p>沃尔夫勒姆指出，观察人工神经网络的发展，可以发现一个有趣的现象：随着网络规模（连接数）的增长，系统会相继跨越一系列<span class="concept">能力阈值</span>。从最初只能识别手写数字（约10<sup>5</sup>连接），到识别所有字母（约10<sup>6</sup>连接），再到识别数千名词图像（约10<sup>7</sup>连接）、语音转录（约10<sup>8</sup>连接），乃至生成逼真图像（约10<sup>9</sup>连接）和流畅的自然语言文本（约10<sup>11</sup>连接）。这就像攀登一座能力的阶梯，每上一个台阶，都会解锁一片新的风景。</p>
+                <p>这个“阶梯”隐喻着<span class="highlight">量变引发质变</span>的规律。那么，如果这个规模继续扩大，远超人脑的约10<sup>14</sup>连接数，将会出现怎样全新的、我们甚至难以想象的能力？这不仅仅是现有能力的线性增强，更可能是全新认知范式的诞生。下面的动画将尝试具象化这个“能力阶梯”的概念。</p>
+                <div id="capabilityAnimationContainer" class="animation-container">
+                    <div class="animation-canvas-container" id="capabilityCanvasContainer"></div>
+                    <div class="controls">
+                        <button id="capabilityPlayPause">播放/暂停</button>
+                        <label for="capabilitySpeed">速度:</label>
+                        <input type="range" id="capabilitySpeed" min="1" max="10" value="3" class="w-32">
+                    </div>
+                </div>
+            </section>
+
+            <section id="reducibility-irreducibility" class="mb-10">
+                <h2 class="font-zh-title">第二章：驾驭复杂性 —— 计算可约性与不可约性之舞</h2>
+                <p>宇宙的运行充满了<span class="concept">计算不可约性</span>。这意味着，对于许多复杂系统，预测其未来行为的唯一方法就是一步步模拟它的演化，无法“抄近路”。然而，大脑（以及成功的科学探索）似乎总能巧妙地“跳跃前进”，抓住世界的某些规律。沃尔夫勒姆认为，这是因为在任何展现整体计算不可约性的系统中，都必然存在无数“<span class="highlight">计算可约性的口袋</span>”（pockets of computational reducibility）。</p>
+                <p>这些“口袋”是系统行为中可被简化、可被理解、可被预测的部分。大脑和科学的本质，就是<span class="highlight">识别和利用这些可约性口袋</span>，从而在不可约的复杂背景中导航。例如，牛顿定律 F = m*a 就是一个伟大的可约性发现，它允许我们不必追踪每个粒子就能预测宏观物体的运动。更大的大脑，或许就意味着拥有更强的雷达，能探测到更深、更广阔的可约性领域，从而更有效地理解和操控世界。</p>
+                <div id="reducibilityAnimationContainer" class="animation-container">
+                     <div class="animation-canvas-container" id="reducibilityCanvasContainer"></div>
+                    <div class="controls">
+                        <button id="reducibilityPlayPause">播放/暂停</button>
+                        <button id="reducibilityReset">重置模拟</button>
+                    </div>
+                </div>
+            </section>
+
+            <section id="concepts-language" class="mb-10">
+                <h2 class="font-zh-title">第三章：概念的宇宙 —— 语言、抽象与思维的边界扩展</h2>
+                <p>语言和概念是我们心智压缩世界复杂性的关键工具。通过一个词（如“猫”），我们可以指代无数具体、细节各异的个体。人类语言大约有3万个常用词汇或类似概念的构造块。沃尔夫勒姆提出，这是否是我们大脑规模的某种反映？更大的大脑，是否能处理数百万甚至更多的<span class="concept">新兴概念</span>？</p>
+                <p>这些“多出来的概念”会是什么呢？它们可能描述我们目前忽略的自然现象细节，或者是在神经网络内部“涌现”出的、我们尚未命名的抽象模式。这些新兴概念代表了新的“可约性口袋”。<span class="highlight">抽象化</span>是这一过程的核心：将大量具体事物（虎、狮）归纳为一个更普遍的概念（大型猫科动物），并对这个抽象概念进行集体陈述。更大的大脑，可能拥有更庞大的概念网络，形成更深邃、更精细的<span class="concept">世界模型</span>，从而在更高层次上进行思考和交流。</p>
+                <div id="conceptsAnimationContainer" class="animation-container">
+                    <div class="animation-canvas-container" id="conceptsCanvasContainer"></div>
+                    <div class="controls">
+                        <label for="brainSizeSlider">大脑规模 (概念数): <span id="brainSizeValue">300</span></label>
+                        <input type="range" id="brainSizeSlider" min="100" max="2000" value="300" class="w-48">
+                         <button id="conceptsPlayPause">自动增长 开/关</button>
+                    </div>
+                </div>
+            </section>
+
+            <section id="computational-language" class="mb-10">
+                <h2 class="font-zh-title">第四章：超越人类语言 —— 计算语言的潜力与高阶思维</h2>
+                <p>人类语言，特别是其组合结构，无疑是伟大的发明。但它是否是思维表达的顶峰？沃尔夫勒姆认为，<span class="concept">计算语言</span>（如他自己设计的Wolfram Language）指明了一条超越之路。与主要用于指令计算机的传统编程语言不同，计算语言旨在成为一种精确的<span class="highlight">思想表征工具</span>。</p>
+                <p>计算语言的一大特点是其处理<span class="concept">高阶构造</span>的能力。例如，`NestList[f, x, n]`这样的函数，它本身不直接操作数据x，而是操作一个行为（函数f），将其重复作用n次。这相当于在“元层面”思考，操作“操作本身”。人类语言虽然也有类似表达，但不像计算语言那样系统和强大。更大的大脑，或者受过计算思维训练的大脑，可能更适应这种<span class="highlight">以代码为原材料、进行符号结构操作</span>的思维模式，从而达到新的抽象高度。</p>
+                <div id="higherOrderAnimationContainer" class="animation-container">
+                    <div class="animation-canvas-container" id="higherOrderCanvasContainer"></div>
+                    <div class="controls">
+                        <button id="higherOrderStep1">1. 应用简单函数 (变色)</button>
+                        <button id="higherOrderStep2">2. 应用高阶函数 (重复并排列)</button>
+                        <button id="higherOrderReset">重置</button>
+                    </div>
+                </div>
+            </section>
+
+            <section id="future-minds" class="mb-10">
+                <h2 class="font-zh-title">第五章：智能的未来图景 —— 从个体到社会，再到宇宙尺度的Ruliad</h2>
+                <p>拥有更大规模的心智，不仅仅意味着个体能力的提升（如更大的工作记忆、处理更多感觉输入、控制更多行动自由度），更可能带来全新的思维架构。沃尔夫勒姆提及了<span class="concept">多路系统（multiway systems）</span>的可能性，即心智不再是单一经验线索，而是可以分支、合并的“思想图谱”，这与量子力学中的某些概念遥相呼应。</p>
+                <p>在社会层面，更强大的心智或许能支撑起远比现在复杂、我们难以想象的<span class="highlight">社会结构和高阶社会抽象</span>。而从最根本的物理和计算层面，沃尔夫勒姆引入了<span class="concept">Ruliad（规则演化空间）</span>的概念——这是所有可能计算和所有可能抽象的极限 entangled limit。任何心智，无论是生物的还是人工的，都可以看作是在Ruliad中占据特定区域并进行探索的存在。更大的大脑，本质上是在Ruliad中占据和导航更广阔的疆域。这为我们提供了一个统一的框架，来思考不同尺度、不同类型的智能。</p>
+                <div id="ruliadAnimationContainer" class="animation-container">
+                     <div class="animation-canvas-container" id="ruliadCanvasContainer"></div>
+                    <div class="controls">
+                        <button id="ruliadPlayPause">演化/暂停</button>
+                        <button id="ruliadAddMind">添加新“心智”</button>
+                    </div>
+                </div>
+            </section>
+
+            <section id="conclusion" class="mt-12">
+                <h2 class="font-zh-title">结语：心智的无垠探索与计算的统一力量</h2>
+                <p>沃尔夫勒姆的这篇文章，为我们描绘了一幅既令人兴奋又引人深思的未来智能图景。它告诉我们，追求“更大的大脑”或更强的AI，其意义远不止于创造出“更聪明”的工具。这更是一场对<span class="highlight">智能本质、思维极限和宇宙规律</span>的根本性探索。通过计算的视角，我们可以将看似迥异的智能现象——从猫的简单认知到人类的复杂语言，再到未来可能出现的超级智能——置于一个统一的框架下理解。</p>
+                <p>核心在于<span class="concept">计算可约性</span>的发现与利用，以及<span class="concept">抽象能力</span>的不断提升。无论是人类通过科学和语言所做的事情，还是未来AI可能展现的全新能力，其底层逻辑都与如何在计算不可约的汪洋大海中开辟出可理解、可操作的航道息息相关。Ruliad的概念更是将这种探索推向了极致，它暗示着宇宙本身就是一个巨大的计算过程，而心智则是这个过程中特定视角的观察者和参与者。</p>
+                <p>最终，对“超越我们心智”的想象，不仅挑战着我们的认知边界，也激励着我们不断深化对计算、对物理世界、乃至对我们自身的理解。这趟旅程，或许才刚刚开始。</p>
+            </section>
+        </main>
+
+        <footer class="mt-16 py-8 bg-gray-800 text-gray-300 text-center">
+            <p>&copy; 2025 思想的火花. 本文根据史蒂芬·沃尔夫勒姆的文章进行解读与演绎。</p>
+            <p>动画与内容仅供学习交流，科学理论请以权威文献为准。</p>
+        </footer>
+    </div>
+
+<script>
+// P5.js Sketches will be implemented here
+
+// --- Animation 1: Capability Thresholds ---
+let sketchCapability = function(p) {
+    let playing = true;
+    let progress = 0;
+    let speed = 3; // Default speed
+    const thresholds = [
+        { connections: "~10^5", ability: "识别10个数字", icon: "🔢", unlocked: false, progReq: 0.1 },
+        { connections: "~10^6", ability: "识别所有字母", icon: "🔤", unlocked: false, progReq: 0.25 },
+        { connections: "~10^7", ability: "识别5000名词图像", icon: "🖼️", unlocked: false, progReq: 0.4 },
+        { connections: "~10^8", ability: "语音转录", icon: "🎤", unlocked: false, progReq: 0.55 },
+        { connections: "~10^9", ability: "生成逼真图像", icon: "🎨", unlocked: false, progReq: 0.7 },
+        { connections: "~10^11", ability: "生成流畅文本", icon: "✍️", unlocked: false, progReq: 0.85 },
+        { connections: ">10^14?", ability: "未知新能力...", icon: "💡", unlocked: false, progReq: 1.0 }
+    ];
+    let barHeight;
+
+    p.setup = function() {
+        const container = p.select('#capabilityCanvasContainer');
+        let canvas = p.createCanvas(container.width, container.height);
+        canvas.parent(container);
+        p.textAlign(p.CENTER, p.CENTER);
+        barHeight = p.height * 0.6;
+
+        p.select('#capabilityPlayPause').mousePressed(() => { playing = !playing; });
+        p.select('#capabilitySpeed').input(() => { speed = parseInt(p.select('#capabilitySpeed').value()); });
+        p.frameRate(30);
+        if (!playing) p.noLoop();
+    };
+
+    p.draw = function() {
+        p.background(248, 249, 250); // Match animation container background
+
+        if (playing) {
+            progress += 0.001 * speed;
+            if (progress > 1) progress = 0; // Loop animation
+        }
+
+        // Draw progress bar representing increasing connections/scale
+        let barWidth = p.width * 0.8;
+        let barX = (p.width - barWidth) / 2;
+        let barY = p.height * 0.15;
+        p.fill(220);
+        p.rect(barX, barY, barWidth, 30, 5);
+        p.fill(52, 152, 219); // Blue progress
+        p.rect(barX, barY, barWidth * progress, 30, 5);
+        p.fill(0);
+        p.textSize(14);
+        p.text(`大脑规模 / 连接数`, p.width / 2, barY -15);
+
+
+        // Draw capability ladder/steps
+        let stepWidth = barWidth / thresholds.length;
+        for (let i = 0; i < thresholds.length; i++) {
+            let t = thresholds[i];
+            let stepX = barX + i * stepWidth;
+            let isUnlocked = progress >= t.progReq;
+
+            if (isUnlocked && !t.unlocked) {
+                t.unlocked = true; // Simple one-time unlock visual cue if needed
+            }
+            
+            p.push();
+            p.translate(stepX + stepWidth / 2, p.height * 0.6);
+            
+            if (isUnlocked) {
+                p.fill(39, 174, 96, 200); // Green for unlocked
+                p.ellipse(0, 0, stepWidth * 0.8, stepWidth * 0.8);
+                p.fill(255);
+                p.textSize(stepWidth * 0.3);
+                p.text(t.icon, 0, 0);
+            } else {
+                p.fill(189, 195, 199, 150); // Gray for locked
+                p.ellipse(0, 0, stepWidth * 0.6, stepWidth * 0.6);
+                 p.fill(100);
+                p.textSize(stepWidth * 0.3);
+                p.text("?",0,0);
+            }
+            
+            p.fill(isUnlocked ? 0 : 150);
+            p.textSize(10);
+            p.text(t.connections, 0, stepWidth * 0.5 + 10);
+            p.textSize(12);
+            p.text(t.ability, 0, stepWidth * 0.5 + 30);
+            p.pop();
+        }
+         if (!playing) p.noLoop(); else p.loop();
+    };
+     p.windowResized = function() {
+        const container = p.select('#capabilityCanvasContainer');
+        p.resizeCanvas(container.width, container.height);
+    };
+};
+new p5(sketchCapability);
+
+// --- Animation 2: Reducibility/Irreducibility ---
+let sketchReducibility = function(p) {
+    let cells = [];
+    let cellSize = 8;
+    let cols, rows;
+    let generation = 0;
+    let ruleSet = [0,1,0,1,1,0,1,0]; // Rule 90 - creates some complexity
+    let playing = true;
+    let spotlightX, spotlightY, spotlightRadius;
+
+    p.setup = function() {
+        const container = p.select('#reducibilityCanvasContainer');
+        let canvas = p.createCanvas(container.width, container.height);
+        canvas.parent(container);
+        cols = p.floor(p.width / cellSize);
+        rows = p.floor(p.height / cellSize);
+        spotlightRadius = p.min(p.width, p.height) / 4;
+        resetAutomaton();
+
+        p.select('#reducibilityPlayPause').mousePressed(() => { playing = !playing; });
+        p.select('#reducibilityReset').mousePressed(resetAutomaton);
+        if (!playing) p.noLoop();
+    };
+    
+    function resetAutomaton() {
+        cells = Array(cols).fill(0);
+        cells[p.floor(cols/2)] = 1; // Start with a single 1 in the middle
+        generation = 0;
+        p.background(248, 249, 250);
+        if(playing) p.loop(); else p.redraw();
+    }
+
+    function generate() {
+        let nextGen = Array(cols).fill(0);
+        for (let i = 1; i < cols - 1; i++) {
+            let left = cells[i-1];
+            let me = cells[i];
+            let right = cells[i+1];
+            nextGen[i] = rules(left, me, right);
+        }
+        cells = nextGen;
+        generation++;
+        if (generation * cellSize > p.height) {
+             resetAutomaton(); // Reset if it fills the screen
+        }
+    }
+
+    function rules(a, b, c) {
+        let s = "" + a + b + c;
+        let index = parseInt(s, 2);
+        return ruleSet[index];
+    }
+
+    p.draw = function() {
+        if (playing) {
+            generate();
+        }
+        
+        // Draw current generation of cellular automaton
+        for (let i = 0; i < cols; i++) {
+            if (cells[i] === 1) {
+                p.fill(50, 50, 50, 150); // Darker for CA cells
+            } else {
+                p.fill(248, 249, 250, 50); // Lighter, almost transparent
+            }
+            p.noStroke();
+            p.rect(i * cellSize, generation * cellSize, cellSize, cellSize);
+        }
+
+        // Simulate "spotlight" finding reducible patterns (conceptual)
+        // For Rule 90, the overall pattern is complex (irreducible), but local triangles are simple (reducible)
+        spotlightX = p.mouseX; 
+        spotlightY = p.mouseY;
+
+        p.loadPixels();
+        for (let x = 0; x < p.width; x++) {
+            for (let y = 0; y < p.height; y++) {
+                let d = p.dist(x, y, spotlightX, spotlightY);
+                if (d < spotlightRadius) {
+                    let index = (x + y * p.width) * 4;
+                    // Make pixels inside spotlight brighter or change color
+                    // This is a simplified visual effect
+                    if (p.pixels[index] < 100 && p.pixels[index+1] < 100 && p.pixels[index+2] < 100) { // If it's a CA cell
+                         p.pixels[index] = 39;   // R  (greenish)
+                         p.pixels[index+1] = 174; // G
+                         p.pixels[index+2] = 96;  // B
+                    }
+                }
+            }
+        }
+        p.updatePixels();
+        
+        p.fill(0, 100);
+        p.noStroke();
+        p.ellipse(spotlightX, spotlightY, spotlightRadius * 2, spotlightRadius * 2);
+        p.fill(255);
+        p.textAlign(p.CENTER, p.CENTER);
+        p.textSize(14);
+        p.text("拖动鼠标\n发现'可约性'", spotlightX, spotlightY);
+
+        if (!playing) p.noLoop(); else p.loop();
+    };
+     p.windowResized = function() {
+        const container = p.select('#reducibilityCanvasContainer');
+        p.resizeCanvas(container.width, container.height);
+        cols = p.floor(p.width / cellSize);
+        rows = p.floor(p.height / cellSize);
+        spotlightRadius = p.min(p.width, p.height) / 4;
+        resetAutomaton();
+    };
+};
+new p5(sketchReducibility);
+
+// --- Animation 3: Concepts & Language Scale ---
+let sketchConcepts = function(p) {
+    let concepts = [];
+    let numConcepts = 300;
+    let targetNumConcepts = 300;
+    let autoGrow = false;
+    const MAX_CONCEPTS = 2000;
+
+    class Concept {
+        constructor(x, y, brainSizeFactor) {
+            this.pos = p.createVector(x, y);
+            this.targetPos = p.createVector(x,y);
+            this.vel = p.createVector();
+            this.acc = p.createVector();
+            this.maxSpeed = p.random(0.5,2) * brainSizeFactor;
+            this.maxForce = 0.1 * brainSizeFactor;
+            this.radius = p.random(2, 5) * brainSizeFactor * 0.5;
+            this.color = p.color(p.random(100, 200), p.random(100, 200), 255, 150);
+        }
+
+        applyForce(force) {
+            this.acc.add(force);
+        }
+        
+        update() {
+            // Attraction to a central point for larger "brain"
+            let center = p.createVector(p.width / 2, p.height / 2);
+            let desired = p5.Vector.sub(center, this.pos);
+            let d = desired.mag();
+            if (d < p.width/3) { // Only if within a certain radius of center
+                desired.setMag(this.maxSpeed);
+                let steer = p5.Vector.sub(desired, this.vel);
+                steer.limit(this.maxForce * 0.1); // Weaker force
+                //this.applyForce(steer);
+            }
+
+
+            this.vel.add(this.acc);
+            this.vel.limit(this.maxSpeed);
+            this.pos.add(this.vel);
+            this.acc.mult(0); // Reset acceleration
+        }
+
+        display() {
+            p.fill(this.color);
+            p.noStroke();
+            p.ellipse(this.pos.x, this.pos.y, this.radius * 2);
+        }
+
+        edges() {
+            if (this.pos.x > p.width + this.radius) this.pos.x = -this.radius;
+            if (this.pos.x < -this.radius) this.pos.x = p.width + this.radius;
+            if (this.pos.y > p.height + this.radius) this.pos.y = -this.radius;
+            if (this.pos.y < -this.radius) this.pos.y = p.height + this.radius;
+        }
+    }
+
+    p.setup = function() {
+        const container = p.select('#conceptsCanvasContainer');
+        let canvas = p.createCanvas(container.width, container.height);
+        canvas.parent(container);
+        
+        p.select('#brainSizeSlider').input(() => {
+            targetNumConcepts = parseInt(p.select('#brainSizeSlider').value());
+            p.select('#brainSizeValue').html(targetNumConcepts);
+        });
+        p.select('#conceptsPlayPause').mousePressed(() => { autoGrow = !autoGrow; });
+        
+        numConcepts = parseInt(p.select('#brainSizeSlider').value());
+        targetNumConcepts = numConcepts;
+        createConcepts(numConcepts);
+    };
+
+    function createConcepts(n) {
+        concepts = [];
+        let brainSizeFactor = p.map(n, 100, MAX_CONCEPTS, 0.5, 2);
+        for (let i = 0; i < n; i++) {
+            concepts.push(new Concept(p.random(p.width), p.random(p.height), brainSizeFactor));
+        }
+    }
+
+    p.draw = function() {
+        p.background(248, 249, 250);
+
+        if (autoGrow) {
+            targetNumConcepts = p.min(MAX_CONCEPTS, targetNumConcepts + 5);
+            p.select('#brainSizeSlider').value(targetNumConcepts);
+            p.select('#brainSizeValue').html(targetNumConcepts);
+        }
+        
+        if (concepts.length !== targetNumConcepts) {
+            createConcepts(targetNumConcepts);
+        }
+
+        // Draw connections (simplified)
+        p.stroke(150, 150, 200, 30); // Light blue connections
+        for (let i = 0; i < concepts.length; i++) {
+            for (let j = i + 1; j < concepts.length; j++) {
+                if (p.dist(concepts[i].pos.x, concepts[i].pos.y, concepts[j].pos.x, concepts[j].pos.y) < 60) {
+                    p.line(concepts[i].pos.x, concepts[i].pos.y, concepts[j].pos.x, concepts[j].pos.y);
+                }
+            }
+        }
+
+        for (let concept of concepts) {
+            concept.update();
+            concept.display();
+            concept.edges();
+        }
+        
+        p.fill(0, 50);
+        p.noStroke();
+        p.textAlign(p.LEFT, p.TOP);
+        p.textSize(14);
+        p.text(`概念数量: ${concepts.length}`, 10, 10);
+        if (concepts.length < 500) p.text("类人脑概念规模", 10, 30);
+        else if (concepts.length < 1500) p.text("扩展概念空间", 10, 30);
+        else p.text("超大规模概念网络", 10, 30);
+    };
+     p.windowResized = function() {
+        const container = p.select('#conceptsCanvasContainer');
+        p.resizeCanvas(container.width, container.height);
+        createConcepts(targetNumConcepts); // Recreate with current number
+    };
+};
+new p5(sketchConcepts);
+
+// --- Animation 4: Higher-Order Constructs ---
+let sketchHigherOrder = function(p) {
+    let elements = [];
+    const ELEMENT_SIZE = 30;
+    let stage = 0; // 0: initial, 1: simple func, 2: higher-order func
+
+    class Element {
+        constructor(x, y, id) {
+            this.id = id;
+            this.pos = p.createVector(x, y);
+            this.targetPos = p.createVector(x, y);
+            this.color = p.color(150, 150, 250); // Initial color: light blue
+            this.targetColor = this.color;
+            this.size = ELEMENT_SIZE;
+            this.targetSize = ELEMENT_SIZE;
+        }
+
+        simpleFunction() { // e.g., change color
+            this.targetColor = p.color(250, 150, 150); // Change to light red
+        }
+
+        update() {
+            this.pos.lerp(this.targetPos, 0.1);
+            this.color = p.lerpColor(this.color, this.targetColor, 0.1);
+            this.size = p.lerp(this.size, this.targetSize, 0.1);
+        }
+
+        display() {
+            p.fill(this.color);
+            p.stroke(50);
+            p.strokeWeight(1);
+            p.ellipse(this.pos.x, this.pos.y, this.size, this.size);
+            p.fill(0);
+            p.noStroke();
+            p.textAlign(p.CENTER, p.CENTER);
+            p.textSize(this.size * 0.4);
+            p.text(this.id, this.pos.x, this.pos.y);
+        }
+    }
+    
+    function higherOrderFunction() { // e.g., duplicate, change color of duplicates, and arrange
+        let originalCount = elements.length;
+        let newElements = [];
+        for (let i = 0; i < originalCount; i++) {
+            let original = elements[i];
+            original.targetColor = p.color(150,250,150); // Original turns green
+            
+            for (let j = 1; j <= 2; j++) { // Create 2 duplicates
+                let newEl = new Element(original.pos.x, original.pos.y, `${original.id}.${j}`);
+                newEl.color = p.color(250, 200, 100); // Duplicates are orange
+                newEl.targetColor = newEl.color;
+                newEl.targetPos = p.createVector(
+                    p.width/2 + (i - originalCount/2 + 0.5) * (ELEMENT_SIZE * 1.5) * 2 + (j-1.5) * ELEMENT_SIZE*1.2, 
+                    p.height * 0.65 + (j-1.5) * ELEMENT_SIZE*0.5
+                );
+                newElements.push(newEl);
+            }
+             original.targetPos.x = p.width/2 + (i - originalCount/2 + 0.5) * (ELEMENT_SIZE * 1.5) * 2;
+             original.targetPos.y = p.height * 0.35;
+        }
+        elements = elements.concat(newElements);
+    }
+
+
+    function resetSketch() {
+        elements = [];
+        let startX = p.width/2 - (2 * (ELEMENT_SIZE + 10));
+        for (let i = 0; i < 5; i++) {
+            elements.push(new Element(startX + i * (ELEMENT_SIZE + 10), p.height / 2, String.fromCharCode(65 + i)));
+        }
+        stage = 0;
+    }
+
+    p.setup = function() {
+        const container = p.select('#higherOrderCanvasContainer');
+        let canvas = p.createCanvas(container.width, container.height);
+        canvas.parent(container);
+        resetSketch();
+
+        p.select('#higherOrderStep1').mousePressed(() => {
+            if (stage === 0) {
+                elements.forEach(el => el.simpleFunction());
+                stage = 1;
+            }
+        });
+        p.select('#higherOrderStep2').mousePressed(() => {
+            if (stage === 1) {
+                higherOrderFunction();
+                stage = 2;
+            }
+        });
+        p.select('#higherOrderReset').mousePressed(resetSketch);
+    };
+
+    p.draw = function() {
+        p.background(248, 249, 250);
+        elements.forEach(el => {
+            el.update();
+            el.display();
+        });
+
+        p.fill(0);
+        p.textAlign(p.CENTER, p.TOP);
+        p.textSize(16);
+        let statusText = "初始状态：基本元素";
+        if (stage === 1) statusText = "应用简单函数：元素变色";
+        if (stage === 2) statusText = "应用高阶函数：元素复制、重排并赋予新属性";
+        p.text(statusText, p.width/2, 20);
+    };
+     p.windowResized = function() {
+        const container = p.select('#higherOrderCanvasContainer');
+        p.resizeCanvas(container.width, container.height);
+        resetSketch(); // Reset on resize to re-center elements
+    };
+};
+new p5(sketchHigherOrder);
+
+
+// --- Animation 5: Ruliad Exploration ---
+let sketchRuliad = function(p) {
+    let minds = [];
+    let playing = true;
+    const RULIAD_POINTS = 300;
+    let ruliadBgPoints = [];
+
+    class Mind {
+        constructor(x, y) {
+            this.pos = p.createVector(x, y);
+            this.vel = p5.Vector.random2D().mult(p.random(0.2, 0.8));
+            this.radius = p.random(10, 30); // Represents "conceptual space occupied"
+            this.targetRadius = this.radius;
+            this.color = p.color(p.random(100,255), p.random(100,200), p.random(100,200), 180);
+            this.lifespan = p.random(200, 500); // Frames
+        }
+
+        update() {
+            this.pos.add(this.vel);
+            // Gentle random walk
+            this.vel.rotate(p.random(-0.1, 0.1));
+
+            // Expand radius over time (simulate learning/growth)
+            if (this.radius < this.targetRadius + 30 && this.radius < p.min(p.width,p.height)/4) {
+                this.radius = p.lerp(this.radius, this.radius + 0.1, 0.5);
+            }
+            
+            // Bounce off edges
+            if (this.pos.x < this.radius || this.pos.x > p.width - this.radius) this.vel.x *= -1;
+            if (this.pos.y < this.radius || this.pos.y > p.height - this.radius) this.vel.y *= -1;
+            
+            this.lifespan--;
+        }
+
+        display() {
+            p.noStroke();
+            p.fill(this.color);
+            p.ellipse(this.pos.x, this.pos.y, this.radius * 2);
+            
+            // Draw some internal "structure"
+            p.stroke(p.red(this.color)-50, p.green(this.color)-50, p.blue(this.color)-50, 100);
+            p.strokeWeight(1);
+            for(let i=0; i<3; i++){
+                let angle = p.random(p.TWO_PI);
+                let r = p.random(this.radius * 0.8);
+                p.line(this.pos.x, this.pos.y, this.pos.x + p.cos(angle)*r, this.pos.y + p.sin(angle)*r);
+            }
+        }
+        
+        isDead() {
+            return this.lifespan < 0;
+        }
+    }
+    
+    function addMind() {
+        minds.push(new Mind(p.random(p.width), p.random(p.height)));
+        if (minds.length > 15) minds.shift(); // Keep max minds
+    }
+
+    p.setup = function() {
+        const container = p.select('#ruliadCanvasContainer');
+        let canvas = p.createCanvas(container.width, container.height);
+        canvas.parent(container);
+        for(let i=0; i<3; i++) addMind(); // Start with a few minds
+
+        p.select('#ruliadPlayPause').mousePressed(() => { playing = !playing; });
+        p.select('#ruliadAddMind').mousePressed(addMind);
+        
+        // Create static background points for Ruliad feel
+        for(let i=0; i<RULIAD_POINTS; i++) {
+            ruliadBgPoints.push(p.createVector(p.random(p.width), p.random(p.height)));
+        }
+        if (!playing) p.noLoop();
+    };
+
+    p.draw = function() {
+        p.background(40, 45, 50); // Dark background for Ruliad
+
+        // Draw Ruliad background (abstract network)
+        p.stroke(80, 80, 90, 50);
+        p.strokeWeight(0.5);
+        for(let i=0; i<ruliadBgPoints.length; i++) {
+            for(let j=i+1; j<ruliadBgPoints.length; j++) {
+                if (p.dist(ruliadBgPoints[i].x, ruliadBgPoints[i].y, ruliadBgPoints[j].x, ruliadBgPoints[j].y) < 80) {
+                    p.line(ruliadBgPoints[i].x, ruliadBgPoints[i].y, ruliadBgPoints[j].x, ruliadBgPoints[j].y);
+                }
+            }
+            p.fill(100,100,120,80);
+            p.noStroke();
+            p.ellipse(ruliadBgPoints[i].x, ruliadBgPoints[i].y, 3,3);
+        }
+
+
+        if (playing) {
+            for (let i = minds.length - 1; i >= 0; i--) {
+                minds[i].update();
+                if (minds[i].isDead()) {
+                   // minds.splice(i, 1); // Option to remove dead minds
+                }
+            }
+        }
+        
+        for (let mind of minds) {
+            mind.display();
+        }
+        
+        p.fill(200);
+        p.textAlign(p.CENTER, p.TOP);
+        p.textSize(14);
+        p.text("Ruliad (规则演化空间) 中的心智探索", p.width/2, 10);
+
+        if (!playing) p.noLoop(); else p.loop();
+    };
+     p.windowResized = function() {
+        const container = p.select('#ruliadCanvasContainer');
+        p.resizeCanvas(container.width, container.height);
+        ruliadBgPoints = []; // Recreate background points on resize
+        for(let i=0; i<RULIAD_POINTS; i++) {
+            ruliadBgPoints.push(p.createVector(p.random(p.width), p.random(p.height)));
+        }
+         // Reposition minds within new bounds
+        minds.forEach(mind => {
+            mind.pos.x = p.constrain(mind.pos.x, mind.radius, p.width - mind.radius);
+            mind.pos.y = p.constrain(mind.pos.y, mind.radius, p.height - mind.radius);
+        });
+    };
+};
+new p5(sketchRuliad);
+
+// Ensure P5 canvases are redrawn once after setup to show initial state if not looping
+window.onload = () => {
+    // Small delay to ensure canvas elements are fully in DOM and sized
+    setTimeout(() => {
+        if (typeof sketchCapability !== 'undefined' && sketchCapability.redraw) sketchCapability.redraw();
+        if (typeof sketchReducibility !== 'undefined' && sketchReducibility.redraw) sketchReducibility.redraw();
+        if (typeof sketchConcepts !== 'undefined' && sketchConcepts.redraw) sketchConcepts.redraw();
+        if (typeof sketchHigherOrder !== 'undefined' && sketchHigherOrder.redraw) sketchHigherOrder.redraw();
+        if (typeof sketchRuliad !== 'undefined' && sketchRuliad.redraw) sketchRuliad.redraw();
+
+        // Force resize and redraw for all sketches to adapt to container
+        const p5Instances = [window.p5InstanceCapability, window.p5InstanceReducibility, window.p5InstanceConcepts, window.p5InstanceHigherOrder, window.p5InstanceRuliad];
+        p5Instances.forEach(instance => {
+            if (instance && instance._setupDone) { // Check if setup has run
+                const containerId = instance.canvas.parentElement.id;
+                const containerElement = document.getElementById(containerId);
+                if (containerElement) {
+                    instance.resizeCanvas(containerElement.clientWidth, containerElement.clientHeight);
+                    instance.redraw();
+                }
+            }
+        });
+    }, 200); // Increased delay
+};
+
+// Store P5 instances globally if needed for resize logic
+window.p5InstanceCapability = new p5(sketchCapability);
+window.p5InstanceReducibility = new p5(sketchReducibility);
+window.p5InstanceConcepts = new p5(sketchConcepts);
+window.p5InstanceHigherOrder = new p5(sketchHigherOrder);
+window.p5InstanceRuliad = new p5(sketchRuliad);
+
+
+// General resize handler for P5 canvases
+window.addEventListener('resize', () => {
+    const p5Instances = [
+        window.p5InstanceCapability, 
+        window.p5InstanceReducibility, 
+        window.p5InstanceConcepts, 
+        window.p5InstanceHigherOrder, 
+        window.p5InstanceRuliad
+    ];
+    p5Instances.forEach(instance => {
+        if (instance && typeof instance.windowResized === 'function') {
+            // P5's windowResized function will internally handle resizing based on its parent.
+            // We just need to ensure the parent container itself is responsive.
+            // The canvas parent container (#capabilityCanvasContainer etc.) should have responsive width.
+            // The canvas itself will be resized by p5.js to fit its parent.
+             const parentContainer = instance.canvas.parentElement;
+             if (parentContainer) {
+                instance.resizeCanvas(parentContainer.clientWidth, parentContainer.clientHeight);
+                instance.redraw(); // Redraw after resize
+             }
+        }
+    });
+});
+
+
+</script>
+</body>
+</html>

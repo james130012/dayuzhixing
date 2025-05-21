@@ -1,0 +1,797 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>General-Reasoner：大模型通用推理能力突破的物理逻辑解读</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.2/p5.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            font-size: 18px; /* 参考“三号”字体，网页上调整为舒适阅读大小 */
+            line-height: 1.8;
+            background-color: #f3f4f6; /* Tailwind gray-100 */
+            color: #1f2937; /* Tailwind gray-800 */
+        }
+        h1, h2, h3 {
+            font-family: 'ZCOOL KuaiLe', cursive;
+        }
+        .content-card {
+            background-color: white;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        .animation-container {
+            width: 100%;
+            min-height: 350px; /* 确保canvas有高度 */
+            height: auto;
+            margin: 20px auto;
+            border: 1px solid #e5e7eb; /* Tailwind gray-200 */
+            border-radius: 8px;
+            overflow: hidden;
+            background-color: #f9fafb; /* Tailwind gray-50 */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 10px;
+        }
+        .animation-container canvas {
+            display: block;
+            max-width: 100%;
+            max-height: 100%;
+            border-radius: 6px;
+        }
+        .controls {
+            text-align: center;
+            margin-top: 10px;
+            margin-bottom: 20px;
+        }
+        .controls button, .controls input[type="range"], .controls label {
+            padding: 8px 16px;
+            font-size: 0.9em;
+            background-color: #3b82f6; /* Tailwind blue-500 */
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            margin: 5px;
+        }
+        .controls button:hover {
+            background-color: #2563eb; /* Tailwind blue-600 */
+        }
+        .controls input[type="range"] {
+            vertical-align: middle;
+        }
+        .controls label {
+            background-color: transparent;
+            color: #374151; /* Tailwind gray-700 */
+            font-size: 0.9em;
+        }
+        .highlight {
+            color: #ef4444; /* Tailwind red-500 */
+            font-weight: bold;
+        }
+        .concept {
+            font-weight: 500;
+            color: #10b981; /* Tailwind emerald-500 */
+            padding: 2px 4px;
+            background-color: #ecfdf5; /* Tailwind emerald-50 */
+            border-radius: 4px;
+        }
+        /* Specific height for certain canvases if needed, or rely on parent min-height */
+        #dataDiversityCanvasContainer {
+             min-height: 450px; /* Taller for pie charts */
+        }
+        #performanceChartCanvasContainer {
+            min-height: 400px;
+        }
+        .tooltip {
+            position: absolute;
+            background-color: rgba(0,0,0,0.75);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 0.8em;
+            pointer-events: none; /* So it doesn't interfere with mouse events on canvas */
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <div class="container mx-auto p-4 sm:p-6 lg:p-8 max-w-5xl">
+        <header class="text-center py-8">
+            <h1 class="text-4xl sm:text-5xl font-bold text-blue-600">General-Reasoner 深度剖析</h1>
+            <p class="text-xl text-gray-600 mt-2">从物理逻辑视角解读大模型通用推理能力的突破</p>
+        </header>
+
+        <main>
+            <section class="content-card" id="intro">
+                <h2 class="text-3xl font-semibold text-emerald-600 mb-4">引言：挣脱枷锁，迈向通用推理</h2>
+                <p>大型语言模型（LLM）在特定领域的推理能力已令人瞩目，尤其是在数学和编程等结构化领域。然而，这些“优等生”在面对物理、化学、金融、人文社科等更广泛、更复杂的真实世界问题时，往往显得力不从心。其核心瓶颈在于：<strong class="highlight">高质量、多样化训练数据的稀缺</strong>，以及<strong class="highlight">答案验证机制的局限性</strong>。传统方法如同给巨人套上了枷锁，限制了其潜能的全面释放。</p>
+                <p>论文《General-Reasoner: Advancing LLM Reasoning Across All Domains》提出的 <span class="concept">General-Reasoner</span> 训练范式，正是为了打破这些束缚，旨在打造一个能够在<strong class="highlight">全领域展现强大推理能力</strong>的LLM。它不是简单的小修小补，而是一套精心设计的“物理系统”，通过创新的数据构建和验证机制，系统性地提升LLM的通用推理核心。</p>
+            </section>
+
+            <section class="content-card" id="data-curation">
+                <h2 class="text-3xl font-semibold text-emerald-600 mb-4">系统之基石：<span class="concept">WebInstruct-verified</span> 全领域数据集</h2>
+                <p>任何强大的智能系统都离不开高质量的“燃料”。General-Reasoner的第一个创新，便是构建了一个名为 <span class="concept">WebInstruct-verified</span> 的大规模、高质量、多领域、可验证答案的推理数据集。这个数据集的构建过程，本身就像一个精密的物理筛选和提纯工厂：</p>
+                <div id="dataCurationCanvasContainer" class="animation-container"></div>
+                <div class="controls">
+                    <button id="playPauseDataCuration">播放/暂停</button>
+                    <button id="resetDataCuration">重置</button>
+                </div>
+                <ul class="list-disc list-inside space-y-2 mt-4 text-gray-700">
+                    <li><strong>源头活水：</strong> 从包含500万条网络爬取指令的 <span class="concept">WebInstruct</span> 数据集出发，追溯原始网页，重新爬取精确的问答对。</li>
+                    <li><strong>初步筛选 (LLM初审)：</strong> 利用先进的LLM（如Gemini-1.5-Pro）自动识别那些具有明确、可验证简短答案的问题，初步筛选出约100万条。</li>
+                    <li><strong>元数据标注 (LLM精加工)：</strong> 使用LLM（如Gemini-2.0-Flash）为每个问题标注答案类型、学科类别、难度等级等元数据。特别地，为保证数据集的挑战性，过滤掉了大学级别以下的简单数学题。</li>
+                    <li><strong>质量把控 (LLM众包验证)：</strong> 针对每个问题，由LLM生成8个候选解决方案。通过以下标准进行严格过滤：
+                        <ul class="list-disc list-inside ml-6 space-y-1">
+                            <li>排除8个答案都错误的“坏问题”（可能源于爬取错误或内容不完整）。</li>
+                            <li>排除8个答案都正确的“简单题”，确保数据集的复杂度和挑战性。</li>
+                        </ul>
+                    </li>
+                    <li><strong>最终成果：</strong> 经过这套“流水线作业”，最终形成了包含约 <strong class="highlight">23万条</strong> 高质量推理问题的 <span class="concept">WebInstruct-verified</span> 数据集。</li>
+                </ul>
+                <p>这个数据集的“物理特性”在于其<strong class="highlight">多样性</strong>和<strong class="highlight">可靠性</strong>，为后续的推理引擎训练提供了坚实的基础。</p>
+                
+                <h3 class="text-2xl font-semibold text-teal-600 mt-6 mb-3">数据集的多样性光彩</h3>
+                <p>General-Reasoner的数据集不仅仅是量大，更在于其“质”的多样性，覆盖了广泛的答案类型和学科领域，这对于培养模型的通用推理能力至关重要。</p>
+                <div id="dataDiversityCanvasContainer" class="animation-container flex-col md:flex-row">
+                    </div>
+                 <div class="controls">
+                    <button id="playPauseDiversity">播放/暂停动画</button>
+                    <label for="diversityHighlightSlider">突出显示扇区 (0-17): <span id="diversityHighlightValue">0</span></label>
+                    <input type="range" id="diversityHighlightSlider" min="0" max="17" value="0" step="1">
+                </div>
+                <p class="mt-2 text-sm text-gray-600 text-center">左图：答案类型分布；右图：学科领域分布。（数据来源：General-Reasoner论文 Fig. 3）</p>
+            </section>
+
+            <section class="content-card" id="verifier">
+                <h2 class="text-3xl font-semibold text-emerald-600 mb-4">推理之引擎：<span class="concept">General-Verifier</span> 模型驱动的验证器</h2>
+                <p>有了高质量数据，还需要一个精准的“裁判”来指导模型的学习。传统基于规则的验证器在处理数学等简单答案时尚可，但面对复杂文本、多步骤推理或语义等价但表达形式不同的答案时，则显得<strong class="highlight">僵化和低效</strong>，常常“误判错判”。</p>
+                <p>General-Reasoner引入了第二个核心创新——<span class="concept">General-Verifier</span>。这是一个<strong class="highlight">小巧（1.5B参数）但强大</strong>的生成式模型验证器。它的“物理工作原理”更像一个经验丰富的导师，而非死板的规则手册：</p>
+                <ul class="list-disc list-inside space-y-2 mt-4 text-gray-700">
+                    <li><strong>上下文感知：</strong> 它能理解问题的上下文。</li>
+                    <li><strong>思维链（Chain-of-Thought）验证：</strong> 它不仅仅看最终答案，还能评估答案的合理性，甚至模拟一个简短的思考过程来判断学生答案与标准答案是否等价。</li>
+                    <li><strong>生成式判断：</strong> 其输出格式为 "y_cot, [sep], y_label"，即先给出一个思考过程，然后给出最终的“真/假”标签。</li>
+                </ul>
+                <p>这个General-Verifier使用之前LLM生成的候选答案和验证标注进行训练，能够为强化学习提供<strong class="highlight">更鲁棒、更准确的奖励信号</strong>。它在处理多样化答案类型（如列表、字符串、复杂表达式）和非数学领域（如物理、工程）时，表现远超传统规则验证器。</p>
+                <div id="verifierComparisonCanvasContainer" class="animation-container"></div>
+                <div class="controls">
+                    <button id="playPauseVerifier">播放/暂停</button>
+                    <button id="nextVerifierExample">下一个例子</button>
+                </div>
+                 <p class="mt-2 text-sm text-gray-600 text-center">上方案例概念性演示了规则验证器与模型验证器的差异。（示例灵感源自General-Reasoner论文 Table 1）</p>
+            </section>
+
+            <section class="content-card" id="training">
+                <h2 class="text-3xl font-semibold text-emerald-600 mb-4">学习之动力：<span class="concept">Zero RL</span> 与 <span class="concept">GRPO</span> 算法</h2>
+                <p>General-Reasoner采用 <span class="concept">Zero Reinforcement Learning (Zero RL)</span> 设置，直接在基础大模型（如Qwen系列）上进行强化学习，无需预先进行监督微调。这好比直接将一个有潜力的“原材料”投入高级“锻造炉”中锤炼。</p>
+                <p>其核心的强化学习算法是 <span class="concept">Group Relative Policy Optimization (GRPO)</span>。这个过程可以被理解为一个持续优化的反馈循环系统：</p>
+                <div id="rlLoopCanvasContainer" class="animation-container"></div>
+                <div class="controls">
+                    <button id="playPauseRLLoop">播放/暂停</button>
+                </div>
+                <ol class="list-decimal list-inside space-y-2 mt-4 text-gray-700">
+                    <li><strong>探索与生成：</strong> 当前的LLM（策略模型）针对一个问题，生成一组（G个）候选答案/解题路径。</li>
+                    <li><strong>评估与反馈：</strong> <span class="concept">General-Verifier</span> 登场，评估这些答案的正确性。如果答案正确，给予正奖励（通常为1，并根据答案长度进行微调以避免过长输出）；如果答案提取失败或错误，给予负奖励。</li>
+                    <li><strong>策略优化：</strong> GRPO算法根据这些奖励信号，以及当前策略与参考策略的差异（KL散度，用于稳定训练），来更新LLM的参数，使其倾向于生成更高质量、更可能获得正奖励的答案。</li>
+                    <li><strong>迭代提升：</strong> 这个过程不断重复，模型在全领域数据集上持续“试错”和“学习”，推理能力逐步增强。</li>
+                </ol>
+                <p>这种“直接强化”的物理过程，配合高质量数据和精准验证器，使得模型能够有效地自我进化，解锁更深层次的推理潜能。</p>
+            </section>
+
+            <section class="content-card" id="performance">
+                <h2 class="text-3xl font-semibold text-emerald-600 mb-4">成果之展现：通用推理能力的显著飞跃</h2>
+                <p>General-Reasoner的“物理系统”运作效果如何？论文通过在12个极具挑战性的推理基准测试（如MMLU-Pro, GPQA, SuperGPQA, TheoremQA等）上的全面评估，给出了响亮的答案。</p>
+                <p>结果显示，General-Reasoner模型（无论基于Qwen2.5还是更新的Qwen3系列）在通用推理任务上<strong class="highlight">显著超越</strong>了其基础模型和经过指令微调的模型。例如，在MMLU-Pro这样的综合基准上，性能提升可达<strong class="highlight">10%</strong>左右。更重要的是，它在提升通用推理能力的同时，依然保持了强大的数学推理性能，甚至有时能略微超过专门针对数学优化的RL框架，这得益于跨领域知识的泛化迁移。</p>
+                <div id="performanceChartCanvasContainer" class="animation-container"></div>
+                <div class="controls">
+                    <button id="playPausePerformance">播放/暂停</button>
+                </div>
+                <p class="mt-2 text-sm text-gray-600 text-center">上图概念性展示了General-Reasoner在MMLU-Pro等基准上相较于基线模型的性能提升。（数据概念源自General-Reasoner论文 Figure 1, Table 2）</p>
+                <p>特别值得一提的是，其最佳模型 <span class="concept">GENERAL-REASONER-QW3-14B</span> 在多个基准上能够匹敌甚至超越像GPT-40这样的顶级商业模型，而这仅仅是通过Zero RL实现的。这充分证明了该训练范式的<strong class="highlight">高效性和巨大潜力</strong>。</p>
+            </section>
+            
+            <section class="content-card" id="analysis">
+                <h2 class="text-3xl font-semibold text-emerald-600 mb-4">系统洞察：数据多样性与验证器效能</h2>
+                <p>论文进一步通过消融实验，揭示了系统成功的关键“物理参数”：</p>
+                <ul class="list-disc list-inside space-y-2 mt-4 text-gray-700">
+                    <li><strong class="highlight">数据多样性的力量：</strong> 对比仅使用数学数据训练和使用完整多样化数据训练的模型，后者在所有通用推理基准上表现更优，同时数学能力不受损甚至略有提升。这表明，<span class="concept">跨领域的知识和推理模式的接触</span>，对于培养真正的通用智能至关重要，就像物理系统需要多样化的输入才能适应更广泛的环境。</li>
+                    <li><strong class="highlight">General-Verifier的优越性：</strong> 对比使用模型验证器和传统规则验证器训练的模型，前者在所有基准上均取得更高准确率。模型验证器能够持续引导模型改进，而规则验证器则较早达到性能瓶颈。这说明一个<span class="concept">更智能、更细致的反馈机制</span>是系统持续进化的核心驱动力。模型验证器与Gemini-2.0-Flash的判断一致性远高于规则验证器（78.7% vs 22.2%），尤其在处理非结构化答案和非数学领域时优势明显。</li>
+                </ul>
+            </section>
+
+            <section class="content-card" id="conclusion">
+                <h2 class="text-3xl font-semibold text-emerald-600 mb-4">结论：迈向通用人工智能的坚实一步</h2>
+                <p>General-Reasoner不仅仅是一个模型或一个数据集，它是一套精心设计的、具有内在“物理逻辑”的<strong class="highlight">训练范式</strong>。它通过构建一个<span class="concept">高质量、多样化的知识输入系统（WebInstruct-verified）</span>和一个<span class="concept">精准、智能的反馈调节系统（General-Verifier）</span>，成功地驱动了大型语言模型在通用推理能力上的显著提升。</p>
+                <p>从物理逻辑的视角看，General-Reasoner的成功在于它优化了整个“学习物理系统”的各个环节：从输入数据的“纯度”和“广度”，到反馈信号的“精度”和“智能度”，再到学习算法的“效率”。这使得LLM能够更有效地从数据中汲取养分，锤炼出跨领域的、真正通用的推理能力。</p>
+                <p>这项工作为未来发展更强大的通用人工智能系统提供了宝贵的思路和坚实的基础，预示着我们离那个能够理解和解决各类复杂问题的AI助手又近了一步。</p>
+            </section>
+        </main>
+
+        <footer class="text-center py-6 mt-8 bg-gray-800 text-gray-300 rounded-lg">
+            <p>&copy; 2025 AI思辨解读平台. 内容基于公开论文分析，仅供学习交流。</p>
+        </footer>
+    </div>
+    <div id="tooltip" class="tooltip"></div>
+
+<script>
+// --- P5.js SKETCHES ---
+
+// Animation 1: Data Curation Pipeline
+let sketchDataCuration = function(p) {
+    let playButton, resetButton;
+    let playing = true;
+    let stage = 0;
+    let maxStages = 5;
+    let progress = 0; // Progress within a stage
+    let stageDuration = 120; // Frames per stage
+
+    const stagesInfo = [
+        { name: "WebInstruct (5M)", color: [52, 152, 219], yPos: 50, size: 80 },
+        { name: "精准问答对爬取", color: [46, 204, 113], yPos: 100, size: 70 },
+        { name: "LLM初筛 (1M)", color: [241, 196, 15], yPos: 150, size: 60 },
+        { name: "元数据标注 & 质量把控", color: [230, 126, 34], yPos: 200, size: 50 },
+        { name: "最终数据集 (230K)", color: [231, 76, 60], yPos: 250, size: 40 }
+    ];
+
+    p.setup = function() {
+        let container = p.select('#dataCurationCanvasContainer');
+        let canvas = p.createCanvas(container.width, container.height > 100 ? container.height : 300);
+        canvas.parent('dataCurationCanvasContainer');
+        p.textAlign(p.CENTER, p.CENTER);
+        p.textSize(14);
+
+        playButton = p.select('#playPauseDataCuration');
+        resetButton = p.select('#resetDataCuration');
+
+        playButton.mousePressed(() => { 
+            playing = !playing; 
+            playButton.html(playing ? '播放/暂停' : '播放/暂停');
+            if(playing) p.loop(); else p.noLoop(); 
+        });
+        resetButton.mousePressed(() => {
+            stage = 0;
+            progress = 0;
+            playing = true;
+            playButton.html('播放/暂停');
+            p.loop();
+        });
+        if (playing) p.loop(); else p.noLoop();
+        p.redraw(); // Initial draw
+    };
+
+    p.draw = function() {
+        p.background(249, 250, 251); // Tailwind gray-50
+        let centerX = p.width / 2;
+
+        for (let i = 0; i < stagesInfo.length; i++) {
+            let s = stagesInfo[i];
+            if (i <= stage) {
+                p.fill(s.color[0], s.color[1], s.color[2], i === stage ? p.map(progress, 0, stageDuration, 50, 255) : 255);
+                p.ellipse(centerX, s.yPos, s.size, s.size);
+                p.fill(0);
+                p.text(s.name, centerX, s.yPos);
+            }
+            if (i < stage && i < stagesInfo.length -1) {
+                 p.stroke(150);
+                 p.line(centerX, stagesInfo[i].yPos + stagesInfo[i].size/2, centerX, stagesInfo[i+1].yPos - stagesInfo[i+1].size/2);
+                 p.noStroke();
+            }
+        }
+        
+        // Arrow for current transition
+        if (stage < maxStages -1 && progress > stageDuration / 4) {
+            let currentY = stagesInfo[stage].yPos + stagesInfo[stage].size/2;
+            let nextY = stagesInfo[stage+1].yPos - stagesInfo[stage+1].size/2;
+            let arrowY = p.map(progress, 0, stageDuration, currentY, nextY);
+            if (arrowY < nextY) { // Only draw if not overlapping next stage yet
+                p.fill(0);
+                p.triangle(centerX - 5, arrowY, centerX + 5, arrowY, centerX, arrowY + 10);
+            }
+        }
+
+
+        if (playing) {
+            progress++;
+            if (progress >= stageDuration) {
+                progress = 0;
+                stage++;
+                if (stage >= maxStages) {
+                    stage = maxStages -1; // Stay at last stage
+                    // playing = false; // Optionally stop
+                    // playButton.html('播放');
+                    // p.noLoop();
+                }
+            }
+        }
+    };
+     p.windowResized = function() {
+        let container = p.select('#dataCurationCanvasContainer');
+        p.resizeCanvas(container.width, container.height > 100 ? container.height : 300);
+    };
+};
+new p5(sketchDataCuration);
+
+
+// Animation 2: Dataset Diversity (Pie Charts)
+let sketchDataDiversity = function(p) {
+    const answerTypes = [
+        { label: "Float", value: 28.0, color: [52, 152, 219] },   // Blue
+        { label: "Expression", value: 11.0, color: [230, 126, 34] },// Orange
+        { label: "Multiple Choice", value: 18.4, color: [46, 204, 113] },// Green
+        { label: "Integer", value: 9.9, color: [155, 89, 182] },  // Purple
+        { label: "String", value: 7.0, color: [241, 196, 15] },   // Yellow
+        { label: "List", value: 1.8, color: [26, 188, 156] },    // Turquoise
+        { label: "Boolean", value: 2.1, color: [231, 76, 60] },   // Red
+        { label: "Percentage", value: 1.7, color: [149, 165, 166] },// Grey
+        { label: "Fraction", value: 2.3, color: [52, 73, 94] },    // Dark Blue
+        { label: "Matrix", value: 0.7, color: [211, 84, 0] }      // Dark Orange
+        // Sums to 82.9, paper shows these as major ones. Remaining could be 'Other'
+    ];
+    answerTypes.push({label: "Other (calc.)", value: 100.0 - answerTypes.reduce((sum, item) => sum + item.value, 0), color: [127, 140, 141]});
+
+
+    const domainTypes = [
+        { label: "Mathematics", value: 32.7, color: [52, 152, 219] },
+        { label: "Physics", value: 18.6, color: [46, 204, 113] },
+        { label: "Chemistry", value: 9.8, color: [241, 196, 15] },
+        { label: "Business", value: 7.5, color: [155, 89, 182] },
+        { label: "Other", value: 7.0, color: [230, 126, 34] },
+        { label: "Finance", value: 5.2, color: [26, 188, 156] },
+        { label: "Economics", value: 3.0, color: [231, 76, 60] },
+        { label: "History", value: 2.5, color: [149, 165, 166] },
+        { label: "Biology", value: 2.4, color: [52, 73, 94] }
+        // Sums to 88.7.
+    ];
+    domainTypes.push({label: "Other (calc.)", value: 100.0 - domainTypes.reduce((sum, item) => sum + item.value, 0), color: [127, 140, 141]});
+
+    let angleOffset = 0;
+    let playing = true;
+    let highlightSlider, highlightValueSpan, playPauseButton;
+    let highlightedIndex = -1;
+    let tooltipDiv;
+
+    p.setup = function() {
+        let container = p.select('#dataDiversityCanvasContainer');
+        // Ensure container has a valid width, otherwise default to a reasonable value.
+        let canvasWidth = container.width > 0 ? container.width : 600;
+        let canvasHeight = container.height > 100 ? container.height : 400;
+        let canvas = p.createCanvas(canvasWidth, canvasHeight);
+        canvas.parent('dataDiversityCanvasContainer');
+        p.angleMode(p.DEGREES);
+        p.textAlign(p.CENTER, p.CENTER);
+        tooltipDiv = p.select('#tooltip');
+
+        playPauseButton = p.select('#playPauseDiversity');
+        highlightSlider = p.select('#diversityHighlightSlider');
+        highlightValueSpan = p.select('#diversityHighlightValue');
+        
+        highlightSlider.elt.max = answerTypes.length + domainTypes.length -1;
+
+
+        playPauseButton.mousePressed(() => {
+            playing = !playing;
+            if(playing) p.loop(); else p.noLoop();
+        });
+        highlightSlider.input(() => {
+            highlightedIndex = parseInt(highlightSlider.value());
+            highlightValueSpan.html(highlightedIndex);
+            p.redraw();
+        });
+        if (playing) p.loop(); else p.noLoop();
+        p.redraw();
+    };
+
+    function drawPieChart(data, centerX, centerY, radius, title, startHighlightIdx) {
+        p.textSize(16);
+        p.fill(0);
+        p.text(title, centerX, centerY - radius - 20);
+
+        let lastAngle = angleOffset;
+        let currentMouseAngle = (p.atan2(p.mouseY - centerY, p.mouseX - centerX) + 360 + angleOffset) % 360;
+        let hoveredSlice = -1;
+
+        for (let i = 0; i < data.length; i++) {
+            let item = data[i];
+            let angle = (item.value / 100) * 360;
+            
+            // Check for hover
+            if (p.dist(p.mouseX, p.mouseY, centerX, centerY) < radius) {
+                if (currentMouseAngle >= lastAngle % 360 && currentMouseAngle < (lastAngle + angle) % 360) {
+                     hoveredSlice = i;
+                }
+                 // Handle wrap-around case for the last slice if angles are large
+                if ((lastAngle + angle) >= 360 && currentMouseAngle < (lastAngle + angle) % 360 && currentMouseAngle >=0){
+                    hoveredSlice = i;
+                }
+            }
+
+            let currentRadius = radius;
+            if (i === hoveredSlice || (startHighlightIdx + i) === highlightedIndex) {
+                p.fill(item.color[0], item.color[1], item.color[2], 255);
+                currentRadius = radius * 1.1; // Explode effect
+            } else {
+                p.fill(item.color[0], item.color[1], item.color[2], 200);
+            }
+            
+            p.arc(centerX, centerY, currentRadius * 2, currentRadius * 2, lastAngle, lastAngle + angle, p.PIE);
+            
+            if (i === hoveredSlice) {
+                tooltipDiv.style('opacity', '1');
+                tooltipDiv.style('left', (p.mouseX + 10) + 'px');
+                tooltipDiv.style('top', (p.mouseY + 10) + 'px');
+                tooltipDiv.html(`${item.label}: ${item.value.toFixed(1)}%`);
+            }
+
+
+            // Add labels (optional, can get crowded)
+            let midAngle = lastAngle + angle / 2;
+            let labelRadius = radius * 0.7;
+            if (item.value > 3) { // Only label larger slices
+                p.fill(255);
+                p.textSize(10);
+               // p.text(item.label.substring(0,3), centerX + labelRadius * p.cos(midAngle), centerY + labelRadius * p.sin(midAngle));
+            }
+
+            lastAngle += angle;
+        }
+         if (hoveredSlice === -1) {
+            tooltipDiv.style('opacity', '0');
+        }
+    }
+
+    p.draw = function() {
+        p.background(249, 250, 251);
+        
+        let pieRadius = p.min(p.width/4.5, p.height/2.5);
+        let pie1CenterX = p.width / 4;
+        let pie2CenterX = p.width * 3 / 4;
+        let pieCenterY = p.height / 2;
+
+        drawPieChart(answerTypes, pie1CenterX, pieCenterY, pieRadius, "答案类型分布", 0);
+        drawPieChart(domainTypes, pie2CenterX, pieCenterY, pieRadius, "学科领域分布", answerTypes.length);
+
+        if (playing) {
+            angleOffset = (angleOffset + 0.5) % 360;
+        }
+    };
+    p.windowResized = function() {
+        let container = p.select('#dataDiversityCanvasContainer');
+        p.resizeCanvas(container.width, container.height > 100 ? container.height : 400);
+    };
+};
+new p5(sketchDataDiversity);
+
+
+// Animation 3: Verifier Comparison
+let sketchVerifierComparison = function(p) {
+    let playButton, nextButton;
+    let playing = true;
+    let currentExampleIndex = 0;
+    let examples = [
+        {
+            question: "Q: x(dy/dx) + y = x^2*y^2",
+            groundTruth: "1/y = -x^2 + Cx",
+            studentAnswer: "y = 1/(Cx - x^2)",
+            ruleBasedCorrect: false, // Assuming rule-based fails on equivalent forms
+            modelBasedCorrect: true
+        },
+        {
+            question: "Q: 某溶液总蒸汽压56.3 torr...",
+            groundTruth: "乙醇分压30.0 torr, 1-丙醇分压26.3 torr",
+            studentAnswer: "乙醇30.0 torr, 1-丙醇26.32 torr", // Slight numeric diff, or format
+            ruleBasedCorrect: false,
+            modelBasedCorrect: true
+        },
+        {
+            question: "Q: 1kg箱子水平推1m, 摩擦系数0.5...",
+            groundTruth: "4.9 J",
+            studentAnswer: "4.9 N-m", // Different unit but equivalent
+            ruleBasedCorrect: false,
+            modelBasedCorrect: true
+        }
+    ];
+    let progress = 0; // 0 to 100 for animation
+    let animationSpeed = 1;
+
+    p.setup = function() {
+        let container = p.select('#verifierComparisonCanvasContainer');
+        let canvas = p.createCanvas(container.width, container.height > 100 ? container.height : 300);
+        canvas.parent('verifierComparisonCanvasContainer');
+        p.textAlign(p.LEFT, p.TOP);
+        p.textSize(14);
+
+        playButton = p.select('#playPauseVerifier');
+        nextButton = p.select('#nextVerifierExample');
+
+        playButton.mousePressed(() => { 
+            playing = !playing; 
+            if(playing) p.loop(); else p.noLoop(); 
+        });
+        nextButton.mousePressed(() => {
+            currentExampleIndex = (currentExampleIndex + 1) % examples.length;
+            progress = 0;
+            if (!playing) p.redraw(); // Redraw if paused
+        });
+        if (playing) p.loop(); else p.noLoop();
+        p.redraw();
+    };
+
+    p.draw = function() {
+        p.background(249, 250, 251);
+        let example = examples[currentExampleIndex];
+        let midX = p.width / 2;
+        let midY = p.height / 2;
+        let boxWidth = p.width * 0.4;
+        let boxHeight = p.height * 0.6;
+
+        // Display Question and Answers
+        p.fill(0);
+        p.textSize(16);
+        p.text(example.question, 20, 20, p.width - 40, 40);
+        p.textSize(12);
+        p.text(`标准答案: ${example.groundTruth}`, 20, 70, p.width - 40, 30);
+        p.text(`学生答案: ${example.studentAnswer}`, 20, 105, p.width - 40, 30);
+
+        // Rule-Based Verifier Box
+        p.stroke(0);
+        p.fill(220);
+        p.rect(p.width * 0.05, midY - boxHeight/2, boxWidth, boxHeight, 8);
+        p.fill(0);
+        p.textSize(16);
+        p.text("规则验证器", p.width * 0.05 + 10, midY - boxHeight/2 + 10);
+
+        // Model-Based Verifier Box
+        p.fill(220);
+        p.rect(midX + p.width * 0.05, midY - boxHeight/2, boxWidth, boxHeight, 8);
+        p.fill(0);
+        p.text("模型验证器 (General-Verifier)", midX + p.width * 0.05 + 10, midY - boxHeight/2 + 10);
+        
+        // Animate decision
+        let decisionY = midY + 20;
+        if (progress > 30) { // Rule-based decision
+            p.fill(example.ruleBasedCorrect ? [0,150,0] : [200,0,0]);
+            p.textSize(20);
+            p.text(example.ruleBasedCorrect ? "正确 ✔" : "错误 ✘", p.width * 0.05 + boxWidth/2 - 30, decisionY);
+        }
+        if (progress > 70) { // Model-based decision
+            if (example.modelBasedCorrect) {
+                 p.fill(0,180,0); // Brighter green
+                 p.textSize(12);
+                 p.text("CoT: 答案语义等价...", midX + p.width * 0.05 + 10, midY - 20);
+            } else {
+                 p.fill(220,0,0); // Brighter red
+                 p.textSize(12);
+                 p.text("CoT: 答案不符...", midX + p.width * 0.05 + 10, midY - 20);
+            }
+            p.fill(example.modelBasedCorrect ? [0,180,0] : [220,0,0]);
+            p.textSize(20);
+            p.text(example.modelBasedCorrect ? "正确 ✔" : "错误 ✘", midX + p.width * 0.05 + boxWidth/2 - 30, decisionY);
+        }
+
+
+        if (playing) {
+            progress += animationSpeed;
+            if (progress > 100) progress = 100; // Cap progress
+        }
+    };
+     p.windowResized = function() {
+        let container = p.select('#verifierComparisonCanvasContainer');
+        p.resizeCanvas(container.width, container.height > 100 ? container.height : 300);
+    };
+};
+new p5(sketchVerifierComparison);
+
+// Animation 4: Reinforcement Learning Loop
+let sketchRLLoop = function(p) {
+    let playButton;
+    let playing = true;
+    let angle = 0;
+    const components = [
+        { name: "LLM\n(策略模型)", x: 0, y: -100, color: [52, 152, 219] },
+        { name: "生成答案", x: 100, y: 0, color: [46, 204, 113] },
+        { name: "General-Verifier\n(评估)", x: 0, y: 100, color: [230, 126, 34] },
+        { name: "奖励信号", x: -100, y: 0, color: [231, 76, 60] }
+    ]; // GRPO is part of LLM update logic
+    let particlePos;
+    let currentSegment = 0;
+
+    p.setup = function() {
+        let container = p.select('#rlLoopCanvasContainer');
+        let canvas = p.createCanvas(container.width, container.height > 100 ? container.height : 350);
+        canvas.parent('rlLoopCanvasContainer');
+        p.textAlign(p.CENTER, p.CENTER);
+        p.textSize(12);
+        particlePos = p.createVector(components[0].x, components[0].y);
+
+        playButton = p.select('#playPauseRLLoop');
+        playButton.mousePressed(() => { 
+            playing = !playing; 
+            if(playing) p.loop(); else p.noLoop(); 
+        });
+        if (playing) p.loop(); else p.noLoop();
+        p.redraw();
+    };
+
+    p.draw = function() {
+        p.background(249, 250, 251);
+        p.translate(p.width / 2, p.height / 2);
+
+        // Draw components
+        for (let comp of components) {
+            p.fill(comp.color);
+            p.ellipse(comp.x, comp.y, 80, 50);
+            p.fill(0);
+            p.text(comp.name, comp.x, comp.y);
+        }
+
+        // Draw arrows
+        for (let i = 0; i < components.length; i++) {
+            let next = (i + 1) % components.length;
+            drawArrow(components[i].x, components[i].y, components[next].x, components[next].y);
+        }
+        p.text("GRPO 更新", components[0].x, components[0].y + 35, 80, 20);
+
+
+        // Animate particle
+        let target = components[(currentSegment + 1) % components.length];
+        let dir = p5.Vector.sub(p.createVector(target.x, target.y), particlePos);
+        dir.limit(3); // Speed
+        particlePos.add(dir);
+
+        p.fill(255,0,0);
+        p.ellipse(particlePos.x, particlePos.y, 10, 10);
+
+        if (p5.Vector.dist(particlePos, p.createVector(target.x, target.y)) < 5) {
+            currentSegment = (currentSegment + 1) % components.length;
+            particlePos.set(components[currentSegment].x, components[currentSegment].y); // Snap to component
+        }
+        
+        if (!playing) { // Keep particle at current segment start if paused
+             particlePos.set(components[currentSegment].x, components[currentSegment].y);
+        }
+    };
+
+    function drawArrow(x1, y1, x2, y2) {
+        p.stroke(0);
+        p.strokeWeight(1);
+        p.line(x1, y1, x2, y2);
+        let angle = p.atan2(y2 - y1, x2 - x1);
+        p.push();
+        p.translate(x2, y2);
+        p.rotate(angle);
+        p.fill(0);
+        p.triangle(-8, -4, -8, 4, 0, 0);
+        p.pop();
+        p.noStroke();
+    }
+     p.windowResized = function() {
+        let container = p.select('#rlLoopCanvasContainer');
+        p.resizeCanvas(container.width, container.height > 100 ? container.height : 350);
+    };
+};
+new p5(sketchRLLoop);
+
+// Animation 5: Performance Chart
+let sketchPerformanceChart = function(p) {
+    let playButton;
+    let playing = true;
+    const benchmarks = [
+        { name: "Base Model", score: 53.3, targetScore: 53.3, color: [150, 150, 150] },
+        { name: "Instruct Model", score: 0, targetScore: 62.7, color: [100, 100, 255] },
+        { name: "SimpleRL (Math)", score: 0, targetScore: 64.0, color: [255, 150, 50] },
+        { name: "General-Reasoner", score: 0, targetScore: 66.6, color: [50, 200, 50] }
+    ]; // Example MMLU-Pro scores for Qwen2.5-14B variants
+    
+    let animationProgress = 0; // 0 to 100
+
+    p.setup = function() {
+        let container = p.select('#performanceChartCanvasContainer');
+        let canvas = p.createCanvas(container.width, container.height > 100 ? container.height : 400);
+        canvas.parent('performanceChartCanvasContainer');
+        p.textAlign(p.CENTER, p.BOTTOM);
+
+        playButton = p.select('#playPausePerformance');
+        playButton.mousePressed(() => { 
+            playing = !playing; 
+            if(playing) {
+                if (animationProgress >= 100) animationProgress = 0; // Restart if finished
+                p.loop(); 
+            } else {
+                p.noLoop();
+            }
+        });
+        if (playing) p.loop(); else p.noLoop();
+        p.redraw();
+    };
+
+    p.draw = function() {
+        p.background(249, 250, 251);
+        let barWidth = (p.width * 0.8) / benchmarks.length;
+        let maxScore = 80; // For y-axis scaling
+        let chartBaseY = p.height * 0.9;
+        let chartTopY = p.height * 0.1;
+
+        // Draw Y-axis
+        p.stroke(0);
+        p.line(p.width * 0.1, chartBaseY, p.width * 0.1, chartTopY);
+        for (let i = 0; i <= maxScore; i += 10) {
+            let y = p.map(i, 0, maxScore, chartBaseY, chartTopY);
+            p.line(p.width * 0.1 - 5, y, p.width * 0.1, y);
+            p.fill(0);
+            p.noStroke();
+            p.textAlign(p.RIGHT, p.CENTER);
+            p.text(i, p.width * 0.1 - 10, y);
+            p.stroke(0); // Reset stroke
+        }
+        p.textAlign(p.CENTER, p.BOTTOM); // Reset alignment for bars
+
+        // Draw bars
+        for (let i = 0; i < benchmarks.length; i++) {
+            let item = benchmarks[i];
+            if (playing && animationProgress < 100) {
+                 if (i==0) item.score = item.targetScore; // Base model starts full
+                 else item.score = p.map(p.constrain(animationProgress - i*10,0,100), 0, 100, 0, item.targetScore);
+            } else if (!playing && animationProgress < 100) {
+                // keep current score if paused mid-animation
+            }
+            else { // animation finished or paused after finish
+                 item.score = item.targetScore;
+            }
+
+
+            let barHeight = p.map(item.score, 0, maxScore, 0, chartBaseY - chartTopY);
+            let x = p.width * 0.1 + barWidth * i + barWidth * 0.1; // Start after Y-axis, add some padding
+
+            p.fill(item.color);
+            p.noStroke();
+            p.rect(x, chartBaseY - barHeight, barWidth * 0.8, barHeight);
+
+            p.fill(0);
+            p.textSize(12);
+            p.text(item.name, x + barWidth * 0.4, chartBaseY + 15);
+            p.text(item.score.toFixed(1), x + barWidth * 0.4, chartBaseY - barHeight - 5);
+        }
+
+        if (playing && animationProgress < 100) {
+            animationProgress += 0.5;
+        } else if (animationProgress >= 100 && playing) {
+            playing = false; // Stop animation when done
+            p.noLoop();
+        }
+    };
+     p.windowResized = function() {
+        let container = p.select('#performanceChartCanvasContainer');
+        p.resizeCanvas(container.width, container.height > 100 ? container.height : 400);
+        animationProgress = 0; // Reset animation on resize
+        if(playing) p.loop(); else p.redraw();
+    };
+};
+new p5(sketchPerformanceChart);
+
+// Ensure all sketches are redrawn once after setup, especially if starting paused.
+document.addEventListener('DOMContentLoaded', () => {
+    // Small delay to ensure P5 objects are fully initialized
+    setTimeout(() => {
+        if (typeof sketchDataCurationInstance !== 'undefined' && sketchDataCurationInstance.redraw) sketchDataCurationInstance.redraw();
+        if (typeof sketchDataDiversityInstance !== 'undefined' && sketchDataDiversityInstance.redraw) sketchDataDiversityInstance.redraw();
+        if (typeof sketchVerifierComparisonInstance !== 'undefined' && sketchVerifierComparisonInstance.redraw) sketchVerifierComparisonInstance.redraw();
+        if (typeof sketchRLLoopInstance !== 'undefined' && sketchRLLoopInstance.redraw) sketchRLLoopInstance.redraw();
+        if (typeof sketchPerformanceChartInstance !== 'undefined' && sketchPerformanceChartInstance.redraw) sketchPerformanceChartInstance.redraw();
+    }, 100);
+
+    // Store instances if needed for global control, though direct p5 object selection is tricky
+    // For simplicity, the redraw calls are generic. If specific instances are needed, assign them:
+    // window.sketchDataCurationInstance = new p5(sketchDataCuration);
+});
+
+</script>
+</body>
+</html>

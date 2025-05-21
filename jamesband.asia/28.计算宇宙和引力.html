@@ -1,0 +1,1041 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>引力：宇宙计算的蛛丝马迹？来自信息物理学的新视角</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.2/p5.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
+    <style>
+        /* 基本重置和页面设置 */
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Noto Sans SC', sans-serif; /* 清晰的正文 */
+            font-size: 18px; /* 模拟“三号”字体大小，提供良好可读性 */
+            line-height: 1.8;
+            background-color: #f0f4f8; /* 淡雅背景色，比原模板稍亮 */
+            color: #333; /* 深灰文字，对比清晰 */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        /* 容器样式 */
+        .container {
+            position: relative; 
+            z-index: 1; 
+            width: 90%;
+            max-width: 1200px; 
+            margin: 30px auto;
+            padding: 35px;
+            background-color: #ffffff; 
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+        }
+
+        #backgroundAnimationContainer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 0; 
+            pointer-events: none; 
+        }
+
+        /* 标题样式 */
+        h1, h2, h3 {
+            font-family: 'ZCOOL KuaiLe', cursive; 
+            color: #0077cc; /* 主题蓝色 */
+            margin-bottom: 0.8em;
+            text-align: center;
+        }
+        h1 {
+            font-size: 2.9em; 
+            color: #005f99; /* 深一点的蓝 */
+            border-bottom: 3px solid #0077cc;
+            padding-bottom: 15px;
+            margin-top: 0;
+        }
+        h2 {
+            font-size: 2.3em;
+            color: #d9534f; /* 强调红色 */
+            margin-top: 1.6em;
+        }
+        h3 {
+            font-size: 1.9em;
+            color: #f0ad4e; /* 警告黄色/橙色 */
+        }
+
+        /* 段落和文本样式 */
+        p {
+            margin-bottom: 1.3em;
+            text-align: justify; 
+        }
+
+        /* 强调文字 */
+        strong, .highlight {
+            color: #c9302c; /* 更深的红色强调 */
+            font-weight: bold;
+        }
+        .concept {
+            font-weight: 500;
+            color: #2a9d8f; /* 青色概念词 (来自模板) */
+            padding: 3px 6px;
+            background-color: #e0f2f1; /* 更淡的青色背景 */
+            border-radius: 5px;
+            border: 1px solid #b2dfdb;
+        }
+
+        /* 公式文本样式 */
+        .formula {
+            display: block;
+            text-align: center;
+            font-family: 'Courier New', Courier, monospace; 
+            font-size: 1.25em;
+            padding: 18px;
+            margin: 25px auto;
+            background-color: #e9f0f4; /* 淡蓝灰色背景 */
+            border-radius: 10px;
+            color: #333;
+            max-width: 85%;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05) inset;
+            border: 1px solid #d1dce5;
+        }
+
+        /* 动画容器 */
+        .animation-container {
+            width: 100%;
+            max-width: 650px; 
+            height: 420px; /* 稍大一点的高度 */
+            margin: 25px auto;
+            border: 2px solid #0077cc; 
+            border-radius: 10px;
+            overflow: hidden; 
+            background-color: #f8f8ff; /* 淡薰衣草色背景 */
+            display: flex; 
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+        }
+        .animation-container canvas {
+            display: block; 
+            max-width: 100%;
+            max-height: 100%;
+            border-radius: 8px; 
+        }
+        
+        /* 交互按钮样式 */
+        .controls {
+            text-align: center;
+            margin-top: 10px;
+            margin-bottom: 25px;
+            padding: 10px;
+            background-color: #f9f9f9;
+            border-radius: 8px;
+        }
+        .controls button, .controls input[type="range"], .controls label {
+            padding: 12px 20px;
+            font-size: 1em;
+            font-family: 'Noto Sans SC', sans-serif;
+            background-color: #0077cc; 
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.25s ease, transform 0.15s ease;
+            margin: 8px;
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+        }
+        .controls button:hover {
+            background-color: #005f99; 
+            transform: translateY(-2px);
+        }
+        .controls button:active {
+            transform: translateY(1px);
+        }
+        .controls input[type="range"] {
+            vertical-align: middle;
+            cursor: grab;
+            accent-color: #d9534f;
+        }
+        .controls label {
+            background-color: transparent;
+            color: #333;
+            box-shadow: none;
+            font-weight: 500;
+        }
+        .controls .value-display {
+            display: inline-block;
+            min-width: 40px;
+            text-align: center;
+            font-weight: bold;
+            color: #0077cc;
+        }
+
+        /* 页脚 */
+        footer {
+            text-align: center;
+            margin-top: 45px;
+            padding: 25px;
+            background-color: #343a40; 
+            color: #f8f9fa;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        footer p {
+            margin: 0;
+            font-size: 0.95em;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            body {
+                font-size: 16px; 
+            }
+            .container {
+                width: 95%;
+                padding: 20px;
+                margin: 15px auto;
+            }
+            h1 {
+                font-size: 2.3em;
+            }
+            h2 {
+                font-size: 1.9em;
+            }
+            .animation-container {
+                height: 320px; 
+            }
+            .formula {
+                font-size: 1.1em;
+                max-width: 95%;
+            }
+            .controls button, .controls input[type="range"], .controls label {
+                padding: 10px 15px;
+                font-size: 0.9em;
+                margin: 5px;
+            }
+        }
+         @media (max-width: 480px) {
+            h1 { font-size: 2em; }
+            h2 { font-size: 1.7em; }
+            .animation-container { height: 280px; }
+             .controls { display: flex; flex-direction: column; align-items: center;}
+             .controls > * { width: 80%; margin: 5px 0; }
+        }
+    </style>
+</head>
+<body>
+    <div id="backgroundAnimationContainer"></div>
+    <div class="container">
+        <header>
+            <h1>引力：宇宙计算的蛛丝马迹？<br>来自信息物理学的新视角</h1>
+        </header>
+
+        <main>
+            <article>
+                <section id="intro">
+                    <h2>引言：宇宙是一台超级计算机吗？</h2>
+                    <p>想象一下，我们生活的宇宙，其本质可能是一台巨大无比的计算机，而我们所熟知的物理定律，不过是这台计算机运行的“代码”。这个听起来像是科幻小说的想法，正是理论物理学家们正在严肃探讨的<strong class="highlight">“模拟宇宙假说”</strong>。最近，物理学家梅尔文·沃普森（Melvin M. Vopson）发表了一篇引人深思的论文，提出引力本身或许就是宇宙作为一台计算机在进行<span class="concept">数据优化和压缩</span>的证据！这听起来是不是超级酷？这篇解读将带你用轻松愉快的方式，潜入沃普森教授的理论，从物理逻辑的视角，看看引力这位“老朋友”背后，是否隐藏着宇宙计算的秘密。</p>
+                    <p>沃普森教授的理论核心，建立在他先前提出的<strong class="highlight">“信息动力学第二定律”</strong>（简称信息第二定律）和<strong class="highlight">“质量-能量-信息等效原理”</strong>之上。他认为，就像热力学第二定律描述物理系统的熵（混乱程度）总是增加或保持不变一样，信息第二定律则指出，信息系统的<span class="concept">信息熵</span>（可以理解为信息的“冗余度”或“复杂度”）总是趋向于减少或保持不变，直到达到一个最小值。这就像我们电脑里的压缩软件，总想把文件变得更小，更“整洁”。</p>
+                </section>
+
+                <section id="infodynamics-vs-thermodynamics">
+                    <h2>信息熵 vs. 物理熵：宇宙的两种“洁癖”</h2>
+                    <p>我们常说“熵增定律”，指的是宇宙中的混乱程度（物理熵）似乎总是在增加。比如，一杯热水会慢慢变凉，能量会从集中变得分散。但沃普森提出的<span class="concept">信息第二定律</span>却唱了个“反调”——它认为宇宙在信息层面有“洁癖”，喜欢<strong class="highlight">减少信息的冗余，让信息变得更简洁高效</strong>。这两种“定律”是如何共存的呢？它们可能描述了宇宙不同层面的演化趋势。</p>
+                    <p>想象一下，物理熵像是我们房间里的东西越堆越多、越来越乱；而信息熵则像是我们努力整理笔记，把重复的内容删掉，让知识点更清晰。宇宙可能同时在这两个方向上“努力”着！</p>
+                    <div id="entropyAnimationContainer" class="animation-container"></div>
+                    <div class="controls">
+                        <button id="entropyPlayPause">播放/暂停动画</button>
+                    </div>
+                </section>
+
+                <section id="gravity-from-info-entropy">
+                    <h2>引力的“真面目”：信息熵的“瘦身教练”？</h2>
+                    <p>沃普森教授的脑洞大开之处在于，他认为<strong class="highlight">引力就是宇宙为了减少信息熵而产生的一种力</strong>。他是怎么想到的呢？让我们来看一个简化的例子，这也是他论文中的核心思想实验（见论文图1）：</p>
+                    <p>想象一个二维的网格空间，每个格子代表空间的一个基本单元（可以小到普朗克尺度）。如果一个格子里有物质，我们就标记为“1”（代表有信息）；如果是空的，就标记为“0”（代表无信息）。</p>
+                    <ul>
+                        <li><strong>初始状态：</strong> 假设我们随机地在网格中撒下一些物质粒子，每个粒子占据一个格子。这时，有很多“1”散布在各处。用信息论的语言来说，这个系统的<span class="concept">香农信息熵 H(X)</span> 比较高，因为它需要较多的信息来描述所有粒子的位置。公式可以表示为：<code class="formula">H(X) = - (p0 * log2(p0) + p1 * log2(p1) + ...)</code>，其中 p0 是格子为0的概率，p1是格子为1的概率。</li>
+                        <li><strong>演化趋势：</strong> 根据信息第二定律，系统会自发地向信息熵减少的方向演化。怎么减少呢？最有效的方法就是把这些分散的“1”聚集起来！如果所有粒子都挤在一个格子里（或者少数几个格子里），那么描述整个系统所需的信息量就大大减少了，信息熵 H(X) 也就降低了。</li>
+                        <li><strong>引力的角色：</strong> 这种让物质粒子聚集起来的“力”，不就是我们熟悉的<strong class="highlight">引力</strong>吗？宇宙中的尘埃汇聚成行星，行星汇聚成恒星，恒星汇聚成星系……这似乎都是在减少描述物质分布所需的“信息量”，从而降低信息熵。</li>
+                    </ul>
+                    <p>所以，引力可能就像一位“瘦身教练”，不断敦促宇宙“减掉”多余的信息脂肪，让整个系统在信息层面变得更“苗条”、更“高效”。这不正是计算机在进行数据压缩和优化时所做的事情吗？</p>
+                    <div id="gridEntropyAnimationContainer" class="animation-container"></div>
+                    <div class="controls">
+                        <button id="gridPlayPause">开始/暂停模拟</button>
+                        <button id="gridReset">重置网格</button>
+                        <label>粒子数: <span id="particleCountDisplay" class="value-display">0</span></label>
+                    </div>
+                </section>
+
+                <section id="deriving-gravity">
+                    <h2>从信息到牛顿：引力公式的“信息版”推导</h2>
+                    <p>沃普森教授不仅提出了概念，还尝试从信息原理出发，推导出我们熟悉的牛顿万有引力定律。这个推导过程比较复杂，但我们可以抓住几个关键点：</p>
+                    <ol>
+                        <li><strong>熵力公式：</strong> 首先，他认为信息熵的变化会产生一种“熵力”。这个力的形式可以写为 <code class="formula">Fs = T * (dS_inf / dr)</code>，其中 T 是系统的有效温度（与信息存储有关），dS_inf 是信息熵的变化量，dr 是物体移动的距离。这个公式表明，信息熵梯度越大的地方，产生的熵力也越大。</li>
+                        <li><strong>质量-能量-信息等效：</strong> 沃普森之前提出的<span class="concept">质量-能量-信息等效原理</span>是关键一环。它认为信息本身也具有等效的质量（或能量）。一个比特的信息也是有“重量”的！这个原理可以粗略理解为爱因斯坦 E=mc^2 的推广，即 <code class="formula">E = m * c^2 = k_B * T * ln(2) * I</code> (其中I是信息量，k_B是玻尔兹曼常数)。</li>
+                        <li><strong>普朗克尺度与信息存储：</strong> 假设空间是由普朗克尺度的基本单元构成的，每个单元（或其表面）可以存储一定量的信息（比如1比特）。一个宏观物体M所包含的信息量，就与构成它的基本单元数量有关。</li>
+                        <li><strong>推导牛顿引力：</strong> 结合熵力公式、质能信等效原理，以及对空间信息存储的假设，沃普森推导出的熵力 Fs 的表达式，竟然与牛顿的万有引力公式 <code class="formula">F = G * (M * m / R^2)</code> 形式完全一致！这里的G是引力常数，M和m是相互作用的两个物体的质量，R是它们之间的距离。</li>
+                    </ol>
+                    <p>这个推导过程暗示，我们所体验到的引力，可能并非一种基本力，而是源于宇宙信息层面更深层次的运作机制——一种为了<strong class="highlight">优化信息存储和处理效率</strong>而表现出来的宏观现象。</p>
+                    <div id="forceDerivationAnimationContainer" class="animation-container"></div>
+                    <div class="controls">
+                        <button id="forcePlayPause">播放/暂停流程</button>
+                    </div>
+                </section>
+                
+                <section id="verlinde-comparison">
+                    <h2>与Verlinde理论的共鸣与差异</h2>
+                    <p>提到引力的熵起源，很多物理爱好者会想到荷兰物理学家埃里克·韦尔兰德（Erik Verlinde）在2011年提出的<span class="concept">熵引力理论</span>。沃普森的理论与韦尔兰德的理论确实有相似之处，都认为引力不是基本力而是熵力，但两者在出发点和机制上有所不同：</p>
+                    <ul>
+                        <li><strong>韦尔兰德的熵引力：</strong> 主要基于全息原理和热力学统计。他认为引力是当物体改变周围时空中的信息（存储在假想的“全息屏”上）时，系统熵增加趋势所导致的恢复力。在他的模型中，熵力指向<strong class="highlight">熵增加</strong>的方向。</li>
+                        <li><strong>沃普森的信息引力：</strong> 核心是信息动力学第二定律和质能信等效原理。他认为引力是系统<strong class="highlight">信息熵减少</strong>趋势所驱动的。他不需要引入额外的全息屏概念，而是直接从物质在空间中的信息编码角度出发。</li>
+                    </ul>
+                    <p>尽管路径不同，但两位科学家的研究都指向了一个共同的可能性：引力可能与信息和熵有着密不可分的联系。沃普森的工作可以看作是对熵引力范式的一个新颖扩展，为我们从信息物理学的角度理解引力提供了新的思路。</p>
+                     <div id="theoryComparisonAnimationContainer" class="animation-container"></div>
+                    <div class="controls">
+                        <button id="comparisonPlayPause">播放/暂停对比</button>
+                    </div>
+                </section>
+
+                <section id="cosmic-optimization">
+                    <h2>宇宙级的“数据压缩”：从尘埃到星球</h2>
+                    <p>让我们再次回到宇宙的宏伟景象。如果引力真的是一种信息优化机制，那么宇宙的演化本身就是一场持续进行的“数据压缩”大戏。想象一下早期宇宙中弥漫的<span class="concept">宇宙尘埃和气体</span>（见论文图2）。这些物质分布广泛，描述它们的状态需要大量的信息，信息熵很高，对应的“计算成本”也可能很高。</p>
+                    <p>在引力的“指挥”下，这些分散的物质开始聚集：尘埃形成星子，星子形成行星，气体云坍缩成恒星，恒星又组成星系。每一个聚集过程，都使得物质的分布更加集中和有序（从某种信息编码的角度看）。一个致密的行星比弥散的尘埃云，在信息上显然更“经济”。因此，宇宙通过引力作用，不断地将物质“压缩打包”，<strong class="highlight">减少了描述整个宇宙状态所需的信息量，降低了信息熵</strong>。</p>
+                    <p>这就像我们整理硬盘，把零散的文件归档到压缩包里一样。宇宙这位“系统管理员”，似乎也在用引力这位“压缩工具”，让整个宇宙数据库运行得更有效率！</p>
+                    <div id="cosmicDustAnimationContainer" class="animation-container"></div>
+                    <div class="controls">
+                        <button id="dustPlayPause">播放/暂停演化</button>
+                        <button id="dustReset">重置</button>
+                    </div>
+                </section>
+
+                <section id="conclusion">
+                    <h2>结论：引力，通往计算宇宙的密钥？</h2>
+                    <p>沃普森教授的理论无疑是激动人心且富有启发性的。它将引力这一古老而神秘的现象，与前沿的信息物理学和模拟宇宙假说联系起来，为我们描绘了一幅宇宙作为<strong class="highlight">巨型信息处理系统</strong>的壮丽图景。如果引力真的是宇宙为了优化自身信息存储和处理效率而演化出的一种机制，那么它无疑为“宇宙是计算机”这一猜想提供了有力的间接证据。</p>
+                    <p>当然，这个理论目前还处于探索阶段，需要更多的理论完善和实验（或观测）验证。例如，如何将其推广到广义相对论的框架？它对暗物质、暗能量等宇宙谜题有何启示？这些都是未来值得深入研究的方向。</p>
+                    <p>无论如何，沃普森的工作提醒我们，<span class="concept">信息可能比我们想象的更为根本</span>，它或许是构成物理实在的基本“砖块”。引力，这位塑造宇宙结构的大师，其真实身份可能是一位默默无闻的“数据压缩工程师”，在宇宙这台超级计算机的后台辛勤工作，确保一切高效运转。下一次当你感受到地球的引力时，不妨想一想，这可能正是宇宙在对你进行“信息优化”呢！这场关于引力和宇宙本质的探索，才刚刚开始，未来可期！</p>
+                </section>
+            </article>
+        </main>
+        <footer>
+            <p>&copy; 2025 宇宙思辨者 & AI助手. 本文内容根据M. M. Vopson的论文观点进行解读和演绎，仅供学习交流。科学理论以同行评审的学术文献为准。</p>
+        </footer>
+    </div>
+
+    <script>
+        // --- Utility for P5.js sketches ---
+        function setupP5Controls(sketch, playPauseButtonId, resetButtonId, slidersInfo = []) {
+            const playPauseButton = sketch.select(`#${playPauseButtonId}`);
+            if (playPauseButton) {
+                playPauseButton.mousePressed(() => {
+                    sketch.playing = !sketch.playing;
+                    if (sketch.playing) sketch.loop(); else sketch.noLoop();
+                    playPauseButton.html(sketch.playing ? '暂停动画' : '播放动画');
+                });
+            }
+
+            const resetButton = sketch.select(`#${resetButtonId}`);
+            if (resetButton) {
+                resetButton.mousePressed(() => {
+                    if (sketch.reset) sketch.reset();
+                    sketch.playing = true; // Often want to play after reset
+                    if(playPauseButton) playPauseButton.html('暂停动画');
+                    sketch.loop();
+                    sketch.redraw();
+                });
+            }
+
+            slidersInfo.forEach(info => {
+                const slider = sketch.select(`#${info.sliderId}`);
+                const valueDisplay = sketch.select(`#${info.displayId}`);
+                if (slider && valueDisplay) {
+                    slider.input(() => {
+                        if (sketch.updateSliderValue) sketch.updateSliderValue(info.paramName, parseFloat(slider.value()));
+                        valueDisplay.html(parseFloat(slider.value()).toFixed(info.toFixed || 0));
+                        sketch.redraw();
+                    });
+                    // Initial display update
+                    if (sketch.getSliderValue) valueDisplay.html(sketch.getSliderValue(info.paramName).toFixed(info.toFixed || 0));
+                }
+            });
+             // Ensure first frame is drawn for all sketches, especially if not looping by default
+            setTimeout(() => { if (sketch.redraw && !sketch.isLooping()) sketch.redraw(); }, 50);
+        }
+
+
+        // --- Animation 0: Background Animation (Adapted from template's swan) ---
+        let sketchBackground = function(p) {
+            let particles = [];
+            const numParticles = 50;
+
+            class Particle {
+                constructor() {
+                    this.x = p.random(p.width);
+                    this.y = p.random(p.height);
+                    this.vx = p.random(-0.3, 0.3);
+                    this.vy = p.random(-0.3, 0.3);
+                    this.alpha = p.random(50, 150);
+                    this.size = p.random(2, 5);
+                    this.color = p.color(p.random(180, 220), p.random(200, 240), 255, this.alpha);
+                }
+
+                update() {
+                    this.x += this.vx;
+                    this.y += this.vy;
+
+                    if (this.x < 0 || this.x > p.width) this.vx *= -1;
+                    if (this.y < 0 || this.y > p.height) this.vy *= -1;
+                }
+
+                draw() {
+                    p.noStroke();
+                    p.fill(this.color);
+                    p.ellipse(this.x, this.y, this.size, this.size);
+                }
+            }
+
+            p.setup = function() {
+                let canvas = p.createCanvas(p.windowWidth, p.windowHeight);
+                canvas.parent('backgroundAnimationContainer');
+                for (let i = 0; i < numParticles; i++) {
+                    particles.push(new Particle());
+                }
+            };
+
+            p.draw = function() {
+                p.clear(); 
+                for (let particle of particles) {
+                    particle.update();
+                    particle.draw();
+                }
+            };
+
+            p.windowResized = function() {
+                p.resizeCanvas(p.windowWidth, p.windowHeight);
+                 particles = []; // Reinitialize particles for new size
+                for (let i = 0; i < numParticles; i++) {
+                    particles.push(new Particle());
+                }
+            };
+        };
+        new p5(sketchBackground);
+
+        // --- Animation 1: Entropy Comparison ---
+        let sketchEntropyComparison = function(p) {
+            p.playing = true;
+            let particlesThermo = [];
+            let particlesInfo = [];
+            const numParticles = 30;
+            let boxSize;
+
+            class Particle {
+                constructor(x, y, isInfo = false) {
+                    this.pos = p.createVector(x, y);
+                    this.vel = p5.Vector.random2D().mult(p.random(0.5, 1.5));
+                    this.radius = 4;
+                    this.isInfo = isInfo;
+                    if (isInfo) {
+                        this.targetRadius = p.random(10, boxSize * 0.3);
+                        this.angle = p.random(p.TWO_PI);
+                        this.orbitSpeed = p.random(0.01, 0.03);
+                        this.color = p.color(60, 180, 220, 150);
+                    } else {
+                        this.color = p.color(220, 80, 80, 150);
+                    }
+                }
+
+                updateThermo() {
+                    this.pos.add(this.vel);
+                    if (this.pos.x < this.radius || this.pos.x > boxSize - this.radius) this.vel.x *= -1;
+                    if (this.pos.y < this.radius || this.pos.y > boxSize - this.radius) this.vel.y *= -1;
+                }
+
+                updateInfo() {
+                    // Info particles condense (move towards center and orbit)
+                    let center = p.createVector(boxSize / 2, boxSize / 2);
+                    let dirToCenter = p5.Vector.sub(center, this.pos);
+                    if (dirToCenter.mag() > this.targetRadius * 0.5) {
+                         this.pos.add(dirToCenter.setMag(0.5));
+                    } else { // Orbit
+                        this.angle += this.orbitSpeed;
+                        this.pos.x = center.x + p.cos(this.angle) * this.targetRadius;
+                        this.pos.y = center.y + p.sin(this.angle) * this.targetRadius;
+                    }
+                     // Keep within bounds slightly
+                    this.pos.x = p.constrain(this.pos.x, this.radius, boxSize - this.radius);
+                    this.pos.y = p.constrain(this.pos.y, this.radius, boxSize - this.radius);
+                }
+
+                draw() {
+                    p.fill(this.color);
+                    p.noStroke();
+                    p.ellipse(this.pos.x, this.pos.y, this.radius * 2);
+                }
+            }
+            
+            p.setup = function() {
+                let container = p.select('#entropyAnimationContainer');
+                let canvas = p.createCanvas(container.width, container.height);
+                canvas.parent('entropyAnimationContainer');
+                boxSize = p.height * 0.8;
+                p.reset();
+                setupP5Controls(p, 'entropyPlayPause');
+                 if (!p.playing) p.noLoop(); else p.loop();
+            };
+
+            p.reset = function() {
+                particlesThermo = [];
+                particlesInfo = [];
+                let startBoxOffset = (p.width / 2 - boxSize) / 2; // For thermo side
+                for (let i = 0; i < numParticles; i++) {
+                    // Thermo particles start somewhat concentrated
+                    particlesThermo.push(new Particle(
+                        p.random(startBoxOffset + boxSize * 0.4, startBoxOffset + boxSize * 0.6),
+                        p.random(boxSize * 0.4, boxSize * 0.6)
+                    ));
+                    // Info particles start spread out
+                    particlesInfo.push(new Particle(
+                        p.random(boxSize * 0.1, boxSize * 0.9),
+                        p.random(boxSize * 0.1, boxSize * 0.9),
+                        true
+                    ));
+                }
+            }
+
+            p.draw = function() {
+                p.background(248, 248, 255);
+                let thermoXOffset = (p.width / 2 - boxSize) / 2;
+                let infoXOffset = p.width / 2 + (p.width / 2 - boxSize) / 2;
+                let yOffset = (p.height - boxSize) / 2;
+
+                // Thermodynamics Panel
+                p.push();
+                p.translate(thermoXOffset, yOffset);
+                p.stroke(150);
+                p.noFill();
+                p.rect(0, 0, boxSize, boxSize);
+                p.fill(0);
+                p.noStroke();
+                p.textAlign(p.CENTER);
+                p.text("物理熵 (倾向增加)", boxSize / 2, -10);
+                particlesThermo.forEach(pt => {
+                    if (p.playing) pt.updateThermo();
+                    pt.draw();
+                });
+                p.pop();
+
+                // Infodynamics Panel
+                p.push();
+                p.translate(infoXOffset, yOffset);
+                p.stroke(150);
+                p.noFill();
+                p.rect(0, 0, boxSize, boxSize);
+                p.fill(0);
+                p.noStroke();
+                p.textAlign(p.CENTER);
+                p.text("信息熵 (倾向减少)", boxSize / 2, -10);
+                particlesInfo.forEach(pi => {
+                    if (p.playing) pi.updateInfo();
+                    pi.draw();
+                });
+                p.pop();
+            };
+             p.windowResized = function() {
+                let container = p.select('#entropyAnimationContainer');
+                p.resizeCanvas(container.width, container.height);
+                boxSize = p.height * 0.8;
+                p.reset();
+            };
+        };
+        new p5(sketchEntropyComparison);
+
+        // --- Animation 2: Grid Entropy Simulation ---
+        let sketchGridEntropy = function(p) {
+            p.playing = false; // Start paused, user clicks button
+            let grid = [];
+            let cols, rows;
+            let resolution = 20;
+            let particles = [];
+            let targetCenter;
+            let particleCount = 0;
+            let maxParticles = 20;
+            let shannonEntropy = 0;
+            let particleCountDisplay;
+
+            class Particle {
+                constructor(x, y) {
+                    this.pos = p.createVector(x, y);
+                    this.target = null;
+                    this.color = p.color(p.random(50,150), p.random(100,200), p.random(200,255), 200);
+                }
+
+                update() {
+                    if (this.target) {
+                        let dir = p5.Vector.sub(this.target, this.pos);
+                        if (dir.mag() > 1) {
+                            dir.setMag(2); // Speed
+                            this.pos.add(dir);
+                        } else {
+                            this.pos = this.target.copy(); // Snap to target
+                        }
+                    }
+                }
+
+                draw() {
+                    p.fill(this.color);
+                    p.noStroke();
+                    p.ellipse(this.pos.x * resolution + resolution / 2, this.pos.y * resolution + resolution / 2, resolution * 0.8, resolution * 0.8);
+                }
+            }
+            
+            function calculateShannonEntropy() {
+                let N1 = particles.length; // Number of '1's
+                let N_total = cols * rows;
+                let N0 = N_total - N1;
+
+                if (N1 === 0 || N0 === 0) return 0; // Entropy is 0 if all cells are same
+
+                let p1 = N1 / N_total;
+                let p0 = N0 / N_total;
+                
+                return - (p1 * p.log(p1) / p.log(2) + p0 * p.log(p0) / p.log(2));
+            }
+
+            p.setup = function() {
+                let container = p.select('#gridEntropyAnimationContainer');
+                let canvas = p.createCanvas(container.width, container.height - 30); // Make space for text
+                canvas.parent('gridEntropyAnimationContainer');
+                cols = p.floor(p.width / resolution);
+                rows = p.floor(p.height / resolution);
+                particleCountDisplay = p.select('#particleCountDisplay');
+                p.reset();
+                
+                const playPauseButton = p.select('#gridPlayPause');
+                playPauseButton.mousePressed(() => {
+                    if (particles.length > 0) {
+                        p.playing = !p.playing;
+                        if (p.playing) {
+                            targetCenter = p.createVector(p.floor(cols / 2), p.floor(rows / 2));
+                            particles.forEach(pt => pt.target = targetCenter);
+                            playPauseButton.html('暂停模拟');
+                            p.loop();
+                        } else {
+                            playPauseButton.html('继续模拟');
+                            p.noLoop();
+                        }
+                    }
+                });
+                
+                const resetButtonCtrl = p.select('#gridReset');
+                 resetButtonCtrl.mousePressed(() => {
+                    p.reset();
+                    playPauseButton.html('开始模拟');
+                    p.redraw();
+                });
+                p.noLoop(); // Start paused
+                p.redraw();
+            };
+            
+            p.reset = function() {
+                p.playing = false;
+                particles = [];
+                particleCount = 0;
+                targetCenter = null;
+                shannonEntropy = 0;
+                if(particleCountDisplay) particleCountDisplay.html(particleCount);
+                p.select('#gridPlayPause').html('开始模拟');
+                p.background(248, 248, 255);
+                p.drawGrid();
+                p.updateEntropyText();
+            }
+
+            p.drawGrid = function() {
+                for (let i = 0; i < cols; i++) {
+                    for (let j = 0; j < rows; j++) {
+                        p.stroke(220);
+                        p.noFill();
+                        p.rect(i * resolution, j * resolution, resolution, resolution);
+                    }
+                }
+            }
+            
+            p.updateEntropyText = function() {
+                p.fill(255); // Clear previous text area
+                p.noStroke();
+                p.rect(0, p.height, p.width, 30);
+                p.fill(0);
+                p.textAlign(p.CENTER, p.BOTTOM);
+                p.textSize(14);
+                p.text(`香农熵 H(X): ${shannonEntropy.toFixed(3)} bits`, p.width / 2, p.height + 25);
+            }
+
+            p.mousePressed = function() {
+                if (p.mouseX > 0 && p.mouseX < p.width && p.mouseY > 0 && p.mouseY < p.height) {
+                    if (!p.playing && particleCount < maxParticles) {
+                        let gridX = p.floor(p.mouseX / resolution);
+                        let gridY = p.floor(p.mouseY / resolution);
+                        // Check if cell is already occupied
+                        let occupied = particles.some(pt => pt.pos.x === gridX && pt.pos.y === gridY);
+                        if (!occupied) {
+                            particles.push(new Particle(gridX, gridY));
+                            particleCount++;
+                            if(particleCountDisplay) particleCountDisplay.html(particleCount);
+                            shannonEntropy = calculateShannonEntropy();
+                            p.redraw();
+                        }
+                    }
+                }
+            }
+
+            p.draw = function() {
+                p.background(248, 248, 255);
+                p.drawGrid();
+
+                let allParticlesAtTarget = true;
+                particles.forEach(pt => {
+                    if (p.playing) pt.update();
+                    pt.draw();
+                    if (pt.target && !pt.pos.equals(pt.target)) {
+                        allParticlesAtTarget = false;
+                    }
+                });
+                
+                if (p.playing) { // Recalculate entropy if particles are moving (conceptually, it changes when they "merge")
+                    if (allParticlesAtTarget && particles.length > 0) {
+                         // Conceptually, after merging, there's only one "occupied" effective cell for the cluster
+                        let effectiveN1 = 1; 
+                        let N_total = cols * rows;
+                        let effectiveN0 = N_total - effectiveN1;
+                        let p1_eff = effectiveN1 / N_total;
+                        let p0_eff = effectiveN0 / N_total;
+                        shannonEntropy = - (p1_eff * p.log(p1_eff) / p.log(2) + p0_eff * p.log(p0_eff) / p.log(2));
+                        p.playing = false; // Stop simulation
+                        p.select('#gridPlayPause').html('模拟完成');
+                        p.noLoop();
+                    } else if (particles.length > 0) {
+                        // While moving, entropy is based on their distinct original positions
+                         shannonEntropy = calculateShannonEntropy();
+                    }
+                } else if (particles.length > 0 && allParticlesAtTarget) { // Already completed
+                     let effectiveN1 = 1; 
+                     let N_total = cols * rows;
+                     let effectiveN0 = N_total - effectiveN1;
+                     let p1_eff = effectiveN1 / N_total;
+                     let p0_eff = effectiveN0 / N_total;
+                     shannonEntropy = - (p1_eff * p.log(p1_eff) / p.log(2) + p0_eff * p.log(p0_eff) / p.log(2));
+                } else {
+                     shannonEntropy = calculateShannonEntropy();
+                }
+                p.updateEntropyText();
+            };
+             p.windowResized = function() {
+                let container = p.select('#gridEntropyAnimationContainer');
+                p.resizeCanvas(container.width, container.height - 30);
+                cols = p.floor(p.width / resolution);
+                rows = p.floor(p.height / resolution);
+                p.reset();
+                p.redraw();
+            };
+        };
+        new p5(sketchGridEntropy);
+
+        // --- Animation 3: Force Derivation Flow ---
+        let sketchForceDerivation = function(p) {
+            p.playing = true;
+            let currentStep = 0;
+            let maxSteps = 5;
+            let frameCounter = 0;
+            let framesPerStep = 90; // 1.5 seconds at 60fps
+
+            const steps = [
+                { text: "1. 物质存在于空间 (高信息熵 S_inf)", y: 0.15 },
+                { text: "2. 信息第二定律驱动 (↓S_inf)", y: 0.30 },
+                { text: "3. 产生熵力: Fs = T * (dS_inf / dr)", y: 0.45 },
+                { text: "4. 结合质能信等效原理 (M/E/I)", y: 0.60 },
+                { text: "5. 涌现引力: F = G * (Mm / R²)", y: 0.75 }
+            ];
+
+            p.setup = function() {
+                let container = p.select('#forceDerivationAnimationContainer');
+                let canvas = p.createCanvas(container.width, container.height);
+                canvas.parent('forceDerivationAnimationContainer');
+                p.textAlign(p.CENTER, p.CENTER);
+                p.textSize(18);
+                setupP5Controls(p, 'forcePlayPause');
+                if (!p.playing) p.noLoop(); else p.loop();
+            };
+            
+            p.reset = function() {
+                currentStep = 0;
+                frameCounter = 0;
+            }
+
+            p.draw = function() {
+                p.background(248, 248, 255);
+                
+                if (p.playing) {
+                    frameCounter++;
+                    if (frameCounter >= framesPerStep) {
+                        currentStep = (currentStep + 1);
+                        frameCounter = 0;
+                        if(currentStep > maxSteps) { // Loop back or pause
+                           currentStep = 0; // Loop behavior
+                           // p.playing = false; p.noLoop(); // Pause at end
+                        }
+                    }
+                }
+
+                for (let i = 0; i < maxSteps; i++) {
+                    if (i < currentStep) {
+                        p.fill(50, 150, 50, 255); // Green for completed
+                    } else if (i === currentStep) {
+                        let alpha = p.map(frameCounter, 0, framesPerStep, 50, 255);
+                        p.fill(200, 100, 50, alpha); // Orange for current, fading in
+                    } else {
+                        p.fill(150, 150, 150, 100); // Gray for upcoming
+                    }
+                    p.noStroke();
+                    p.text(steps[i].text, p.width / 2, p.height * steps[i].y);
+
+                    // Draw connecting arrows
+                    if (i > 0 && i < currentStep + (i === currentStep ? 1:0) ) { // Draw arrow if source and partial/full target are visible
+                        let arrowAlpha = 255;
+                        if (i === currentStep && i > 0) { // Fading in arrow to current step
+                           arrowAlpha = p.map(frameCounter, framesPerStep * 0.3, framesPerStep * 0.7, 0, 255); // Arrow appears mid-step
+                           arrowAlpha = p.constrain(arrowAlpha,0,255);
+                        }
+                         if (i < currentStep || (i === currentStep && arrowAlpha > 0) ) { // Only draw if fully visible or fading in
+                            p.stroke(100,100,200, arrowAlpha);
+                            p.strokeWeight(2);
+                            let y1 = p.height * steps[i-1].y + 20;
+                            let y2 = p.height * steps[i].y - 20;
+                            p.line(p.width/2, y1, p.width/2, y2);
+                            p.push();
+                            p.translate(p.width/2, y2);
+                            p.fill(100,100,200, arrowAlpha);
+                            p.triangle(0,0, -5, -10, 5, -10);
+                            p.pop();
+                        }
+                    }
+                }
+            };
+             p.windowResized = function() {
+                let container = p.select('#forceDerivationAnimationContainer');
+                p.resizeCanvas(container.width, container.height);
+            };
+        };
+        new p5(sketchForceDerivation);
+
+        // --- Animation 4: Theory Comparison (Vopson vs Verlinde) ---
+        let sketchTheoryComparison = function(p) {
+            p.playing = true;
+            let currentPoint = 0;
+            let frameCounter = 0;
+            let framesPerPoint = 120; // 2 seconds per point
+
+            const vopsonPoints = [
+                "核心: 信息第二定律",
+                "驱动: 信息熵减少",
+                "机制: M/E/I 等效",
+                "引力: 优化信息处理"
+            ];
+            const verlindePoints = [
+                "核心: 全息原理",
+                "驱动: (物理)熵增加",
+                "机制: 全息屏信息变化",
+                "引力: 熵的统计力"
+            ];
+            const commonPoints = [
+                "共同点: 引力是熵力, 非基本力"
+            ];
+
+            p.setup = function() {
+                let container = p.select('#theoryComparisonAnimationContainer');
+                let canvas = p.createCanvas(container.width, container.height);
+                canvas.parent('theoryComparisonAnimationContainer');
+                p.textSize(16);
+                setupP5Controls(p, 'comparisonPlayPause');
+                if (!p.playing) p.noLoop(); else p.loop();
+            };
+            
+            p.reset = function() {
+                currentPoint = 0;
+                frameCounter = 0;
+            }
+
+            p.draw = function() {
+                p.background(248, 248, 255);
+                let midX = p.width / 2;
+                let quarterX = p.width / 4;
+                let startY = 80;
+                let lineHeight = 30;
+
+                if (p.playing) {
+                    frameCounter++;
+                    if (frameCounter >= framesPerPoint) {
+                        currentPoint = (currentPoint + 1);
+                        frameCounter = 0;
+                         if (currentPoint > Math.max(vopsonPoints.length, verlindePoints.length) + commonPoints.length -1) {
+                            currentPoint = 0; // Loop
+                        }
+                    }
+                }
+                
+                // Titles
+                p.fill(0);
+                p.textAlign(p.CENTER);
+                p.textStyle(p.BOLD);
+                p.text("沃普森 (信息引力)", quarterX, 40);
+                p.text("韦尔兰德 (熵引力)", midX + quarterX, 40);
+                p.textStyle(p.NORMAL);
+
+                // Vopson's points
+                for (let i = 0; i < vopsonPoints.length; i++) {
+                    if (i <= currentPoint) {
+                         let alpha = (i === currentPoint) ? p.map(frameCounter, 0, framesPerPoint, 50, 255) : 255;
+                         p.fill(0, 100, 0, alpha);
+                         p.textAlign(p.LEFT);
+                         p.text(`• ${vopsonPoints[i]}`, quarterX - 100, startY + i * lineHeight);
+                    }
+                }
+
+                // Verlinde's points
+                for (let i = 0; i < verlindePoints.length; i++) {
+                     if (i <= currentPoint) { // Show Verlinde points slightly delayed or in parallel
+                        let alpha = (i === currentPoint) ? p.map(frameCounter, 0, framesPerPoint, 50, 255) : 255;
+                        p.fill(0, 0, 100, alpha);
+                        p.textAlign(p.LEFT);
+                        p.text(`• ${verlindePoints[i]}`, midX + quarterX - 100, startY + i * lineHeight);
+                     }
+                }
+                
+                // Common points
+                let commonStartY = startY + Math.max(vopsonPoints.length, verlindePoints.length) * lineHeight + 20;
+                for (let i = 0; i < commonPoints.length; i++) {
+                    if (currentPoint >= Math.max(vopsonPoints.length, verlindePoints.length) + i) {
+                         let alpha = (currentPoint === Math.max(vopsonPoints.length, verlindePoints.length) + i) ? p.map(frameCounter, 0, framesPerPoint, 50, 255) : 255;
+                        p.fill(150, 0, 150, alpha);
+                        p.textAlign(p.CENTER);
+                        p.text(commonPoints[i], midX, commonStartY + i * lineHeight);
+                    }
+                }
+            };
+             p.windowResized = function() {
+                let container = p.select('#theoryComparisonAnimationContainer');
+                p.resizeCanvas(container.width, container.height);
+            };
+        };
+        new p5(sketchTheoryComparison);
+
+        // --- Animation 5: Cosmic Dust to Planet ---
+        let sketchCosmicDust = function(p) {
+            p.playing = true;
+            let particles = [];
+            const numDust = 150;
+            let planetRadius = 0;
+            let maxPlanetRadius = 50;
+            let dustColor, planetColor;
+            let infoEntropyValue = 100; // Arbitrary scale 0-100
+
+            class DustParticle {
+                constructor() {
+                    this.pos = p.createVector(p.random(p.width), p.random(p.height));
+                    this.target = p.createVector(p.width / 2, p.height / 2);
+                    this.vel = p5.Vector.sub(this.target, this.pos).setMag(p.random(0.1, 0.5));
+                    this.radius = p.random(1, 3);
+                    this.absorbed = false;
+                }
+
+                update() {
+                    if (!this.absorbed) {
+                        let distToTarget = p5.Vector.dist(this.pos, this.target);
+                        if (distToTarget > planetRadius * 0.8) { // Keep moving if outside planet influence
+                            this.pos.add(this.vel);
+                             // Add slight random walk
+                            this.vel.rotate(p.random(-0.05, 0.05));
+                            this.vel.limit(1.5);
+                        } else {
+                            this.absorbed = true;
+                            if (planetRadius < maxPlanetRadius) {
+                                planetRadius += 0.2; // Grow planet
+                            }
+                            infoEntropyValue = p.max(0, infoEntropyValue - (100/numDust) * 0.8); // Decrease entropy
+                        }
+                    }
+                }
+
+                draw() {
+                    if (!this.absorbed) {
+                        p.fill(dustColor);
+                        p.noStroke();
+                        p.ellipse(this.pos.x, this.pos.y, this.radius * 2);
+                    }
+                }
+            }
+
+            p.setup = function() {
+                let container = p.select('#cosmicDustAnimationContainer');
+                let canvas = p.createCanvas(container.width, container.height);
+                canvas.parent('cosmicDustAnimationContainer');
+                dustColor = p.color(200, 180, 150, 150);
+                planetColor = p.color(80, 120, 200);
+                p.reset();
+                setupP5Controls(p, 'dustPlayPause', 'dustReset');
+                 if (!p.playing) p.noLoop(); else p.loop();
+            };
+
+            p.reset = function() {
+                particles = [];
+                for (let i = 0; i < numDust; i++) {
+                    particles.push(new DustParticle());
+                }
+                planetRadius = 5; // Start with a small core
+                infoEntropyValue = 100;
+            }
+
+            p.draw = function() {
+                p.background(248, 248, 255);
+
+                particles.forEach(d => {
+                    if (p.playing) d.update();
+                    d.draw();
+                });
+
+                // Draw planet
+                p.fill(planetColor);
+                p.noStroke();
+                p.ellipse(p.width / 2, p.height / 2, planetRadius * 2);
+
+                // Draw Info Entropy Meter
+                p.fill(0);
+                p.textAlign(p.LEFT);
+                p.textSize(14);
+                p.text(`信息熵/计算成本: ${infoEntropyValue.toFixed(1)}%`, 20, 30);
+                p.stroke(150);
+                p.noFill();
+                p.rect(20, 40, 150, 15);
+                p.fill(50, 200, 50);
+                p.noStroke();
+                p.rect(20, 40, 150 * (infoEntropyValue / 100), 15);
+
+                if (p.playing && planetRadius >= maxPlanetRadius && particles.every(d => d.absorbed)) {
+                    p.playing = false; // Stop when all absorbed and planet max size
+                    p.noLoop();
+                    p.select('#dustPlayPause').html('演化完成');
+                }
+            };
+             p.windowResized = function() {
+                let container = p.select('#cosmicDustAnimationContainer');
+                p.resizeCanvas(container.width, container.height);
+                p.reset();
+            };
+        };
+        new p5(sketchCosmicDust);
+
+    </script>
+</body>
+</html>

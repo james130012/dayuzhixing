@@ -1,0 +1,903 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>宇宙的计算与信息：Skywalker的物理学遐想</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.2/p5.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
+    <style>
+        /* 基本重置和页面设置 */
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Noto Sans SC', sans-serif;
+            font-size: 18px; /* 基础字号，参考“三号”在屏幕上的可读性 */
+            line-height: 1.8;
+            background-color: #1a1a2e; /* 深空蓝背景 */
+            color: #e0e0e0; /* 浅色文字，适合深色背景 */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            overflow-x: hidden; /* 防止水平溢出 */
+        }
+
+        /* 背景动画容器 */
+        #backgroundCanvasContainer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 0;
+            pointer-events: none; /* 允许点击穿透 */
+        }
+
+        /* 内容容器 */
+        .container {
+            position: relative;
+            z-index: 1; /* 在背景动画之上 */
+            width: 90%;
+            max-width: 1000px; /* 优化阅读宽度 */
+            margin: 30px auto;
+            padding: 30px 40px;
+            background-color: rgba(26, 26, 46, 0.85); /* 半透明深色背景，增加层次感 */
+            border: 1px solid #4a4a6a;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        /* 标题样式 */
+        h1, h2 {
+            font-family: 'ZCOOL KuaiLe', cursive;
+            color: #82aaff; /* 淡蓝色标题 */
+            margin-bottom: 0.75em;
+            text-align: center;
+            letter-spacing: 1px;
+        }
+        h1 {
+            font-size: 2.6em; /* 主标题 */
+            color: #a6c8ff; /* 更亮的蓝色 */
+            border-bottom: 2px solid #5a7fba;
+            padding-bottom: 15px;
+            margin-top: 0;
+        }
+        h2 {
+            font-size: 2em; /* 副标题 */
+            color: #ffb3cc; /* 粉色系，用于章节标题，增加活泼感 */
+            margin-top: 2em;
+        }
+
+        /* 段落和文本样式 */
+        p {
+            margin-bottom: 1.5em;
+            text-align: justify;
+            color: #c0c0d0; /* 柔和的文字颜色 */
+        }
+
+        /* 强调文字 */
+        strong, .highlight {
+            color: #ffca80; /* 暖黄色强调 */
+            font-weight: bold;
+        }
+        .concept {
+            font-weight: 500;
+            color: #80ffdb; /* 青绿色概念词 */
+            padding: 3px 6px;
+            background-color: rgba(128, 255, 219, 0.1);
+            border-radius: 5px;
+            border: 1px solid rgba(128, 255, 219, 0.3);
+        }
+
+        /* 动画容器 */
+        .animation-container {
+            width: 100%;
+            max-width: 550px;
+            height: 350px; /* 动画区域高度 */
+            margin: 25px auto;
+            border: 1px solid #4a4a6a;
+            border-radius: 10px;
+            overflow: hidden;
+            background-color: rgba(15, 15, 30, 0.7); /* 更深的动画背景 */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.4);
+        }
+        .animation-container canvas {
+            display: block;
+            max-width: 100%;
+            max-height: 100%;
+            border-radius: 8px;
+        }
+        
+        /* 交互按钮和控件样式 */
+        .controls {
+            text-align: center;
+            margin-bottom: 25px;
+            margin-top: 15px;
+        }
+        .controls button {
+            padding: 10px 20px;
+            font-size: 0.95em;
+            font-family: 'Noto Sans SC', sans-serif;
+            background-image: linear-gradient(45deg, #6a11cb 0%, #2575fc 100%); /* 渐变按钮 */
+            color: white;
+            border: none;
+            border-radius: 20px; /* 更圆润的按钮 */
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            letter-spacing: 0.5px;
+        }
+        .controls button:hover {
+            transform: translateY(-2px) scale(1.05);
+            box-shadow: 0 6px 15px rgba(37, 117, 252, 0.5);
+        }
+        .controls button:active {
+            transform: translateY(0px) scale(1);
+        }
+        .controls label {
+            color: #b0b0c0;
+            margin: 0 10px;
+            font-size: 0.9em;
+        }
+        .controls input[type="range"] {
+            vertical-align: middle;
+            cursor: grab;
+            width: 150px; /* 滑块宽度 */
+        }
+
+        /* 引用Skywalker的文字 */
+        .skywalker-quote {
+            background-color: rgba(74, 74, 106, 0.2);
+            border-left: 4px solid #82aaff;
+            padding: 15px 20px;
+            margin: 20px 0;
+            border-radius: 0 8px 8px 0;
+            font-style: italic;
+            color: #d0d0e0;
+        }
+        .skywalker-quote p {
+            margin-bottom: 0.5em;
+        }
+
+        /* 页脚 */
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding: 25px;
+            background-color: rgba(15, 15, 30, 0.9);
+            color: #888;
+            width: 100%;
+            font-size: 0.9em;
+            border-top: 1px solid #4a4a6a;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            body {
+                font-size: 16px;
+            }
+            .container {
+                width: 95%;
+                padding: 20px;
+                margin: 15px auto;
+            }
+            h1 {
+                font-size: 2em;
+            }
+            h2 {
+                font-size: 1.6em;
+            }
+            .animation-container {
+                height: 300px;
+            }
+            .controls button {
+                padding: 8px 15px;
+                font-size: 0.9em;
+            }
+            .controls input[type="range"] {
+                width: 120px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="backgroundCanvasContainer"></div>
+    <div class="container">
+        <header>
+            <h1>宇宙的计算与信息：Skywalker的物理学遐想</h1>
+        </header>
+
+        <main>
+            <article>
+                <section id="intro">
+                    <p>“Skywalker”的一系列思考，如珠玑散落，触及了从人工智能的边界到宇宙本质的诸多深刻命题。这些想法，充满了对未知的好奇和对现有物理图景的追问。本文将尝试从<strong class="highlight">物理逻辑</strong>的视角，对这些闪耀着智慧火花的片段进行解读和延伸，探讨它们在现代物理学框架下的可能回响。</p>
+                    <div class="skywalker-quote">
+                        <p><em>Skywalker: 如果我们在计算机中，谁输入电能？这个电能如何做功的？</em></p>
+                        <p><em>Skywalker: 计算宇宙其实没啥稀奇的，就是计算怎么发生的才稀奇。</em></p>
+                        <p><em>Skywalker: 黑洞能够压缩信息表示所用的复杂度。</em></p>
+                        <p><em>Skywalker: 如果黑洞是引力的一种极限状态，那么没那么极限的话，引力也是在整理宇宙信息。</em></p>
+                        <p><em>Skywalker: 但是谁给的约束呢？</em></p>
+                    </div>
+                    <p>这些问题，正是驱动科学探索的引擎。让我们一同踏上这场思辨之旅。</p>
+                </section>
+
+                <section id="computational-universe">
+                    <h2>遐想一：计算宇宙与能量之源</h2>
+                    <p>“如果我们身处计算机之中，谁输入电能？电能如何做功？” 这是一个关于<span class="concept">模拟宇宙假说</span>的经典追问。如果宇宙是一个巨大的计算系统，那么它的“硬件”是什么？“能源”从何而来？物理学中，<strong class="highlight">能量守恒</strong>是最基本的定律之一。任何计算过程，根据兰道尔原理（Landauer's Principle），擦除信息（逻辑不可逆操作）是需要消耗能量的，这个能量最终会以热的形式耗散。所以，一个持续计算的宇宙必然需要能量输入，或者拥有一个初始的巨大能量储备。</p>
+                    <p>至于“计算如何发生”，这触及了物理定律的本质。物理定律可以被看作是宇宙这个“计算机”的<span class="concept">算法</span>。例如，量子力学描述了微观粒子的行为，广义相对论描述了引力。这些定律规定了物质和能量如何相互作用、演化。但这些定律本身从何而来，为何是这个样子，依然是物理学的终极问题之一。</p>
+                    <div id="computationAnimationContainer" class="animation-container"></div>
+                    <div class="controls">
+                        <button id="computationPlayPause">启动/停止能量流</button>
+                        <label for="computationSpeed">速度: <span id="computationSpeedValue">5</span></label>
+                        <input type="range" id="computationSpeed" min="1" max="10" value="5" step="1">
+                    </div>
+                    <p>动画展示了一个抽象的计算网格，能量粒子（黄色圆点）从左侧流入，激活网格单元（使其变亮），模拟计算过程。您可以控制能量流的启停和速度，观察能量如何在系统中传递并驱动“计算”。</p>
+                </section>
+
+                <section id="information-entropy">
+                    <h2>遐想二：信息熵、序与代价</h2>
+                    <p>“那个信息熵力的减小是对的。” 这句话引出了热力学第二定律和信息的深刻联系。通常我们说，孤立系统的<span class="concept">熵</span>（代表无序度）总是增加或保持不变。然而，生命系统、自组织结构等似乎在局部创造有序，从而“减小熵”。这并不违背热二定律，因为这种<strong class="highlight">局部熵减</strong>是以环境更大范围的熵增为代价的，总熵依然增加。</p>
+                    <p>信息熵，由香农提出，衡量的是信息的不确定性。麦克斯韦妖的思想实验揭示了信息与熵的转换关系：获取信息可以用来降低系统的熵（做功），但获取信息本身也需要付出代价。例如，黑洞就是一个极端的例子，它似乎吞噬信息，但其视界面积（与贝肯斯坦-霍金熵成正比）却能表征其内部状态的巨大复杂性。</p>
+                    <div id="entropyAnimationContainer" class="animation-container"></div>
+                    <div class="controls">
+                        <button id="entropyPlayPause">激活/暂停“麦克斯韦妖”</button>
+                    </div>
+                    <p>此动画模拟了“麦克斯韦妖”的概念。初始时，两种颜色的粒子（代表不同能量状态）混合在一个容器中。当“妖”（中间的门）被激活，它会选择性地让特定颜色的粒子通过，从而在容器两侧形成有序分布（一侧高温，一侧低温），实现了局部熵减。但这需要“妖”获取信息并消耗能量，暗示了信息处理的物理代价。</p>
+                </section>
+
+                <section id="black-holes">
+                    <h2>遐想三：黑洞——宇宙的信息处理器</h2>
+                    <p>“黑洞能够压缩信息表示所用的复杂度。” “据说黑洞蒸发后会留下一个纯态一样的东西，这里面所有的状态都纠缠在一起。” 这些观察非常敏锐，触及了<span class="concept">黑洞信息悖论</span>和<span class="concept">全息原理</span>等前沿物理概念。</p>
+                    <p>黑洞的熵（贝肯斯坦-霍金熵）与其视界面积成正比，而不是体积，这暗示了信息可能存储在边界上，即全息原理的思想：一个三维空间中的物理信息可以被编码在一个二维表面上。这确实是一种极致的“信息压缩”。公式可以表示为：S_BH = (A * k * c^3) / (4 * G * h_bar)，其中A是视界面积，k是玻尔兹曼常数，c是光速，G是引力常数，h_bar是约化普朗克常数。</p>
+                    <p>霍金辐射理论指出黑洞会缓慢蒸发。如果初始形成黑洞的物质是纯态（信息完整），而霍金辐射是热辐射（信息随机），那么信息似乎丢失了，这违背了量子力学的幺正性。目前的一种可能解决方案是，信息最终以某种微妙的方式编码在出射的霍金辐射的<strong class="highlight">量子纠缠</strong>中，使得整个过程最终保持信息守恒，最终留下的可能确实是一个高度纠缠的纯态残留。</p>
+                    <div id="blackholeAnimationContainer" class="animation-container"></div>
+                    <div class="controls">
+                        <button id="blackholePlayPause">开始吸积/蒸发</button>
+                    </div>
+                    <p>动画展示了一个黑洞（中心黑色圆）正在吸积周围的物质（信息粒子，彩色方块）。随后，它开始通过霍金辐射（向外发射的小粒子）缓慢蒸发。这个过程形象地展示了黑洞作为信息处理器的角色，以及信息悖论中涉及的吸积与蒸发现象。</p>
+                </section>
+
+                <section id="gravity-organizer">
+                    <h2>遐想四：引力——宇宙的整理者与最小作用量</h2>
+                    <p>“如果黑洞是引力的一种极限状态，那么没那么极限的话，引力也是在整理宇宙信息。” “如果我们对系统有个约束，这个系统自然会向一个遵守这个约束的状态演进，最终会得到一个类似拉格朗日状态方程。” 这是对引力角色和物理系统演化方式的深刻洞察。</p>
+                    <p>引力的确是宇宙尺度上最重要的<span class="concept">结构塑造者</span>。它使得物质聚集形成恒星、星系和更大的宇宙结构，这本身就是一种从均匀到非均匀的“整理”过程。这种整理是否等同于“信息整理”则需要更细致的定义，但引力无疑在降低系统的某些自由度，形成有序结构。</p>
+                    <p>而系统在约束下向特定状态演化的思想，完美地对应了物理学中的<strong class="highlight">最小作用量原理</strong>。无论是经典力学中的拉格朗日力学、哈密顿力学，还是场论，其核心都是一个作用量泛函，物理系统真实的演化路径是使这个作用量取极小值（或极大值、鞍点值）的路径。这就像大自然总是在“偷懒”，选择最“经济”的方式行事。例如，光在不同介质中传播会走耗时最短的路径（费马原理）。F = ma (牛顿第二定律) 和 E = mc^2 (质能方程) 都是这种深刻原理在特定情境下的体现。</p>
+                    <div id="gravityActionAnimationContainer" class="animation-container"></div>
+                    <div class="controls">
+                        <button id="gravityActionPlayPause">释放小球/重置</button>
+                    </div>
+                    <p>此动画演示了最小作用量原理的一个简单例子。一个小球从一个弯曲轨道（代表势能面）的某点释放，它会自动滚向并最终停留在势能最低点。这象征着物理系统在约束下自发地趋向于能量最低或作用量最小的状态。您可以点击按钮释放小球，观察其运动轨迹。</p>
+                </section>
+
+                <section id="constraints-origin">
+                    <h2>遐想五：约束之源——谁设定了宇宙的游戏规则？</h2>
+                    <p>“但是谁给的约束呢？” 这是所有物理学家和哲学家都为之着迷的终极问题。物理定律、基本常数（如光速c，普朗克常数h，引力常数G）构成了我们宇宙的<span class="concept">基本约束</span>。它们为何是现在这个样子？它们是宇宙诞生之初就固定的，还是某种更深层次原理的涌现现象？</p>
+                    <p>一些理论，如弦理论、M理论，试图寻找一个“万物理论”（Theory of Everything），希望能从更少的假设出发推导出所有的物理定律和常数。另一些观点，如<strong class="highlight">人择原理</strong>，则认为我们观察到的宇宙参数之所以如此，是因为只有这样的参数才能允许智慧生命（我们）的存在和演化来观察它们。这更像是一个选择效应而非解释。这个问题目前尚无定论，它驱动着基础物理学的探索边界，也连接着科学与哲学的桥梁。</p>
+                    <div id="lawsAnimationContainer" class="animation-container"></div>
+                    <div class="controls">
+                        <button id="lawsPlayPause">启动/暂停“规律演化”</button>
+                    </div>
+                    <p>这个概念动画展示了宇宙规律的“涌现”。初始时，屏幕上散布着无序的简单符号或几何形状。启动后，它们开始相互作用、吸引、排斥，并逐渐自组织形成一个稳定、对称的复杂结构，象征着物理定律或宇宙常数的形成。这引发我们思考这些“约束”是如何产生的。</p>
+                </section>
+
+                <section id="conclusion">
+                    <h2>结语：遐想无垠，探索不止</h2>
+                    <p>Skywalker的遐想，从计算机隐喻到黑洞奥秘，再到宇宙秩序的本源，展现了人类思维在探索宇宙时的广阔与深邃。这些问题或许没有简单的答案，但它们本身就构成了科学探索的灯塔。物理学的发展，正是在一代代科学家对这类根本问题的追问、假设、验证与修正中不断前进的。</p>
+                    <p>宇宙是否是计算的？信息在其中扮演何种角色？引力如何编织万物？约束从何而来？这些问题如同星空本身，引人入胜，也激励着我们不断仰望与思考。正如Skywalker最后所言：“欢迎收看大宇之形”，这宇宙的形态与规律，确实值得我们用一生去探索和欣赏。</p>
+                </section>
+            </article>
+        </main>
+        <footer>
+            <p>&copy; 2025 宇宙遐想解读。内容融合物理学视角与创意思考，仅供学习交流。</p>
+        </footer>
+    </div>
+
+    <script>
+        // --- 全局背景动画 ---
+        let sketchBackground = function(p) {
+            let particles = [];
+            const numParticles = 100;
+
+            p.setup = function() {
+                let canvas = p.createCanvas(p.windowWidth, p.windowHeight);
+                canvas.parent('backgroundCanvasContainer');
+                for (let i = 0; i < numParticles; i++) {
+                    particles.push(new Particle());
+                }
+                p.noStroke();
+            };
+
+            p.draw = function() {
+                p.clear(); // 使用clear()以保持透明背景，让CSS body背景可见
+                // 或者 p.background(26, 26, 46, 10); // 如果想要一点拖尾效果
+                for (let particle of particles) {
+                    particle.update();
+                    particle.display();
+                }
+            };
+
+            p.windowResized = function() {
+                p.resizeCanvas(p.windowWidth, p.windowHeight);
+            };
+
+            class Particle {
+                constructor() {
+                    this.pos = p.createVector(p.random(p.width), p.random(p.height));
+                    this.vel = p.createVector(p.random(-0.3, 0.3), p.random(-0.3, 0.3));
+                    this.size = p.random(1, 3);
+                    this.color = p.color(p.random(100, 200), p.random(150, 220), 255, p.random(50, 150));
+                }
+
+                update() {
+                    this.pos.add(this.vel);
+                    if (this.pos.x < 0 || this.pos.x > p.width) this.vel.x *= -1;
+                    if (this.pos.y < 0 || this.pos.y > p.height) this.vel.y *= -1;
+                }
+
+                display() {
+                    p.fill(this.color);
+                    p.ellipse(this.pos.x, this.pos.y, this.size, this.size);
+                }
+            }
+        };
+        new p5(sketchBackground);
+
+
+        // --- 动画1: 计算宇宙与能量之源 ---
+        let sketchComputation = function(p) {
+            let cells = [];
+            let cols, rows;
+            let cellSize = 20;
+            let energyParticles = [];
+            let playing = true;
+            let speedSlider;
+            let speedValueSpan;
+            let flowRate = 5; // Corresponds to slider value
+
+            p.setup = function() {
+                let container = p.select('#computationAnimationContainer');
+                let canvas = p.createCanvas(container.width, container.height);
+                canvas.parent('computationAnimationContainer');
+                cols = p.floor(p.width / cellSize);
+                rows = p.floor(p.height / cellSize);
+
+                for (let i = 0; i < cols; i++) {
+                    cells[i] = [];
+                    for (let j = 0; j < rows; j++) {
+                        cells[i][j] = { active: 0, brightness: 0 }; // active: countdown, brightness: visual
+                    }
+                }
+
+                p.select('#computationPlayPause').mousePressed(() => { playing = !playing; });
+                speedSlider = p.select('#computationSpeed');
+                speedValueSpan = p.select('#computationSpeedValue');
+                speedSlider.input(() => {
+                    flowRate = parseInt(speedSlider.value());
+                    speedValueSpan.html(flowRate);
+                });
+                flowRate = parseInt(speedSlider.value()); // Initial value
+                speedValueSpan.html(flowRate);
+            };
+
+            p.draw = function() {
+                p.background(15, 15, 30);
+
+                if (playing && p.frameCount % (12 - flowRate) === 0) { // Adjust flow based on speed
+                    for(let i=0; i < flowRate/2 ; i++){ // Emit more particles for higher speed
+                        energyParticles.push({ x: 0, y: p.random(p.height), vx: p.random(2, 4) });
+                    }
+                }
+
+                // Update and draw energy particles
+                for (let i = energyParticles.length - 1; i >= 0; i--) {
+                    let particle = energyParticles[i];
+                    particle.x += particle.vx;
+                    p.fill(255, 223, 0, 200); // Yellow energy
+                    p.ellipse(particle.x, particle.y, 8, 8);
+
+                    // Check collision with cells
+                    let col = p.floor(particle.x / cellSize);
+                    let row = p.floor(particle.y / cellSize);
+                    if (col >= 0 && col < cols && row >= 0 && row < rows) {
+                        if (!cells[col][row].active) {
+                            cells[col][row].active = 30; // Activate for 30 frames
+                            cells[col][row].brightness = 255;
+                            energyParticles.splice(i, 1); // Particle consumed
+                        }
+                    } else if (particle.x > p.width) {
+                        energyParticles.splice(i, 1); // Particle out of bounds
+                    }
+                }
+
+                // Update and draw cells
+                for (let i = 0; i < cols; i++) {
+                    for (let j = 0; j < rows; j++) {
+                        p.stroke(40, 40, 60);
+                        if (cells[i][j].active > 0) {
+                            p.fill(cells[i][j].brightness, cells[i][j].brightness, 100 + cells[i][j].brightness / 2);
+                            cells[i][j].active--;
+                            cells[i][j].brightness = p.map(cells[i][j].active, 0, 30, 50, 255); // Fade out
+                        } else {
+                            p.fill(30, 30, 50);
+                        }
+                        p.rect(i * cellSize, j * cellSize, cellSize, cellSize);
+                    }
+                }
+                 if (!playing) {
+                    p.fill(255,255,255,150);
+                    p.textAlign(p.CENTER, p.CENTER);
+                    p.textSize(24);
+                    p.text("已暂停", p.width/2, p.height/2);
+                }
+            };
+        };
+        new p5(sketchComputation);
+
+        // --- 动画2: 信息熵与序 ---
+        let sketchEntropy = function(p) {
+            let particles = [];
+            const numParticles = 100;
+            let demonActive = false;
+            let playing = true;
+            let gateY, gateHeight = 20, gateOpen = false;
+
+            p.setup = function() {
+                let container = p.select('#entropyAnimationContainer');
+                let canvas = p.createCanvas(container.width, container.height);
+                canvas.parent('entropyAnimationContainer');
+                gateY = p.height / 2 - gateHeight / 2;
+
+                for (let i = 0; i < numParticles; i++) {
+                    particles.push({
+                        x: p.random(p.width),
+                        y: p.random(p.height),
+                        vx: p.random(-1, 1),
+                        vy: p.random(-1, 1),
+                        color: (i < numParticles / 2) ? p.color(255, 100, 100, 200) : p.color(100, 100, 255, 200), // Red and Blue
+                        isHot: (i < numParticles / 2) // Red = hot
+                    });
+                }
+                p.select('#entropyPlayPause').mousePressed(() => { demonActive = !demonActive; playing = true;});
+            };
+
+            p.draw = function() {
+                p.background(15, 15, 30);
+
+                // Draw wall and gate
+                p.stroke(150);
+                p.line(p.width / 2, 0, p.width / 2, gateY);
+                p.line(p.width / 2, gateY + gateHeight, p.width / 2, p.height);
+                
+                // Demon's gate logic
+                if (demonActive && playing) {
+                     // Simple gate animation: open/close periodically or based on nearby particles
+                    if(p.frameCount % 30 < 15) gateOpen = true; else gateOpen = false;
+                } else {
+                    gateOpen = false; // Keep gate closed if demon is inactive
+                }
+
+                if (!gateOpen) {
+                    p.line(p.width / 2, gateY, p.width / 2, gateY + gateHeight); // Closed gate
+                } else {
+                     p.fill(200,200,0); // Yellow demon/gate
+                     p.rect(p.width/2 - 2, gateY, 4, gateHeight); // Open gate representation
+                }
+
+
+                for (let particle of particles) {
+                    if (playing) {
+                        particle.x += particle.vx;
+                        particle.y += particle.vy;
+
+                        // Wall and boundary collisions
+                        if (particle.x < 0 || particle.x > p.width) particle.vx *= -1;
+                        if (particle.y < 0 || particle.y > p.height) particle.vy *= -1;
+
+                        // Gate interaction
+                        let atGateX = (particle.x > p.width / 2 - 5 && particle.x < p.width / 2 + 5);
+                        let atGateY = (particle.y > gateY && particle.y < gateY + gateHeight);
+
+                        if (atGateX && !gateOpen) { // Bounce off closed gate
+                             particle.vx *= -1;
+                             particle.x += particle.vx * 2; // Ensure it moves away
+                        } else if (atGateX && atGateY && gateOpen && demonActive) {
+                            // Demon logic: hot (red) to left, cold (blue) to right
+                            if (particle.isHot && particle.x > p.width / 2) { // Hot particle on right, wants to go left
+                                // Allow through
+                            } else if (!particle.isHot && particle.x < p.width / 2) { // Cold particle on left, wants to go right
+                                // Allow through
+                            } else { // Wrong particle for this side, bounce it back if it tries to cross
+                                particle.vx *= -1;
+                                particle.x += particle.vx * 2;
+                            }
+                        } else if (atGateX && atGateY && !demonActive && gateOpen){ // if demon is off, but gate somehow open, just let pass
+                            // (This state shouldn't really happen with current logic)
+                        }
+                         else if (atGateX) { // If near wall but not gate
+                            particle.vx *= -1;
+                            particle.x += particle.vx * 2;
+                        }
+                    }
+                    p.fill(particle.color);
+                    p.ellipse(particle.x, particle.y, 8, 8);
+                }
+                if (!playing && demonActive) { // If demon was active but now paused
+                    p.fill(255,255,255,150);
+                    p.textAlign(p.CENTER, p.CENTER);
+                    p.textSize(24);
+                    p.text("演示暂停", p.width/2, p.height/2);
+                } else if (!demonActive) {
+                    p.fill(255,255,255,150);
+                    p.textAlign(p.CENTER, p.CENTER);
+                    p.textSize(20);
+                    p.text("“麦克斯韦妖”未激活", p.width/2, p.height/2);
+                }
+            };
+        };
+        new p5(sketchEntropy);
+
+        // --- 动画3: 黑洞信息处理 ---
+        let sketchBlackhole = function(p) {
+            let bhRadius = 30;
+            let particles = [];
+            let hawkingParticles = [];
+            let mode = 'accretion'; // 'accretion' or 'evaporation'
+            let playing = true;
+
+            p.setup = function() {
+                let container = p.select('#blackholeAnimationContainer');
+                let canvas = p.createCanvas(container.width, container.height);
+                canvas.parent('blackholeAnimationContainer');
+                p.select('#blackholePlayPause').mousePressed(() => {
+                    if(mode === 'accretion') mode = 'evaporation';
+                    else mode = 'accretion';
+                    playing = true;
+                });
+            };
+
+            p.draw = function() {
+                p.background(15, 15, 30);
+                let bhCenter = p.createVector(p.width / 2, p.height / 2);
+
+                if (playing) {
+                    if (mode === 'accretion' && p.frameCount % 10 === 0) {
+                        let angle = p.random(p.TWO_PI);
+                        let r = p.random(p.width/2 * 0.8, p.width/2 * 1.2);
+                        particles.push({
+                            pos: p.createVector(bhCenter.x + r * p.cos(angle), bhCenter.y + r * p.sin(angle)),
+                            vel: p.createVector(0,0),
+                            color: p.color(p.random(100,255), p.random(100,255), p.random(100,255), 200),
+                            size: p.random(4,8)
+                        });
+                    } else if (mode === 'evaporation' && bhRadius > 10 && p.frameCount % 15 === 0) {
+                        let angle = p.random(p.TWO_PI);
+                        hawkingParticles.push({
+                            pos: p.createVector(bhCenter.x + (bhRadius + 5) * p.cos(angle), bhCenter.y + (bhRadius + 5) * p.sin(angle)),
+                            vel: p.createVector(p.cos(angle) * p.random(0.5,1), p.sin(angle) * p.random(0.5,1)),
+                            life: 100
+                        });
+                        bhRadius -= 0.1; // Shrink slowly
+                    }
+                }
+
+                // Accreting particles
+                for (let i = particles.length - 1; i >= 0; i--) {
+                    let particle = particles[i];
+                    if(playing){
+                        let dir = p5.Vector.sub(bhCenter, particle.pos);
+                        dir.normalize();
+                        dir.mult(0.5); // Attraction speed
+                        particle.vel.add(dir);
+                        particle.vel.limit(2);
+                        particle.pos.add(particle.vel);
+                    }
+                    p.fill(particle.color);
+                    p.rectMode(p.CENTER);
+                    p.square(particle.pos.x, particle.pos.y, particle.size);
+
+                    if (p5.Vector.dist(particle.pos, bhCenter) < bhRadius) {
+                        particles.splice(i, 1);
+                        if (playing && mode === 'accretion' && bhRadius < p.min(p.width, p.height)/4) bhRadius += 0.2; // Grow slightly
+                    }
+                }
+                
+                // Hawking radiation
+                for (let i = hawkingParticles.length - 1; i >= 0; i--) {
+                    let hp = hawkingParticles[i];
+                     if(playing) {
+                        hp.pos.add(hp.vel);
+                        hp.life--;
+                     }
+                    p.fill(200, 200, 255, hp.life * 2); // Fading blueish particles
+                    p.ellipse(hp.pos.x, hp.pos.y, 3, 3);
+                    if (hp.life <= 0) {
+                        hawkingParticles.splice(i, 1);
+                    }
+                }
+
+                // Draw black hole
+                p.fill(0);
+                p.ellipse(bhCenter.x, bhCenter.y, bhRadius * 2, bhRadius * 2);
+                
+                // Event horizon (subtle)
+                p.noFill();
+                p.stroke(50,50,50,100);
+                p.ellipse(bhCenter.x, bhCenter.y, bhRadius * 2 + 10, bhRadius * 2 + 10);
+
+                p.fill(255,255,255,150);
+                p.textAlign(p.CENTER, p.TOP);
+                p.textSize(14);
+                p.text(mode === 'accretion' ? "吸积模式" : "蒸发模式", p.width/2, 10);
+
+                 if (!playing) {
+                    p.fill(255,255,255,150);
+                    p.textAlign(p.CENTER, p.CENTER);
+                    p.textSize(24);
+                    p.text("已暂停", p.width/2, p.height/2);
+                }
+            };
+        };
+        new p5(sketchBlackhole);
+
+        // --- 动画4: 引力与最小作用量 ---
+        let sketchGravityAction = function(p) {
+            let ball;
+            let path = [];
+            let potentialCurve = [];
+            let playing = false; // Start paused, release on button
+
+            p.setup = function() {
+                let container = p.select('#gravityActionAnimationContainer');
+                let canvas = p.createCanvas(container.width, container.height);
+                canvas.parent('gravityActionAnimationContainer');
+                
+                // Define the potential curve (a simple sine wave or similar)
+                for (let x = 0; x <= p.width; x += 5) {
+                    let y = p.height * 0.6 + p.height * 0.25 * p.sin(p.map(x, 0, p.width, 0, p.PI * 2));
+                    potentialCurve.push(p.createVector(x,y));
+                }
+                resetBall();
+                p.select('#gravityActionPlayPause').mousePressed(() => {
+                    if (!playing || ball.settled) { // If paused or ball settled, reset and play
+                        resetBall();
+                        playing = true;
+                    } else { // If playing, pause
+                        playing = false;
+                    }
+                });
+            };
+            
+            function resetBall(){
+                ball = {
+                    pos: p.createVector(p.width * 0.15, potentialCurve.find(pt => pt.x >= p.width * 0.15).y - 10),
+                    vel: p.createVector(0, 0),
+                    acc: p.createVector(0, 0),
+                    radius: 8,
+                    mass: 1,
+                    settled: false
+                };
+                path = [];
+                playing = false; // Start paused
+            }
+
+            p.draw = function() {
+                p.background(15, 15, 30);
+
+                // Draw potential curve
+                p.noFill();
+                p.stroke(100, 150, 255, 200); // Blueish curve
+                p.strokeWeight(2);
+                p.beginShape();
+                for (let v of potentialCurve) {
+                    p.vertex(v.x, v.y);
+                }
+                p.endShape();
+
+                if (playing && !ball.settled) {
+                    // Find current segment of the curve under the ball
+                    let currentX = ball.pos.x;
+                    let p1 = null, p2 = null;
+                    for(let i=0; i < potentialCurve.length -1; i++){
+                        if(potentialCurve[i].x <= currentX && potentialCurve[i+1].x >= currentX){
+                            p1 = potentialCurve[i];
+                            p2 = potentialCurve[i+1];
+                            break;
+                        }
+                    }
+                    
+                    if(p1 && p2){
+                        // Calculate slope for gravitational force component
+                        let slope = (p2.y - p1.y) / (p2.x - p1.x);
+                        let gravityForce = p.createVector(slope, 1).normalize().mult(0.05 * ball.mass); // Simplified force
+                         gravityForce.x = slope * 0.1; // Force along the slope
+                         gravityForce.y = 0.1; // Vertical gravity component (simplified)
+                        
+                        // Apply force (simplified: directly influence velocity based on slope)
+                        ball.acc = p.createVector(slope * 0.2, 0.1); // Acceleration due to "gravity" along slope
+                        
+                        ball.vel.add(ball.acc);
+                        ball.vel.mult(0.98); // Damping/friction
+                        ball.pos.add(ball.vel);
+
+                        // Constrain ball to the curve (approximate)
+                        let targetY = p.lerp(p1.y, p2.y, (currentX - p1.x) / (p2.x - p1.x));
+                        ball.pos.y = targetY - ball.radius / 2; // Adjust to sit on curve
+
+                        // Keep within bounds
+                        ball.pos.x = p.constrain(ball.pos.x, 0, p.width);
+
+                        path.push(ball.pos.copy());
+                        if (path.length > 200) path.shift();
+
+                        if(ball.vel.mag() < 0.05 && ball.pos.y > p.height * 0.6 + p.height * 0.25 * 0.9) { // Check if near bottom and slow
+                           // ball.settled = true; // Could add a settled state
+                        }
+                    }
+                } else if (ball.settled) {
+                    // Ball is settled, do nothing or display message
+                }
+
+
+                // Draw path
+                p.stroke(255, 100, 100, 100); // Reddish path
+                p.beginShape();
+                for (let v of path) {
+                    p.vertex(v.x, v.y);
+                }
+                p.endShape();
+
+                // Draw ball
+                p.fill(255, 200, 0); // Yellow ball
+                p.noStroke();
+                p.ellipse(ball.pos.x, ball.pos.y, ball.radius * 2, ball.radius * 2);
+                
+                if (!playing && !ball.settled) {
+                    p.fill(255,255,255,150);
+                    p.textAlign(p.CENTER, p.CENTER);
+                    p.textSize(20);
+                    p.text("点击按钮释放小球", p.width/2, p.height/2 - 20);
+                }
+            };
+        };
+        new p5(sketchGravityAction);
+
+        // --- 动画5: 约束之源与规律演化 ---
+        let sketchLaws = function(p) {
+            let elements = [];
+            const numElements = 15;
+            let playing = false;
+            let targetPatternFormed = false;
+
+            class Element {
+                constructor() {
+                    this.pos = p.createVector(p.random(p.width), p.random(p.height));
+                    this.vel = p.createVector(p.random(-0.5, 0.5), p.random(-0.5, 0.5));
+                    this.type = p.floor(p.random(3)); // 0: circle, 1: square, 2: triangle
+                    this.size = p.random(10, 20);
+                    this.color = p.color(p.random(100,200),p.random(100,200),255, 180);
+                    this.targetPos = null; 
+                }
+
+                applyForce(force) {
+                    this.vel.add(force);
+                }
+
+                update() {
+                    if(playing && !targetPatternFormed) {
+                        // Attraction/repulsion logic for self-organization
+                        for (let other of elements) {
+                            if (other !== this) {
+                                let d = p5.Vector.dist(this.pos, other.pos);
+                                if (d < 50 && d > 0) { // Repel if too close
+                                    let force = p5.Vector.sub(this.pos, other.pos);
+                                    force.normalize();
+                                    force.mult(0.5 / d);
+                                    this.applyForce(force);
+                                } else if (d < 100 && this.type === other.type) { // Attract same types
+                                    let force = p5.Vector.sub(other.pos, this.pos);
+                                    force.normalize();
+                                    force.mult(0.02);
+                                    this.applyForce(force);
+                                }
+                            }
+                        }
+                         // Move towards a pre-defined target position if one is set (for final pattern)
+                        if(this.targetPos){
+                            let dirToTarget = p5.Vector.sub(this.targetPos, this.pos);
+                            dirToTarget.mult(0.03); // Speed of moving to target
+                            this.vel.add(dirToTarget);
+                        }
+
+
+                        this.vel.limit(1);
+                        this.pos.add(this.vel);
+                        this.vel.mult(0.98); // Damping
+
+                        // Bounce off walls
+                        if (this.pos.x < this.size/2 || this.pos.x > p.width - this.size/2) this.vel.x *= -1;
+                        if (this.pos.y < this.size/2 || this.pos.y > p.height - this.size/2) this.vel.y *= -1;
+                    
+                    } else if (targetPatternFormed && this.targetPos) { // If pattern formed, gently move to target
+                        let dirToTarget = p5.Vector.sub(this.targetPos, this.pos);
+                        dirToTarget.mult(0.05);
+                        this.pos.add(dirToTarget);
+                         if(p5.Vector.dist(this.pos, this.targetPos) < 1) this.vel.mult(0); // Stop when very close
+                    }
+                }
+
+                display() {
+                    p.fill(this.color);
+                    p.noStroke();
+                    if (this.type === 0) {
+                        p.ellipse(this.pos.x, this.pos.y, this.size, this.size);
+                    } else if (this.type === 1) {
+                        p.rectMode(p.CENTER);
+                        p.square(this.pos.x, this.pos.y, this.size);
+                    } else {
+                        p.push();
+                        p.translate(this.pos.x, this.pos.y);
+                        p.triangle(0, -this.size/2, -this.size/2, this.size/2, this.size/2, this.size/2);
+                        p.pop();
+                    }
+                }
+            }
+            
+            function formTargetPattern() {
+                targetPatternFormed = true;
+                let centerX = p.width / 2;
+                let centerY = p.height / 2;
+                let radius = p.min(p.width, p.height) / 3;
+                elements.forEach((el, i) => {
+                    let angle = p.map(i, 0, elements.length, 0, p.TWO_PI);
+                    el.targetPos = p.createVector(centerX + radius * p.cos(angle), centerY + radius * p.sin(angle));
+                });
+            }
+
+
+            p.setup = function() {
+                let container = p.select('#lawsAnimationContainer');
+                let canvas = p.createCanvas(container.width, container.height);
+                canvas.parent('lawsAnimationContainer');
+                for (let i = 0; i < numElements; i++) {
+                    elements.push(new Element());
+                }
+                p.select('#lawsPlayPause').mousePressed(() => {
+                    playing = !playing;
+                    if(playing && !targetPatternFormed && p.random(1) < 0.8){ // Chance to start forming pattern
+                        setTimeout(formTargetPattern, 3000); // Start forming pattern after a delay
+                    } else if (!playing && targetPatternFormed){ // If paused after pattern formed, reset
+                        targetPatternFormed = false;
+                        elements.forEach(el => el.targetPos = null);
+                    }
+                });
+            };
+
+            p.draw = function() {
+                p.background(15, 15, 30);
+                for (let el of elements) {
+                    el.update();
+                    el.display();
+                }
+                if (!playing) {
+                    p.fill(255,255,255,150);
+                    p.textAlign(p.CENTER, p.CENTER);
+                    p.textSize(20);
+                    p.text(targetPatternFormed ? "规律已形成 (暂停)" : "点击启动“规律演化”", p.width/2, p.height/2);
+                } else if (targetPatternFormed){
+                     p.fill(180,255,180,150);
+                    p.textAlign(p.CENTER, p.CENTER);
+                    p.textSize(18);
+                    p.text("规律形成中...", p.width/2, p.height/2);
+                }
+            };
+        };
+        new p5(sketchLaws);
+
+    </script>
+</body>
+</html>

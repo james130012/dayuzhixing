@@ -1,0 +1,991 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>神经符号学习的独立性假设：逻辑视角下的深度剖析</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.2/p5.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
+    <style>
+        /* 基本重置和页面设置 */
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Noto Sans SC', sans-serif; /* 清晰的正文 */
+            font-size: 18px; /* 模拟“三号”字体大小，提供良好可读性 */
+            line-height: 1.8;
+            background-color: #f0f2f5; /* 淡雅背景色，类似GitHub */
+            color: #24292e; /* GitHub 风格的深灰文字 */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 1000px; /* 限制最大宽度 */
+            margin: 30px auto;
+            padding: 30px 40px;
+            background-color: #ffffff; /* 白色内容背景 */
+            border: 1px solid #d1d5da; /* GitHub 风格边框 */
+            border-radius: 8px; /* 圆角 */
+            box-shadow: 0 8px 24px rgba(149, 157, 165, 0.2); /* 更柔和的阴影 */
+        }
+
+        header {
+            border-bottom: 1px solid #e1e4e8; /* GitHub 风格分隔线 */
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+        }
+
+        h1, h2, h3 {
+            font-family: 'ZCOOL KuaiLe', cursive; /* 轻松活泼的标题字体 */
+            color: #0366d6; /* GitHub 风格蓝色标题 */
+            margin-bottom: 0.75em;
+            text-align: center;
+        }
+        h1 {
+            font-size: 2.6em; /* 大标题 */
+            color: #1a73e8; /* 更鲜明的蓝色 */
+        }
+        h2 {
+            font-size: 2em;
+            color: #d73a49; /* GitHub 风格红色，强调章节 */
+            margin-top: 2em;
+            border-bottom: 2px solid #f1f1f1;
+            padding-bottom: 8px;
+        }
+        h3 {
+            font-size: 1.6em;
+            color: #6f42c1; /* GitHub 风格紫色 */
+            margin-top: 1.5em;
+        }
+
+        p {
+            margin-bottom: 1.2em;
+            text-align: justify; /* 两端对齐，更整洁 */
+            color: #333;
+        }
+
+        strong, .highlight {
+            color: #d73a49; /* 红色强调 */
+            font-weight: 600; /* Noto Sans SC bold is 700, 600 for semi-bold */
+        }
+        .concept {
+            font-weight: 500;
+            color: #005cc5; /* 深蓝色概念词 */
+            padding: 3px 6px;
+            background-color: #f1f8ff; /* 淡蓝色背景 */
+            border-radius: 4px;
+            border: 1px solid #c8e1ff;
+        }
+
+        .formula-text {
+            display: block;
+            text-align: center;
+            font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace; /* GitHub 代码字体 */
+            font-size: 1.1em;
+            padding: 15px;
+            margin: 25px auto;
+            background-color: #f6f8fa; /* GitHub 代码块背景 */
+            border: 1px solid #dfe2e5;
+            border-radius: 6px;
+            color: #24292e;
+            max-width: 85%;
+            overflow-x: auto; /* 公式过长时可滚动 */
+        }
+
+        .animation-container {
+            width: 100%;
+            max-width: 550px; /* 动画最大宽度 */
+            height: 380px; /* 固定高度 */
+            margin: 25px auto;
+            border: 1px solid #d1d5da; /* 边框 */
+            border-radius: 6px;
+            overflow: hidden;
+            background-color: #fdfdfd;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: inset 0 0 8px rgba(0,0,0,0.05);
+        }
+        .animation-container canvas {
+            display: block;
+            max-width: 100%;
+            max-height: 100%;
+            border-radius: 5px;
+        }
+        
+        .controls {
+            text-align: center;
+            margin-top: 10px;
+            margin-bottom: 30px;
+            padding: 10px;
+            background-color: #f9f9f9;
+            border-radius: 6px;
+            border: 1px solid #e1e4e8;
+        }
+        .controls button, .controls input[type="range"], .controls label, .controls select {
+            padding: 9px 16px;
+            font-size: 0.95em;
+            font-family: 'Noto Sans SC', sans-serif;
+            background-color: #2ea44f; /* GitHub 绿色按钮 */
+            color: white;
+            border: 1px solid rgba(27,31,35,.2);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.2s ease-in-out, transform 0.1s ease;
+            margin: 5px;
+            box-shadow: 0 1px 0 rgba(27,31,35,.04), inset 0 1px 0 hsla(0,0%,100%,.25);
+        }
+        .controls button:hover {
+            background-color: #22863a; /* 深绿色悬停 */
+        }
+        .controls button:active {
+            transform: translateY(1px);
+            background-color: #207433;
+        }
+        .controls input[type="range"] {
+            vertical-align: middle;
+            cursor: grab;
+            padding: 0; /* Range inputs don't need padding like buttons */
+            background-color: transparent; /* Remove button-like bg */
+            box-shadow: none;
+            border: none;
+        }
+        .controls label {
+            background-color: transparent;
+            color: #586069; /* GitHub muted text color */
+            box-shadow: none;
+            border: none;
+            font-weight: 500;
+        }
+        .controls select {
+             background-color: white;
+             color: #24292e;
+             border: 1px solid #d1d5da;
+        }
+        .controls .value-display {
+            display: inline-block;
+            min-width: 30px;
+            text-align: right;
+            font-weight: bold;
+            color: #0366d6;
+        }
+
+        ul {
+            list-style-type: square; /* 更现代的点 */
+            padding-left: 25px;
+        }
+        li {
+            margin-bottom: 0.6em;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 50px;
+            padding: 25px;
+            background-color: #f6f8fa; /* GitHub 页脚背景 */
+            color: #586069; /* GitHub muted text */
+            width: 100%;
+            border-top: 1px solid #e1e4e8;
+        }
+        footer p {
+            margin: 0;
+            font-size: 0.9em;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            body {
+                font-size: 16px;
+            }
+            .container {
+                width: 95%;
+                padding: 20px;
+                margin: 15px auto;
+            }
+            h1 {
+                font-size: 2em;
+            }
+            h2 {
+                font-size: 1.7em;
+            }
+            h3 {
+                font-size: 1.4em;
+            }
+            .animation-container {
+                height: 300px;
+            }
+            .formula-text {
+                font-size: 1em;
+                max-width: 100%;
+            }
+            .controls button, .controls input[type="range"], .controls label, .controls select {
+                padding: 8px 12px;
+                font-size: 0.9em;
+                width: calc(100% - 20px); /* Full width buttons on mobile */
+                margin-left: 10px;
+                margin-right: 10px;
+            }
+            .controls label {
+                 width: auto; /* Labels should not be full width */
+            }
+            .controls input[type="range"]{
+                width: calc(100% - 80px); /* Adjust for label */
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>神经符号学习的“独立性”魔咒：逻辑视角下的深度剖析</h1>
+        </header>
+
+        <main>
+            <article>
+                <section id="intro">
+                    <h2>引言：当神经网络遇上逻辑规则</h2>
+                    <p>想象一下，我们既希望人工智能拥有神经网络那样强大的感知和学习能力，又希望它能像逻辑学家一样严谨思考、遵守规则。这就是<span class="concept">神经符号学习</span>（Neurosymbolic Learning）的宏伟目标。它试图将神经网络的“直觉”与符号逻辑的“理性”相结合。然而，在当前的许多神经符号系统中，存在一个看似不起眼、实则影响深远的“基本操作”——<strong class="highlight">条件独立性假设</strong>。</p>
+                    <p>这篇解读，我们将深入探讨这篇名为《On the Independence Assumption in Neurosymbolic Learning》的学术论文，从一个偏向“物理逻辑”——即系统内在结构和行为逻辑的视角，揭示这个假设如何像一把双刃剑，在简化模型的同时，也可能限制了模型的潜能，甚至可能将模型引向“认知偏差”。</p>
+                </section>
+
+                <section id="independence-assumption">
+                    <h2>“独立思考”的代价：条件独立性假设的困境</h2>
+                    <p>条件独立性假设，简单来说，就是认为在给定输入数据（比如一张图片）后，模型对不同符号（比如图片中是否有猫、是否有狗）的判断是相互独立的。比如，模型判断“有猫”的概率，不会受到它判断“有狗”的概率的影响。这大大简化了模型的构建和概率计算。</p>
+                    <p>但论文尖锐地指出，这种“独立性”是有代价的：</p>
+                    <ul>
+                        <li><strong class="highlight">过度自信与确定性偏见</strong>：模型可能无法表达对多种可能性并存时的“不确定性”。例如，交通信号灯不能同时亮红灯（r）和绿灯（g）。如果模型不确定到底是红灯亮、绿灯亮还是都没亮（比如故障），独立性假设可能会迫使它给出一个非常确定的结论，比如“红灯一定没亮”或“绿灯一定没亮”，而不是承认这种模糊状态。</li>
+                        <li><strong class="highlight">优化障碍</strong>：包含这种假设的损失函数（用以指导模型学习的函数）往往是<span class="concept">非凸的</span>，并且其最优解（极小值点）可能是<span class="concept">高度不连通的</span>。这就像在崎岖不平的山地里找最低点，很容易卡在某个局部小坑里，难以找到真正的全局最优。</li>
+                        <li><strong class="highlight">无法准确量化不确定性</strong>：这直接源于其确定性偏见，使得模型在需要审慎判断的场景下表现不佳。</li>
+                    </ul>
+                    <p>下面的动画将模拟交通灯例子，展示独立性假设如何导致模型在概率空间中的选择受限。</p>
+                    <div id="animation1Container" class="animation-container"></div>
+                    <div class="controls">
+                        <button id="anim1PlayPause">播放/暂停</button>
+                        <button id="anim1Reset">重置状态</button>
+                        <label for="anim1TrueProbR">真实P(红灯): <span id="anim1ValR" class="value-display">0.5</span></label>
+                        <input type="range" id="anim1TrueProbR" min="0" max="1" value="0.5" step="0.01">
+                         <label for="anim1TrueProbG">真实P(绿灯): <span id="anim1ValG" class="value-display">0.5</span></label>
+                        <input type="range" id="anim1TrueProbG" min="0" max="1" value="0.5" step="0.01">
+                    </div>
+                </section>
+
+                <section id="semantic-loss">
+                    <h2>语义损失：在逻辑的边缘行走</h2>
+                    <p>神经符号学习中常用一种<span class="concept">语义损失函数</span>来训练模型。其基本思想是：模型预测的结果越符合逻辑约束，损失就越小。公式可以理解为：</p>
+                    <p class="formula-text">损失 = -log( P(逻辑约束被满足 | 输入数据) )</p>
+                    <p>对于交通灯的例子，约束是“红灯和绿灯不能同时亮”，即 `NOT (r AND g)`。如果模型预测 `P(r)=p_r`，`P(g)=p_g`，在独立性假设下，`P(r AND g) = p_r * p_g`。那么，约束被满足的概率是 `1 - p_r * p_g`。模型的目标就是最大化这个概率，或者说最小化 `-log(1 - p_r * p_g)`。</p>
+                    <p>论文指出，这种损失函数在独立性假设下，其极小值点（即模型最满意的状态）往往对应于某些变量被<strong class="highlight">确定性地赋值</strong>。比如，`p_r=0` 或 `p_g=0`。这再次印证了模型的确定性偏见。</p>
+                    <div id="animation2Container" class="animation-container"></div>
+                    <div class="controls">
+                        <button id="anim2PlayPause">播放/暂停粒子</button>
+                        <label for="anim2ShowGradient">显示梯度: </label>
+                        <input type="checkbox" id="anim2ShowGradient" checked>
+                    </div>
+                </section>
+
+                <section id="implicants">
+                    <h2>逻辑的“棋筋”：蕴含项与极小值点</h2>
+                    <p>论文引入了逻辑学中的<span class="concept">蕴含项</span>（Implicant）概念来分析模型的行为。一个蕴含项是对部分符号变量的赋值，只要这些赋值成立，整个逻辑约束就一定成立。例如，对于约束 `A OR B`，`A=true` 是一个蕴含项，`B=true` 也是一个蕴含项。</p>
+                    <p>核心结论（论文定理3.1）是：<strong class="highlight">在独立性假设下，语义损失的极小值点，其对应的模型状态必然使其对某些变量的赋值构成一个蕴含项。</strong></p>
+                    <p>这意味着模型会“抓住”这些逻辑上的关键点，并试图将概率分布推向这些能确保逻辑正确的“确定状态”。这解释了为什么模型倾向于给出确定性的预测，因为它在努力满足逻辑约束的“最简单粗暴”的方式。</p>
+                    <p>下面的动画将展示一个简单逻辑约束的蕴含项如何在参数空间中定义出模型的“舒适区”。</p>
+                    <div id="animation3Container" class="animation-container"></div>
+                    <div class="controls">
+                        <label for="anim3Constraint">选择约束: </label>
+                        <select id="anim3Constraint">
+                            <option value="A_OR_B">A OR B</option>
+                            <option value="A_AND_B">A AND B</option>
+                            <option value="A_IMPLIES_B">A IMPLIES B (NOT A OR B)</option>
+                        </select>
+                    </div>
+                </section>
+
+                <section id="geometry-minima">
+                    <h2>迷宫般的解空间：非凸与不连通的挑战</h2>
+                    <p>从“物理逻辑”或几何结构的角度看，所有可能的独立概率分布形成一个超立方体。而那些满足逻辑约束的、好的独立分布，在这个超立方体中构成的区域（论文中用<span class="concept">立方集 Cubical Set</span>来描述）通常是<strong class="highlight">非凸</strong>的，并且可能是<strong class="highlight">不连通</strong>的。</p>
+                    <ul>
+                        <li><strong>非凸性</strong>：想象一个香蕉形状的区域。如果你在香蕉的两端各取一点，连接它们的直线段可能会穿出香蕉区域。这意味着，两个“好”的解的平均（或混合）可能是一个“坏”的解。这给优化带来了麻烦。论文证明，只有当逻辑约束极其简单（只是一系列简单肯定或否定命题的合取）时，这个解区域才是凸的。</li>
+                        <li><strong>不连通性</strong>：解区域可能由多个孤立的“岛屿”组成。一旦优化过程进入一个“岛屿”，就很难跳到另一个可能更好的“岛屿”上，因为中间隔着高损失的“海洋”。论文用XOR（异或）问题和MNIST加法任务作为例子，它们的极小值点是互相分离的。</li>
+                    </ul>
+                    <p>这种复杂的几何结构使得基于梯度下降的优化方法很容易陷入局部最优，难以找到全局最优解。下面的动画将以XOR问题为例，展示其不连通的极小值点。</p>
+                    <div id="animation4Container" class="animation-container"></div>
+                    <div class="controls">
+                        <button id="anim4PlayPause">播放/暂停粒子</button>
+                        <button id="anim4ResetParticle">重置粒子</button>
+                    </div>
+                </section>
+
+                <section id="expressive-models-solution">
+                    <h2>挣脱束缚：表达性模型的潜力</h2>
+                    <p>既然独立性假设有这么多问题，那出路何在？论文指出，使用<span class="concept">更具表达性的概率模型</span>是关键。这类模型不作（或减弱）独立性假设，能够表示更复杂的概率分布。例如，模型可以直接学习符号间的依赖关系。</p>
+                    <p>这样做的好处是：</p>
+                    <ul>
+                        <li>能够<strong class="highlight">准确表达不确定性</strong>，不会被强迫给出过度自信的结论。</li>
+                        <li>对应的损失函数在所有可能的（满足约束的）概率分布空间中是<strong class="highlight">凸的</strong>，这使得优化过程更为平滑，更容易找到好的解。</li>
+                    </ul>
+                    <p>当然，表达性模型通常计算更复杂，参数更多。但论文的理论分析为发展这类更优越的神经符号模型奠定了坚实的基础，指明了方向——即在保持可处理性的前提下，尽可能地增强模型的表达能力，使其能够真正理解和运用逻辑规则，而不是仅仅“记住”满足规则的某些确定性模式。</p>
+                    <p>最后一个动画将对比独立模型和（理想的）表达性模型在表示不确定性方面的差异。</p>
+                    <div id="animation5Container" class="animation-container"></div>
+                    <div class="controls">
+                        <label for="anim5P_R_not_G">P(红, 非绿): <span id="anim5Val_R_not_G" class="value-display">0.33</span></label>
+                        <input type="range" id="anim5P_R_not_G" min="0" max="1" value="0.33" step="0.01">
+                        <label for="anim5P_not_R_G">P(非红, 绿): <span id="anim5Val_not_R_G" class="value-display">0.33</span></label>
+                        <input type="range" id="anim5P_not_R_G" min="0" max="1" value="0.33" step="0.01">
+                        <label for="anim5P_not_R_not_G">P(非红, 非绿): <span id="anim5Val_not_R_not_G" class="value-display">0.34</span></label>
+                        <input type="range" id="anim5P_not_R_not_G" min="0" max="1" value="0.34" step="0.01">
+                        <button id="anim5Normalize">归一化概率</button>
+                    </div>
+                </section>
+
+                <section id="conclusion">
+                    <h2>结论：迈向更智能的逻辑推理</h2>
+                    <p>《On the Independence Assumption in Neurosymbolic Learning》这篇论文通过严谨的数学分析和逻辑推演，深刻揭示了神经符号学习中一个基础性假设——条件独立性——所带来的系统性问题。它不仅仅是一个技术细节，更关系到模型能否真正地进行灵活、鲁棒的逻辑推理和不确定性表达。</p>
+                    <p>从“物理逻辑”的视角来看，这个假设改变了问题空间的“几何形态”，使得原本平坦的寻优之路变得崎岖不平、充满陷阱。它迫使模型在面对多种可能性时，倾向于选择“黑或白”的极端判断，而失去了在灰色地带游刃有余的能力。</p>
+                    <p>未来的神经符号学习研究，需要在模型的<strong class="highlight">表达能力</strong>、<strong class="highlight">推理精度</strong>和<strong class="highlight">计算效率</strong>之间做出更明智的权衡。放弃或改进独立性假设，拥抱更灵活的概率建模方式，将是通往更强大、更可信赖的人工智能的关键一步。这篇论文为我们照亮了前路，也敲响了警钟：在追求智能的道路上，对基础假设的审视和批判，与算法创新同等重要。</p>
+                </section>
+            </article>
+        </main>
+        <footer>
+            <p>&copy; 2025 AI逻辑探索者。内容基于学术论文解读，仅供学习交流。</p>
+        </footer>
+    </div>
+
+<script>
+// --- Animation 1: Traffic Light & Independence Bias ---
+let sketchAnim1 = function(p) {
+    let playing = true;
+    let modelProbR = 0.7, modelProbG = 0.7; // Initial model state (in "bad" region)
+    let targetR = 0.1, targetG = 0.1; // Where independent model might go
+    let trueProbRSlider, trueProbGSlider;
+    let valRSpan, valGSpan;
+
+    p.setup = function() {
+        let canvas = p.createCanvas(p.select('#animation1Container').width, p.select('#animation1Container').height);
+        canvas.parent('animation1Container');
+        p.select('#anim1PlayPause').mousePressed(() => { playing = !playing; if(playing) p.loop(); else p.noLoop(); });
+        p.select('#anim1Reset').mousePressed(resetModel);
+        
+        trueProbRSlider = p.select('#anim1TrueProbR');
+        trueProbGSlider = p.select('#anim1TrueProbG');
+        valRSpan = p.select('#anim1ValR');
+        valGSpan = p.select('#anim1ValG');
+
+        trueProbRSlider.input(() => valRSpan.html(parseFloat(trueProbRSlider.value()).toFixed(2)));
+        trueProbGSlider.input(() => valGSpan.html(parseFloat(trueProbGSlider.value()).toFixed(2)));
+
+        resetModel();
+        if (playing) p.loop(); else p.noLoop();
+    };
+
+    function resetModel() {
+        modelProbR = p.random(0.6, 0.9);
+        modelProbG = p.random(0.6, 0.9);
+        // Determine a target on one of the axes
+        if (p.random() > 0.5) { // Target P(R)=0
+            targetR = p.random(0, 0.1);
+            targetG = parseFloat(trueProbGSlider.value()); // Keep G from "true"
+        } else { // Target P(G)=0
+            targetG = p.random(0, 0.1);
+            targetR = parseFloat(trueProbRSlider.value()); // Keep R from "true"
+        }
+        if (playing) p.loop(); else p.redraw();
+    }
+
+    p.draw = function() {
+        p.background(250, 250, 255); // Light lavender
+        let w = p.width;
+        let h = p.height;
+        let padding = 40;
+
+        // Draw axes
+        p.stroke(150);
+        p.line(padding, padding, padding, h - padding); // P(G) axis
+        p.line(padding, h - padding, w - padding, h - padding); // P(R) axis
+        p.fill(0);
+        p.noStroke();
+        p.textAlign(p.CENTER, p.CENTER);
+        p.text("P(红灯)", w / 2, h - padding + 15);
+        p.push();
+        p.translate(padding - 20, h / 2);
+        p.rotate(-p.PI / 2);
+        p.text("P(绿灯)", 0, 0);
+        p.pop();
+        for (let i = 0; i <= 5; i++) {
+            let val = i * 0.2;
+            p.text(val.toFixed(1), padding + (w - 2 * padding) * val, h - padding + 8);
+            p.text(val.toFixed(1), padding - 8, h - padding - (h - 2 * padding) * val);
+        }
+
+        // "Impossible" region (r AND g is true)
+        p.fill(255, 100, 100, 100); // Transparent red
+        p.noStroke();
+        p.beginShape();
+        p.vertex(padding + (w - 2*padding)*0.7, h - padding - (h-2*padding)*0.7);
+        p.vertex(w - padding, h - padding - (h-2*padding)*0.7);
+        p.vertex(w - padding, padding);
+        p.vertex(padding + (w - 2*padding)*0.7, padding);
+        p.endShape(p.CLOSE);
+        p.fill(150,0,0);
+        p.text("P(r)P(g)高: 不满足约束", w*0.7, padding*1.5);
+
+
+        // Model's current state
+        let modelX = padding + (w - 2 * padding) * modelProbR;
+        let modelY = h - padding - (h - 2 * padding) * modelProbG;
+        p.fill(0, 0, 255); // Blue dot
+        p.ellipse(modelX, modelY, 10, 10);
+        p.text("模型状态", modelX, modelY - 15);
+
+        // Animate model towards target (axes)
+        if (playing) {
+            modelProbR += (targetR - modelProbR) * 0.02;
+            modelProbG += (targetG - modelProbG) * 0.02;
+        }
+
+        // Show where independent models are forced (axes)
+        p.stroke(50, 200, 50, 150); // Green lines for valid minima
+        p.strokeWeight(4);
+        p.line(padding, padding, padding, h - padding); // P(R)=0
+        p.line(padding, h - padding, w - padding, h - padding); // P(G)=0
+        p.strokeWeight(1);
+        p.fill(0,100,0);
+        p.text("独立模型倾向的解:\nP(红灯)=0 或 P(绿灯)=0", w*0.6, h*0.6);
+    };
+    setTimeout(() => { if (p && p.redraw) p.redraw(); }, 0); // Ensure first frame draw
+};
+new p5(sketchAnim1);
+
+// --- Animation 2: Semantic Loss Landscape ---
+let sketchAnim2 = function(p) {
+    let playing = true;
+    let particle = { x: 0.7, y: 0.7, vx: 0, vy: 0 };
+    let showGradientCheck;
+
+    function loss(pr, pg) {
+        // Semantic loss: -log(1 - pr*pg)
+        // To avoid log(0) or log(negative), clamp pr*pg < 1
+        let product = p.constrain(pr * pg, 0, 0.9999);
+        return -p.log(1 - product);
+    }
+
+    function gradient(pr, pg) {
+        // dL/dpr = pg / (1 - pr*pg)
+        // dL/dpg = pr / (1 - pr*pg)
+        let product = p.constrain(pr * pg, 0, 0.9999);
+        let denominator = 1 - product;
+        if (p.abs(denominator) < 1e-6) return { gx: 0, gy: 0 }; // Avoid division by zero
+        return {
+            gx: pg / denominator,
+            gy: pr / denominator
+        };
+    }
+
+    p.setup = function() {
+        let canvas = p.createCanvas(p.select('#animation2Container').width, p.select('#animation2Container').height);
+        canvas.parent('animation2Container');
+        p.colorMode(p.HSB, 360, 100, 100, 100);
+        p.select('#anim2PlayPause').mousePressed(() => { playing = !playing; if(playing) p.loop(); else p.noLoop(); });
+        showGradientCheck = p.select('#anim2ShowGradient');
+        showGradientCheck.changed(() => p.redraw());
+        resetParticle();
+        if (playing) p.loop(); else p.noLoop();
+    };
+    
+    function resetParticle(){
+        particle.x = p.random(0.4,0.8);
+        particle.y = p.random(0.4,0.8);
+        particle.vx = 0;
+        particle.vy = 0;
+    }
+
+    p.draw = function() {
+        let w = p.width;
+        let h = p.height;
+        let resolution = 15; // Draw fewer cells for performance
+
+        // Draw loss landscape (heatmap)
+        for (let i = 0; i < w / resolution; i++) {
+            for (let j = 0; j < h / resolution; j++) {
+                let pr = i * resolution / w;
+                let pg = j * resolution / h;
+                let l = loss(pr, pg);
+                // Map loss to color (e.g., blue=low, red=high)
+                // Loss can go to infinity, so clamp for visualization
+                let hue = p.map(p.constrain(l, 0, 5), 0, 5, 240, 0); // Blue to Red
+                p.noStroke();
+                p.fill(hue, 80, 90);
+                p.rect(i * resolution, j * resolution, resolution, resolution);
+            }
+        }
+        
+        // Overlay axes and labels
+        p.stroke(0,0,80); // White stroke for axes
+        p.line(0, h-1, w, h-1); // P(R) axis (y=0 for loss is top, so P(G)=0 is top)
+        p.line(0, 0, 0, h);   // P(G) axis (P(R)=0 is left)
+        p.fill(0,0,0); // Black text
+        p.noStroke();
+        p.textAlign(p.CENTER, p.TOP);
+        p.text("P(红灯)", w/2, 5);
+        p.textAlign(p.LEFT, p.CENTER);
+        p.push();
+        p.translate(5, h/2);
+        p.rotate(-p.PI/2);
+        p.text("P(绿灯)", 0, 0);
+        p.pop();
+
+        // Animate particle
+        if (playing) {
+            let grad = gradient(particle.x, particle.y);
+            particle.vx = -grad.gx * 0.002; // Move against gradient
+            particle.vy = -grad.gy * 0.002; // P5's Y is inverted from typical math plots for P(G)
+            
+            particle.x += particle.vx;
+            particle.y += particle.vy;
+
+            particle.x = p.constrain(particle.x, 0.01, 0.99); // Keep within bounds
+            particle.y = p.constrain(particle.y, 0.01, 0.99);
+            
+            if ((particle.x < 0.05 && grad.gx > 0) || (particle.y < 0.05 && grad.gy > 0)) {
+                 // resetParticle(); // Reset if it hits an axis and still has gradient pushing it
+            }
+        }
+
+        // Draw particle
+        let px = particle.x * w;
+        let py = particle.y * h;
+        p.fill(0,0,100); // White particle
+        p.stroke(0,0,0);
+        p.ellipse(px, py, 10, 10);
+
+        // Draw gradient vector at particle
+        if (showGradientCheck.checked()) {
+            let grad = gradient(particle.x, particle.y);
+            p.stroke(0, 100, 100); // Bright red for gradient
+            p.line(px, py, px - grad.gx * 50, py - grad.gy * 50); // Scale for visibility
+        }
+         p.fill(0,0,0);
+         p.noStroke();
+         p.textAlign(p.RIGHT, p.BOTTOM);
+         p.text("损失值高", w-10, h-30);
+         p.fill(240,80,90);
+         p.rect(w-60, h-25, 15,15);
+         p.fill(0,0,0);
+         p.text("损失值低", w-10, h-10);
+         p.fill(0,80,90);
+         p.rect(w-60, h-25+15, 15,15);
+
+
+    };
+    setTimeout(() => { if (p && p.redraw) p.redraw(); }, 0);
+};
+new p5(sketchAnim2);
+
+// --- Animation 3: Implicants Visualized ---
+let sketchAnim3 = function(p) {
+    let constraintSelect;
+    let angleX = 0, angleY = 0;
+
+    p.setup = function() {
+        let canvas = p.createCanvas(p.select('#animation3Container').width, p.select('#animation3Container').height, p.WEBGL);
+        canvas.parent('animation3Container');
+        constraintSelect = p.select('#anim3Constraint');
+        constraintSelect.changed(() => p.redraw());
+        p.noLoop(); // Static visualization, redraw on change
+        p.redraw();
+    };
+    
+    p.mouseDragged = function() {
+        angleY += (p.mouseX - p.pmouseX) * 0.01;
+        angleX += (p.mouseY - p.pmouseY) * 0.01;
+        p.redraw();
+    }
+
+    p.draw = function() {
+        p.background(250, 250, 255);
+        p.orbitControl(2,2,0.1); // Allows mouse rotation, zoom, pan
+        // p.rotateX(angleX);
+        // p.rotateY(angleY);
+        
+        let cubeSize = p.min(p.width, p.height) * 0.3;
+        
+        // Draw cube frame representing P(A), P(B), P(C) from 0 to 1
+        p.stroke(150);
+        p.noFill();
+        p.box(cubeSize * 2); // Centered at (0,0,0), so P=0.5 is origin
+
+        // Axis labels (approximate in 3D)
+        p.fill(0);
+        p.noStroke();
+        p.textSize(16);
+        // P(A) ~ X-axis, P(B) ~ Y-axis, P(C) ~ Z-axis
+        // Origin of cube at (-cubeSize, -cubeSize, -cubeSize) if not centered
+        // With centered box, (cubeSize,0,0) is P(A)=1, P(B)=0.5, P(C)=0.5
+        
+        // Shift coordinate system so (0,0,0) in sketch is (P(A)=0, P(B)=0, P(C)=0)
+        // and (cubeSize, cubeSize, cubeSize) is (P(A)=1, P(B)=1, P(C)=1)
+        // For p.box(D), it draws from -D/2 to D/2. So shift by D/2.
+        let s = cubeSize; // half-size for drawing
+        
+        p.push();
+        p.translate(s,0,0); p.text("P(A)=1", s/2, 0, 0);
+        p.pop();
+        p.push();
+        p.translate(0,s,0); p.text("P(B)=1", 0, s/2, 0);
+        p.pop();
+        p.push();
+        p.translate(0,0,s); p.text("P(C)=1",0,0,s/2);
+        p.pop();
+
+
+        let currentConstraint = constraintSelect.value();
+        p.strokeWeight(4);
+
+        // Transform probability P (0 to 1) to sketch coordinates (-s to s)
+        // coord = P * 2s - s
+        // P=0 -> -s; P=0.5 -> 0; P=1 -> s
+        
+        if (currentConstraint === "A_OR_B") { // Implicants: A=1 OR B=1
+            // A=1 plane (P(A)=1)
+            p.push();
+            p.translate(s, 0, 0); // X=s is P(A)=1 plane
+            p.fill(255, 0, 0, 100); // Red
+            p.noStroke();
+            p.box(1, 2*s, 2*s); // Thin plane for A=1
+            p.pop();
+
+            // B=1 plane (P(B)=1)
+            p.push();
+            p.translate(0, s, 0); // Y=s is P(B)=1 plane
+            p.fill(0, 0, 255, 100); // Blue
+            p.noStroke();
+            p.box(2*s, 1, 2*s); // Thin plane for B=1
+            p.pop();
+        } else if (currentConstraint === "A_AND_B") { // Implicant: A=1 AND B=1
+            // Line where A=1 and B=1
+            p.push();
+            p.translate(s, s, 0); // X=s, Y=s
+            p.stroke(0, 255, 0, 200); // Green line
+            p.strokeWeight(8);
+            p.line(0,0,-s, 0,0,s); // Line along Z-axis (P(C) varies)
+            p.pop();
+        } else if (currentConstraint === "A_IMPLIES_B") { // NOT A OR B. Implicants: A=0 OR B=1
+            // A=0 plane (P(A)=0)
+            p.push();
+            p.translate(-s, 0, 0); // X=-s is P(A)=0 plane
+            p.fill(255, 255, 0, 100); // Yellow
+            p.noStroke();
+            p.box(1, 2*s, 2*s);
+            p.pop();
+
+            // B=1 plane (P(B)=1)
+            p.push();
+            p.translate(0, s, 0); // Y=s is P(B)=1 plane
+            p.fill(0, 0, 255, 100); // Blue
+            p.noStroke();
+            p.box(2*s, 1, 2*s);
+            p.pop();
+        }
+    };
+    setTimeout(() => { if (p && p.redraw) p.redraw(); }, 0);
+};
+new p5(sketchAnim3);
+
+// --- Animation 4: Disconnected Minima (XOR) ---
+let sketchAnim4 = function(p) {
+    let playing = true;
+    let particle = { pa: 0.5, pb: 0.5, vx: 0, vy: 0 }; // P(A), P(B)
+    let resolution = 10;
+    let w, h, padding = 30;
+
+
+    function lossXOR(pa, pb) {
+        // L = -log( pa*(1-pb) + (1-pa)*pb )
+        let term1 = pa * (1 - pb);
+        let term2 = (1 - pa) * pb;
+        let sum = term1 + term2;
+        sum = p.constrain(sum, 1e-6, 1 - 1e-6); // Avoid log(0) or log(1) issues
+        return -p.log(sum);
+    }
+
+    function gradientXOR(pa, pb) {
+        // dL/dpa = - ( (1-pb) - pb ) / ( pa(1-pb) + (1-pa)pb ) = - (1 - 2pb) / sum
+        // dL/dpb = - ( -pa + (1-pa) ) / ( pa(1-pb) + (1-pa)pb ) = - (1 - 2pa) / sum
+        let term1 = pa * (1 - pb);
+        let term2 = (1 - pa) * pb;
+        let sum = term1 + term2;
+        sum = p.constrain(sum, 1e-6, 1 - 1e-6);
+        return {
+            gpa: -(1 - 2 * pb) / sum,
+            gpb: -(1 - 2 * pa) / sum
+        };
+    }
+    
+    function mapToCanvas(pa, pb) {
+        let x = padding + (w - 2 * padding) * pa;
+        let y = h - padding - (h - 2 * padding) * pb; // Invert y-axis for P(B)
+        return { x: x, y: y };
+    }
+
+
+    p.setup = function() {
+        let canvas = p.createCanvas(p.select('#animation4Container').width, p.select('#animation4Container').height);
+        canvas.parent('animation4Container');
+        p.colorMode(p.HSB, 360, 100, 100, 100);
+        w = p.width; h = p.height;
+
+        p.select('#anim4PlayPause').mousePressed(() => { playing = !playing; if(playing) p.loop(); else p.noLoop(); });
+        p.select('#anim4ResetParticle').mousePressed(resetParticle);
+        resetParticle();
+        if (playing) p.loop(); else p.noLoop();
+    };
+
+    function resetParticle() {
+        particle.pa = p.random(0.2, 0.8);
+        particle.pb = p.random(0.2, 0.8);
+        particle.vx = 0;
+        particle.vy = 0;
+        if(!playing) p.redraw();
+    }
+
+    p.draw = function() {
+        p.background(0,0,98); // Very light gray
+
+        // Draw loss landscape (heatmap)
+        for (let i = 0; i < w / resolution; i++) {
+            for (let j = 0; j < h / resolution; j++) {
+                let pa_val = i * resolution / w;
+                let pb_val = 1 - (j * resolution / h); // Y maps to P(B), P(B)=1 is top
+                let l = lossXOR(pa_val, pb_val);
+                let hue = p.map(p.constrain(l, 0, 3), 0, 3, 240, 0); // Blue (low loss) to Red (high loss)
+                p.noStroke();
+                p.fill(hue, 70, 95, 80);
+                p.rect(i * resolution, j * resolution, resolution, resolution);
+            }
+        }
+        
+        // Axes
+        p.stroke(0,0,20);
+        p.line(padding, padding, padding, h - padding); // P(B) axis
+        p.line(padding, h - padding, w - padding, h - padding); // P(A) axis
+        p.fill(0,0,10);
+        p.noStroke();
+        p.textAlign(p.CENTER, p.CENTER);
+        p.text("P(A)", w / 2, h - padding + 15);
+        p.push();
+        p.translate(padding - 20, h / 2);
+        p.rotate(-p.PI / 2);
+        p.text("P(B)", 0, 0);
+        p.pop();
+        for (let i = 0; i <= 5; i++) {
+            let val = i * 0.2;
+            p.text(val.toFixed(1), padding + (w - 2 * padding) * val, h - padding + 8);
+            p.text(val.toFixed(1), padding - 8, h - padding - (h - 2 * padding) * val);
+        }
+
+        // Minima points (1,0) and (0,1)
+        let min1Coords = mapToCanvas(1,0);
+        let min2Coords = mapToCanvas(0,1);
+        p.fill(0, 80, 100); // Bright green for minima
+        p.ellipse(min1Coords.x, min1Coords.y, 12, 12);
+        p.ellipse(min2Coords.x, min2Coords.y, 12, 12);
+        p.text("Min", min1Coords.x, min1Coords.y -10);
+        p.text("Min", min2Coords.x, min2Coords.y -10);
+
+
+        // Animate particle
+        if (playing) {
+            let grad = gradientXOR(particle.pa, particle.pb);
+            particle.vx = -grad.gpa * 0.005; // Move against gradient
+            particle.vy = -grad.gpb * 0.005; 
+            
+            particle.pa += particle.vx;
+            particle.pb += particle.vy;
+
+            particle.pa = p.constrain(particle.pa, 0.001, 0.999);
+            particle.pb = p.constrain(particle.pb, 0.001, 0.999);
+        }
+
+        // Draw particle
+        let particleCoords = mapToCanvas(particle.pa, particle.pb);
+        p.fill(0,0,0); // Black particle
+        p.stroke(0,0,100);
+        p.ellipse(particleCoords.x, particleCoords.y, 10, 10);
+    };
+    setTimeout(() => { if (p && p.redraw) p.redraw(); }, 0);
+};
+new p5(sketchAnim4);
+
+// --- Animation 5: Expressiveness Comparison ---
+let sketchAnim5 = function(p) {
+    // Simplex for 3 outcomes: (R, not G), (not R, G), (not R, not G)
+    // Let these be P1, P2, P3. P1+P2+P3 = 1.
+    // Independent model: P(R), P(G). Then P1=P(R)(1-P(G)), P2=(1-P(R))P(G), P3=(1-P(R))(1-P(G))
+    let sliderP1, sliderP2, sliderP3;
+    let valP1, valP2, valP3;
+    let targetProbs = [0.33, 0.33, 0.34]; // Target for P1, P2, P3
+    let simplexCenter, simplexRadius;
+
+    function updateTargetProbs() {
+        targetProbs[0] = parseFloat(sliderP1.value());
+        targetProbs[1] = parseFloat(sliderP2.value());
+        targetProbs[2] = parseFloat(sliderP3.value());
+        // Normalize if needed, or let button do it
+        valP1.html(targetProbs[0].toFixed(2));
+        valP2.html(targetProbs[1].toFixed(2));
+        valP3.html(targetProbs[2].toFixed(2));
+        p.redraw();
+    }
+    
+    function normalizeProbs() {
+        let sum = targetProbs[0] + targetProbs[1] + targetProbs[2];
+        if (sum === 0) sum = 1; // Avoid division by zero, default to uniform
+        targetProbs[0] /= sum;
+        targetProbs[1] /= sum;
+        targetProbs[2] /= sum;
+        sliderP1.value(targetProbs[0]);
+        sliderP2.value(targetProbs[1]);
+        sliderP3.value(targetProbs[2]);
+        updateTargetProbs(); // Update spans and redraw
+    }
+
+    // Convert simplex probs (P1,P2,P3) to 2D point for plotting
+    function simplexToCartesian(probs) {
+        // Equilateral triangle vertices:
+        // V1 (P1=1): (0, -simplexRadius)
+        // V2 (P2=1): (simplexRadius * sqrt(3)/2, simplexRadius/2)
+        // V3 (P3=1): (-simplexRadius * sqrt(3)/2, simplexRadius/2)
+        let v1 = p.createVector(0, -simplexRadius);
+        let v2 = p.createVector(simplexRadius * p.cos(p.radians(30)), simplexRadius * p.sin(p.radians(30)));
+        let v3 = p.createVector(-simplexRadius * p.cos(p.radians(30)), simplexRadius * p.sin(p.radians(30)));
+        
+        let x = probs[0]*v1.x + probs[1]*v2.x + probs[2]*v3.x;
+        let y = probs[0]*v1.y + probs[1]*v2.y + probs[2]*v3.y;
+        return p.createVector(x + simplexCenter.x, y + simplexCenter.y);
+    }
+
+    // Try to find P(R), P(G) for independent model that best matches targetProbs
+    // This is a mini-optimization problem. For simplicity, we can iterate or use a fixed mapping.
+    // For this demo, let's just show the manifold of independent distributions.
+    function getIndependentModelProbs(pr_val, pg_val) {
+        let p1_ind = pr_val * (1 - pg_val);
+        let p2_ind = (1 - pr_val) * pg_val;
+        let p3_ind = (1 - pr_val) * (1 - pg_val);
+        return [p1_ind, p2_ind, p3_ind];
+    }
+
+    p.setup = function() {
+        let canvas = p.createCanvas(p.select('#animation5Container').width, p.select('#animation5Container').height);
+        canvas.parent('animation5Container');
+        simplexCenter = p.createVector(p.width / 2, p.height / 2 + 20); // Shift down for title
+        simplexRadius = p.min(p.width, p.height) * 0.35;
+
+        sliderP1 = p.select('#anim5P_R_not_G');
+        sliderP2 = p.select('#anim5P_not_R_G');
+        sliderP3 = p.select('#anim5P_not_R_not_G');
+        valP1 = p.select('#anim5Val_R_not_G');
+        valP2 = p.select('#anim5Val_not_R_G');
+        valP3 = p.select('#anim5Val_not_R_not_G');
+        
+        sliderP1.input(updateTargetProbs);
+        sliderP2.input(updateTargetProbs);
+        sliderP3.input(updateTargetProbs);
+        p.select('#anim5Normalize').mousePressed(normalizeProbs);
+
+        normalizeProbs(); // Initial call
+        p.noLoop();
+        p.redraw();
+    };
+
+    p.draw = function() {
+        p.background(250, 250, 255);
+        p.textAlign(p.CENTER, p.CENTER);
+
+        // Draw simplex triangle
+        let v1Pos = simplexToCartesian([1,0,0]);
+        let v2Pos = simplexToCartesian([0,1,0]);
+        let v3Pos = simplexToCartesian([0,0,1]);
+        p.stroke(150);
+        p.strokeWeight(2);
+        p.noFill();
+        p.triangle(v1Pos.x, v1Pos.y, v2Pos.x, v2Pos.y, v3Pos.x, v3Pos.y);
+        
+        // Labels for vertices
+        p.fill(0);
+        p.noStroke();
+        p.textSize(12);
+        p.text("P(R,¬G)=1", v1Pos.x, v1Pos.y - 15);
+        p.text("P(¬R,G)=1", v2Pos.x + 20, v2Pos.y + 15);
+        p.text("P(¬R,¬G)=1", v3Pos.x - 20, v3Pos.y + 15);
+
+        // Show manifold of independent distributions
+        p.stroke(255, 165, 0, 150); // Orange
+        p.strokeWeight(1);
+        p.noFill();
+        // Sample points for P(R) and P(G) from 0 to 1
+        p.beginShape(p.POINTS);
+        for (let pr_sample = 0; pr_sample <= 1; pr_sample += 0.02) {
+            for (let pg_sample = 0; pg_sample <= 1; pg_sample += 0.02) {
+                let indProbs = getIndependentModelProbs(pr_sample, pg_sample);
+                // Ensure sum is 1 (it should be by construction)
+                let sumInd = indProbs[0]+indProbs[1]+indProbs[2];
+                if (p.abs(sumInd - 1) < 0.01) { // Check if valid probability distribution
+                     let indPos = simplexToCartesian(indProbs);
+                     p.vertex(indPos.x, indPos.y);
+                }
+            }
+        }
+        p.endShape();
+        p.fill(255,165,0);
+        p.text("独立模型可达区域 (橙色)", simplexCenter.x, simplexCenter.y + simplexRadius + 20);
+
+
+        // Target probability point (Expressive model can reach this)
+        let targetPos = simplexToCartesian(targetProbs);
+        p.fill(0, 0, 255); // Blue for target
+        p.noStroke();
+        p.ellipse(targetPos.x, targetPos.y, 10, 10);
+        p.text("目标概率\n(表达性模型可达)", targetPos.x, targetPos.y - 20);
+        
+        // Find closest independent model point (simplified: just show one)
+        // This is hard to do in real-time accurately. For demo, we can assume one.
+        // Or, we can iterate through some P(R), P(G) to find a "close enough" point.
+        let bestDistSq = Infinity;
+        let bestIndPos = null;
+        for (let pr_sample = 0; pr_sample <= 1; pr_sample += 0.05) {
+            for (let pg_sample = 0; pg_sample <= 1; pg_sample += 0.05) {
+                let indProbs = getIndependentModelProbs(pr_sample, pg_sample);
+                let sumInd = indProbs[0]+indProbs[1]+indProbs[2];
+                 if (p.abs(sumInd - 1) < 0.01) {
+                    let currentIndPos = simplexToCartesian(indProbs);
+                    let dSq = p.dist(targetPos.x, targetPos.y, currentIndPos.x, currentIndPos.y);
+                    if (dSq < bestDistSq) {
+                        bestDistSq = dSq;
+                        bestIndPos = currentIndPos;
+                    }
+                }
+            }
+        }
+        if(bestIndPos){
+            p.fill(255,0,0); // Red for closest independent
+            p.ellipse(bestIndPos.x, bestIndPos.y, 8,8);
+            p.stroke(200,0,0,100);
+            p.line(targetPos.x, targetPos.y, bestIndPos.x, bestIndPos.y);
+            p.text("独立模型\n最近似点", bestIndPos.x, bestIndPos.y + 20);
+        }
+
+
+        p.fill(0);
+        p.textSize(16);
+        p.text("表达性 vs. 独立性", simplexCenter.x, 30);
+    };
+    setTimeout(() => { if (p && p.redraw) p.redraw(); }, 0);
+};
+new p5(sketchAnim5);
+
+</script>
+</body>
+</html>

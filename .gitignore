@@ -1,0 +1,18 @@
+# Logs
+*.log
+logs/
+
+# Cache
+cache/
+tmp/
+
+# User Uploads
+uploads/
+
+# Vendor directories
+node_modules/
+vendor/
+
+# Environment files (often contain secrets)
+.env
+config/database.php

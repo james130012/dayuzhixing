@@ -1,0 +1,1128 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ARC-AGI-2：AI推理能力的新疆界——物理逻辑视角下的深度解读</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.2/p5.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" id="MathJax-script" async></script>
+    <style>
+        /* 基本重置和页面设置 */
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Noto Sans SC', sans-serif; /* 清晰的正文 */
+            font-size: 18px; /* 模拟“三号”字体大小，提供良好可读性 */
+            line-height: 1.8;
+            background-color: #f8f9fa; /* 淡雅背景色 */
+            color: #343a40; /* 深灰文字，对比清晰 */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        /* 容器样式，使其在A3纸张感觉上居中且有边距 */
+        .container {
+            position: relative; 
+            z-index: 1; 
+            width: 90%;
+            max-width: 1200px; /* 限制最大宽度，类似纸张 */
+            margin: 20px auto;
+            padding: 30px;
+            background-color: #ffffff; /* 白色内容背景 */
+            border-radius: 12px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+        }
+
+        #swanAnimationContainer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 0; 
+            pointer-events: none; 
+        }
+
+        /* 标题样式 */
+        h1, h2, h3, h4 {
+            font-family: 'ZCOOL KuaiLe', cursive; /* 轻松活泼的标题字体 */
+            color: #007bff; /* 蓝色标题 */
+            margin-bottom: 0.75em;
+            text-align: center;
+        }
+        h1 {
+            font-size: 2.8em; /* 大标题 */
+            color: #2a9d8f; /* 青色，更活泼 */
+            border-bottom: 3px solid #2a9d8f;
+            padding-bottom: 10px;
+            margin-top: 0;
+        }
+        h2 {
+            font-size: 2.2em;
+            color: #e76f51; /* 橙红色，强调章节 */
+            margin-top: 1.5em;
+        }
+        h3 {
+            font-size: 1.8em;
+            color: #f4a261; /* 暖黄色 */
+        }
+        h4 {
+            font-size: 1.5em;
+            color: #264653; /* 深蓝绿色 */
+        }
+
+        /* 段落和文本样式 */
+        p, li {
+            margin-bottom: 1.2em;
+            text-align: justify; /* 两端对齐，更整洁 */
+        }
+        ul {
+            padding-left: 20px;
+        }
+
+        /* 强调文字 */
+        strong, .highlight {
+            color: #d62828; /* 红色强调 */
+            font-weight: bold;
+        }
+        .concept {
+            font-weight: 500;
+            color: #2a9d8f; /* 青色概念词 */
+            padding: 2px 4px;
+            background-color: #e9f5f4;
+            border-radius: 4px;
+        }
+
+        /* 动画容器 */
+        .animation-container {
+            width: 100%;
+            max-width: 600px; 
+            height: 400px; 
+            margin: 20px auto;
+            border: 2px solid #007bff; 
+            border-radius: 8px;
+            overflow: hidden; 
+            background-color: #f0f8ff; 
+            display: flex; 
+            justify-content: center;
+            align-items: center;
+            position: relative; /* For absolute positioning of text within */
+        }
+        .animation-container canvas {
+            display: block; 
+            max-width: 100%;
+            max-height: 100%;
+            border-radius: 6px; 
+        }
+        
+        /* 交互按钮样式 */
+        .controls {
+            text-align: center;
+            margin-top: 10px;
+            margin-bottom: 20px;
+        }
+        .controls button, .controls input[type="range"], .controls label {
+            padding: 10px 18px;
+            font-size: 1em;
+            font-family: 'Noto Sans SC', sans-serif;
+            background-color: #007bff; 
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            margin: 5px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .controls button:hover {
+            background-color: #0056b3; 
+            transform: translateY(-2px);
+        }
+        .controls button:active {
+            transform: translateY(1px);
+        }
+        .controls input[type="range"] {
+            vertical-align: middle;
+            cursor: grab;
+            max-width: 150px; /* Prevent sliders from becoming too wide */
+        }
+        .controls label {
+            background-color: transparent;
+            color: #343a40;
+            box-shadow: none;
+            padding: 5px;
+        }
+
+        /* 页脚 */
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding: 20px;
+            background-color: #343a40; 
+            color: #f8f9fa; 
+            width: 100%; /* Ensure footer spans the full width of the viewport if body doesn't fill height */
+            box-sizing: border-box; /* Include padding in width calculation */
+        }
+        footer p {
+            margin: 0;
+            font-size: 0.9em;
+        }
+
+        /* 表格样式 */
+        table {
+            width: 80%;
+            margin: 20px auto;
+            border-collapse: collapse;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        th, td {
+            border: 1px solid #dee2e6;
+            padding: 12px;
+            text-align: left;
+        }
+        th {
+            background-color: #e9ecef;
+            color: #495057;
+            font-weight: 500;
+        }
+        tbody tr:nth-child(odd) {
+            background-color: #f8f9fa;
+        }
+        tbody tr:hover {
+            background-color: #e9f5f4;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            body {
+                font-size: 16px; 
+            }
+            .container {
+                width: 95%;
+                padding: 15px;
+            }
+            h1 {
+                font-size: 2.2em;
+            }
+            h2 {
+                font-size: 1.8em;
+            }
+            h3 {
+                font-size: 1.5em;
+            }
+            h4 {
+                font-size: 1.3em;
+            }
+            .animation-container {
+                height: 300px; 
+            }
+            .controls button, .controls input[type="range"], .controls label {
+                padding: 8px 12px;
+                font-size: 0.9em;
+                margin: 3px;
+            }
+            table {
+                width: 100%;
+                font-size: 0.9em;
+            }
+            th, td {
+                padding: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="swanAnimationContainer"></div>
+    <div class="container">
+        <header>
+            <h1>ARC-AGI-2：AI推理能力的新疆界</h1>
+            <h2>物理逻辑视角下的深度解读</h2>
+        </header>
+
+        <main>
+            <article>
+                <section id="intro">
+                    <h3>引言：智能的标尺与前沿挑战</h3>
+                    <p>人工智能的飞速发展，特别是近期大型语言模型的突破，对我们如何衡量机器智能提出了新的要求。2019年诞生的<strong class="concept">ARC-AGI</strong>（Abstraction and Reasoning Corpus for Artificial General Intelligence，后称ARC-AGI-1）基准，通过一系列独特的、仅需极少先验知识的抽象推理任务，为评估通用<strong class="concept">流体智能</strong>提供了一个重要平台。这些任务通常以网格的形式呈现，要求系统从少数几个输入-输出示例中归纳出潜在的转换规则。</p>
+                    <p>然而，五年过去，AI能力的边界不断拓展，我们需要更精细、更具挑战性的标尺来衡量其在复杂认知任务上的进展。本文将从“物理逻辑”的视角，深入解读新一代基准 <strong class="highlight">ARC-AGI-2</strong>，探讨其设计理念、核心挑战以及它如何推动AI向更通用、更类人的能力迈进。“物理逻辑”在这里指任务的结构化呈现方式（物理形态）以及解决这些任务所需的底层推理过程和规则（逻辑内核）。</p>
+                </section>
+
+                <section id="arc1-review">
+                    <h2>ARC-AGI-1的回顾与“物理”局限</h2>
+                    <p>ARC-AGI-1的核心“物理”设定是基于<strong class="concept">网格的输入输出对</strong>。AI系统需要从少量（通常2-5个）示例中归纳出隐藏的转换规则，并将其应用于新的测试网格。这些任务的“逻辑”在于它们刻意规避了对大量世界知识或语言能力的依赖，旨在纯粹考察流体智能——高效解决新问题的能力。其三大特征：<strong class="highlight">抗过拟合与记忆</strong>、<strong class="highlight">最小化先验知识</strong>（仅依赖如物体持久性、基本几何拓扑等核心认知）、以及<strong class="highlight">人类可解性</strong>。</p>
+                    
+                    <h4>ARC-AGI-1 的主要局限性：</h4>
+                    <ul>
+                        <li><strong>策略的脆弱性：</strong> 研究发现，近一半的ARC-AGI-1私有评估任务可能被计算密集的<strong class="concept">暴力程序搜索</strong>方法破解。这在一定程度上奖励了算力而非真正的认知架构创新，削弱了基准评估高级智能的信号。</li>
+                        <li><strong>人类基准的缺失：</strong> 虽然任务设计为人类可解，但ARC-AGI-1缺乏官方、标准化的第一方人类测试数据。这使得精确对比AI与人类在该基准上的表现变得困难。</li>
+                        <li><strong>认知天花板较低：</strong> 经验表明，智力水平较高的人类可以相对轻松地解决超过97%的ARC-AGI-1任务，这意味着该基准在区分更高层次的流体智能方面能力有限，出现了“饱和”现象。</li>
+                        <li><strong>难度分布不均：</strong> ARC-AGI-1的不同任务子集（如公共评估集与私有评估集）在实证难度上存在不一致，这可能影响跨子集比较得分的可靠性。</li>
+                        <li><strong>信息泄露风险：</strong> 由于私有评估集在多次竞赛中重复使用并提供排行榜反馈，累积的评分数据可能间接泄露任务特征，导致模型针对特定任务集进行“调优”，而非发展真正通用的推理能力。</li>
+                    </ul>
+                    <p>这些局限性共同表明，虽然ARC-AGI-1在推动AI抽象推理研究方面功不可没，但它在衡量当前最前沿AI系统的更高阶能力时，已逐渐显现出其“物理”边界和“逻辑”瓶颈。</p>
+                </section>
+                
+                <section id="animation1-arc-task">
+                    <h4>动画演示1：ARC任务剖析</h4>
+                    <p>下面的动画演示了一个典型的ARC任务是如何呈现的。观察输入网格如何通过一个未言明的规则转换为输出网格。</p>
+                    <div id="arcTaskAnimationContainer" class="animation-container"></div>
+                    <div class="controls">
+                        <button id="arcTaskPlayPause">播放/暂停</button>
+                        <button id="arcTaskNextExample">下一个示例</button>
+                    </div>
+                </section>
+
+                <section id="arc2-goals">
+                    <h2>ARC-AGI-2的“物理逻辑”重塑</h2>
+                    <p>为了应对ARC-AGI-1的局限性并持续推动AGI研究，ARC-AGI-2应运而生。它在保持核心原则和任务格式（输入-输出网格对，网格大小1x1至30x30，最多10种离散颜色）不变的前提下，进行了关键的升级和重塑，旨在提升基准的“物理”挑战性和“逻辑”深度。</p>
+                    <h4>ARC-AGI-2 的核心目标与设计革新：</h4>
+                    <ul>
+                        <li><strong>增强对非泛化策略的抵抗力：</strong> ARC-AGI-2中的任务经过精心设计，旨在<strong class="highlight">最小化对朴素或计算密集型暴力破解方法的易感性</strong>。这使得焦点进一步转向高效的、适应性的抽象推理能力。</li>
+                        <li><strong>建立坚实的的人类基准：</strong> 通过对ARC-AGI-2候选任务进行<strong class="highlight">大规模、受控的第一方人类测试</strong>（涉及407名不同背景的参与者，尝试了1848个独特的任务测试对），获得了关于人类可解率、感知难度和解决策略的可靠数据。例如，人类测试者平均解决了他们尝试任务的66%，解决成功的任务对平均耗时2.2分钟。</li>
+                        <li><strong>拓宽有效的“信号带宽”：</strong> ARC-AGI-2包含了一系列经过仔细校准的、难度跨度更广的任务。这些任务对人类而言通常仍然是可解的，但能<strong class="highlight">更有效地衡量和区分不同层次的AI流体推理能力</strong>，减少了简单任务的比例。</li>
+                        <li><strong>校准各子集的难度分布：</strong> 确保公共评估集、半私有评估集和私有评估集中的任务，在人类可解性和感知难度方面，都<strong class="highlight">来源于具有可比性的分布</strong>。这增强了在不同任务集上获得的分数的可解释性和预测性。</li>
+                        <li><strong>任务的独特性与新颖性：</strong> ARC-AGI-2中的任务更加独特，许多是全新创作的，以应对信息泄露的风险，并确保评估的是真正的“零样本”或“少样本”学习能力。</li>
+                    </ul>
+                    <p>ARC-AGI-2的最终任务筛选过程非常严格，所有评估集中的任务都确保至少被两名独立的人类测试者在两次尝试或更少的时间内成功解决。平均而言，最终入选ARC-AGI-2的任务对被75%尝试过它们的人类测试者解决。</p>
+                </section>
+
+                <section id="animation2-comparison">
+                    <h4>动画演示2：ARC-1 局限 vs ARC-2 目标</h4>
+                    <p>此动画对比了ARC-AGI-1的主要局限性以及ARC-AGI-2为解决这些问题所设定的目标。</p>
+                    <div id="arcComparisonAnimationContainer" class="animation-container"></div>
+                    <div class="controls">
+                        <button id="arcComparisonPlayPause">播放/暂停</button>
+                        <button id="arcComparisonNext">下一个对比点</button>
+                    </div>
+                </section>
+
+                <section id="arc2-challenges">
+                    <h2>ARC-AGI-2为何更具挑战性？——深入“逻辑内核”</h2>
+                    <p>ARC-AGI-1中的许多任务，人类测试者往往可以近乎即时地解决，无需大量认知努力。相比之下，ARC-AGI-2中的所有任务都需要一定程度的<strong class="concept">深思熟虑</strong>——例如，在人类测试样本中，任务的平均完成时间为2.7分钟。这种难度的提升源于其“逻辑内核”的显著增强：</p>
+                    <ol>
+                        <li><strong>任务的独特性 (Uniqueness)：</strong> ARC-AGI-1中的一些简单任务可能与某些已知模式存在重叠，而ARC-AGI-2中的<strong class="highlight">每一个任务都力求完全新颖</strong>，据开发者所知是前所未见的。</li>
+                        <li><strong>信息内容的复杂性 (Complexity)：</strong> ARC-AGI-2任务通常包含<strong class="highlight">更大的网格、每个网格中更多的对象、以及每个任务中涉及更多的概念</strong>。从信息论角度看，压缩ARC-AGI-2任务会比压缩ARC-AGI-1任务产生更多的数据位。</li>
+                        <li><strong>对组合泛化能力的深度考察 (Compositional Generalization)：</strong> 这是ARC-AGI-2最具挑战性的方面。它要求AI系统能够<strong class="highlight">以新颖的方式组合已知的规则或概念</strong>来解决问题。这通常表现为以下几种形式：
+                            <ul>
+                                <li><strong class="concept">多规则组合推理 (Multi-rule compositional reasoning)：</strong> 大多数ARC-AGI-1任务可通过识别和应用单一高级转换规则解决（例如，“物体下落”）。而ARC-AGI-2任务则倾向于包含<strong class="highlight">多个同时作用的规则，这些规则还可能相互影响</strong>。例如，一个任务可能要求首先根据框架裁剪输入网格，然后缩放彩色对象，最后将缩放后的对象放入框架内形状匹配的孔洞中（参考PDF图6）。</li>
+                                <li><strong class="concept">多步骤组合推理 (Multi-step compositional reasoning)：</strong> 许多ARC-AGI-2任务要求<strong class="highlight">顺序应用某个规则，其中第N步的状态直接依赖于第N-1步的结果</strong>。例如，迭代地放置对象，下一个对象的位置和方向由前一个对象的放置情况决定（参考PDF图7）。预测对象N+1的位置几乎不可能不执行前N个步骤。</li>
+                                <li><strong class="concept">上下文规则应用 (Contextual rule application)：</strong> ARC-AGI-2中的任务不仅要求测试者识别核心转换规则，还要求<strong class="highlight">理解其应用如何受到网格内特定上下文元素的调节</strong>。这为推理链增加了一个额外的环节，通常涉及某种形式的控制流。例如，一个任务可能涉及分离形状并将它们堆叠到一边，但堆叠到哪一边（左或右）取决于一个上下文线索，如形状轮廓的颜色（参考PDF图8）。</li>
+                                <li><strong class="concept">在情境中定义符号 (In-context symbol definition)：</strong> 许多ARC-AGI-2任务包含“符号”（代表自身以外事物的对象），其<strong class="highlight">含义在任务内部被临时定义</strong>。例如，在PDF图1中，带有孔洞的彩色矩形编码了具有相同孔洞数量的形状应该使用的颜色。这种动态的符号赋值对前沿AI系统来说是一个重大挑战。</li>
+                            </ul>
+                        </li>
+                    </ol>
+                    <p>这些设计上的改变，使得ARC-AGI-2的任务不再仅仅是简单的模式匹配，而是要求AI展现出更深层次的抽象、推理和规划能力，这正是通向更通用人工智能的关键所在。</p>
+                </section>
+
+                <section id="animation4-compositional">
+                    <h4>动画演示3：组合泛化挑战</h4>
+                    <p>此动画模拟了一个需要多规则组合推理的ARC-AGI-2任务的解决流程（概念简化自PDF图6）。</p>
+                    <div id="compositionalAnimationContainer" class="animation-container"></div>
+                    <div class="controls">
+                        <button id="compositionalPlayPause">播放/暂停</button>
+                        <button id="compositionalNextStep">下一步</button>
+                        <button id="compositionalReset">重置</button>
+                    </div>
+                </section>
+
+                <section id="sota-arc-prize">
+                    <h2>当前AI表现与ARC Prize 2025</h2>
+                    <p>ARC-AGI-2的引入，显著提升了对AI抽象推理能力的考验。如PDF中表1所示，之前在ARC-AGI-1上表现尚可的模型，在ARC-AGI-2上的得分出现了大幅下降：</p>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>模型 (Model)</th>
+                                <th>ARC-AGI-1 得分 (Score)</th>
+                                <th>ARC-AGI-2 得分 (Score)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>o3-mini (High)</td>
+                                <td>34.5%</td>
+                                <td>3.0%</td>
+                            </tr>
+                            <tr>
+                                <td>o3 (Medium)</td>
+                                <td>53.0%</td>
+                                <td>3.0%</td>
+                            </tr>
+                            <tr>
+                                <td>ARChitects (ARC Prize 2024)</td>
+                                <td>56.0%</td>
+                                <td>2.5%</td>
+                            </tr>
+                            <tr>
+                                <td>o4-mini (Medium)</td>
+                                <td>41.8%</td>
+                                <td>2.4%</td>
+                            </tr>
+                             <tr>
+                                <td>Icecuber (ARC Prize 2020)</td>
+                                <td>17.0%</td>
+                                <td>1.6%</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <p class="highlight">注意：当ARC-AGI-2的准确率低于5%时，通常不被认为具有统计意义，可能源于噪声启发式或偶然的模式匹配。只有当性能超过5%的阈值时，才能开始显现出一致的信号。</p>
+                    <p>这种得分的“断崖式下跌”清晰地表明了ARC-AGI-2所提出的新挑战的艰巨性。为了激励在这一领域的突破，<strong class="concept">ARC Prize 2025</strong> 竞赛已经启动，提供总额100万美元的奖金，旨在加速开源AGI研究的进展。其核心目标是激励AI研究人员通过开源解决ARC-AGI的方案来探索新思想和新方法。竞赛的评估协议非常严格：提交的方案需要在Kaggle的安全沙箱服务器环境（配备4个NVIDIA L4 GPU）中，在12小时的运行时限内，离线解决240个前所未见的ARC-AGI-2任务（120个半私有评估集任务和120个私有评估集任务），且全程无互联网访问。</p>
+                </section>
+
+                <section id="animation3-performance">
+                    <h4>动画演示4：模型表现断崖</h4>
+                    <p>此图表展示了部分顶尖AI模型在ARC-AGI-1和ARC-AGI-2上的得分对比。</p>
+                    <div id="modelPerformanceAnimationContainer" class="animation-container"></div>
+                    <div class="controls">
+                        <button id="modelPerformancePlayPause">播放/暂停动画</button>
+                    </div>
+                </section>
+                
+                <section id="animation5-human-insights">
+                    <h4>动画演示5：人类测试洞察</h4>
+                    <p>ARC-AGI-2的设计经过了广泛的人类测试。此动画概念性地展示了人类在任务上花费时间与结果的分布趋势（灵感源自PDF图3）。</p>
+                    <div id="humanInsightsAnimationContainer" class="animation-container"></div>
+                    <div class="controls">
+                        <button id="humanInsightsPlayPause">播放/暂停</button>
+                         <label for="humanInsightsDataPoints">数据点数量: <span id="humanInsightsDataPointsValue">50</span></label>
+                        <input type="range" id="humanInsightsDataPoints" min="10" max="200" value="50" step="10">
+                    </div>
+                </section>
+
+
+                <section id="conclusion">
+                    <h2>结论：迈向更真实的智能衡量</h2>
+                    <p>ARC-AGI-2不仅仅是其前身的简单升级，更是对AI研究方向的一次重要校准和挑战深化。它通过引入更独特、更复杂、更侧重<strong class="highlight">组合泛化能力</strong>的任务，并辅以大规模、标准化的<strong class="highlight">人类表现基准</strong>，显著提高了衡量AI系统真实流体智能和抽象推理能力的门槛。</p>
+                    <p>从“物理逻辑”的视角看，ARC-AGI-2的“物理”形态（网格、对象、规则的呈现）变得更为精巧，旨在抵抗浅层策略；其“逻辑”内核则要求AI进行更深层次的、类似人类的思考过程——识别模式、形成假设、测试假设、组合知识、并适应全新的情境。这正是当前AI系统普遍存在的短板。</p>
+                    <p>虽然目前顶尖模型在ARC-AGI-2上的表现不尽如人意，但这恰恰凸显了该基准的价值：它为我们指明了距离真正通用、灵活、高效的类人智能还有多远，并为未来的研究提供了清晰、可量化的目标。ARC-AGI-2及其相关的竞赛（如ARC Prize），无疑将继续在推动人工智能向更高阶认知能力迈进的征途中，扮演至关重要的角色，为通往通用人工智能的漫漫长路树立新的、更具挑战性的里程碑。</p>
+                </section>
+            </article>
+        </main>
+        <footer>
+            <p>&copy; 2025 AI前沿观察者. 本文根据公开的ARC-AGI-2研究报告进行解读，旨在学习交流。</p>
+        </footer>
+    </div>
+
+    <script>
+        // --- Animation 0: Swans Background (from template) ---
+        let sketchSwans = function(p) {
+            let motherSwan;
+            class Swan {
+                constructor(x, y, sizeFactor = 1) {
+                    this.x = x;
+                    this.y = y;
+                    this.sizeFactor = sizeFactor;
+                    this.bodyLength = 30 * sizeFactor;
+                    this.bodyWidth = 20 * sizeFactor;
+                    this.velocity = p.createVector(p.random(-0.5, 0.5), p.random(-0.5, 0.5)); 
+                    this.speed = p.random(0.2, 0.5) * this.sizeFactor; 
+                    this.velocity.setMag(this.speed);
+                }
+                draw() {
+                    p.push();
+                    p.translate(this.x, this.y);
+                    p.rotate(this.velocity.heading() + p.PI / 2); 
+                    p.fill(255, 255, 255, 30); // More transparent swans
+                    p.noStroke();
+                    p.ellipse(0, 0, this.bodyWidth, this.bodyLength); 
+                    p.stroke(255, 255, 255, 30); 
+                    p.strokeWeight(this.bodyWidth / 3);
+                    p.line(0, -this.bodyLength / 2.5, 0, -this.bodyLength * 0.6); 
+                    p.noStroke(); 
+                    p.fill(255, 255, 255, 30);
+                    p.ellipse(0, -this.bodyLength * 0.7, this.bodyWidth * 0.8, this.bodyWidth * 0.8); 
+                    p.fill(255, 165, 0, 30); 
+                    p.triangle(0, -this.bodyLength * 0.7 - this.bodyWidth * 0.3,
+                               -this.bodyWidth * 0.25, -this.bodyLength * 0.7,
+                               this.bodyWidth * 0.25, -this.bodyLength * 0.7); 
+                    p.pop();
+                }
+                update() {
+                    this.velocity.rotate(p.random(-0.05, 0.05)); 
+                    this.velocity.setMag(this.speed); 
+                    this.x += this.velocity.x;
+                    this.y += this.velocity.y;
+                    let buffer = this.bodyLength; 
+                    if (this.x < -buffer) this.x = p.width + buffer;
+                    if (this.x > p.width + buffer) this.x = -buffer;
+                    if (this.y < -buffer) this.y = p.height + buffer;
+                    if (this.y > p.height + buffer) this.y = -buffer;
+                }
+            }
+            p.setup = function() {
+                let canvas = p.createCanvas(p.windowWidth, p.windowHeight);
+                canvas.parent('swanAnimationContainer');
+                motherSwan = new Swan(p.random(p.width), p.random(p.height), 2.5); // Slightly larger and one
+            };
+            p.draw = function() {
+                p.clear(); 
+                motherSwan.update();
+                motherSwan.draw();
+            };
+            p.windowResized = function() {
+                p.resizeCanvas(p.windowWidth, p.windowHeight);
+            };
+        };
+        new p5(sketchSwans);
+
+        // --- Animation 1: ARC Task Dissection ---
+        let sketchArcTask = function(p) {
+            let playButton, nextExampleButton;
+            let playing = true;
+            let currentExample = 0;
+            const examples = [
+                { rule: "将所有蓝色方块变为红色", transform: (grid) => grid.map(row => row.map(cell => cell === 'blue' ? 'red' : cell)) },
+                { rule: "水平翻转网格", transform: (grid) => grid.map(row => [...row].reverse()) },
+                { rule: "用绿色填充最大的连续对象", transform: (grid) => { // Simplified: fill the first found object of a specific color
+                    let newGrid = grid.map(row => [...row]);
+                    let targetColor = 'gray'; // Example: find gray objects
+                    let found = false;
+                    for(let r=0; r<newGrid.length; r++) {
+                        for(let c=0; c<newGrid[r].length; c++) {
+                            if(newGrid[r][c] === targetColor) {
+                                newGrid[r][c] = 'green'; // Simplified fill
+                                if (newGrid[r+1] && newGrid[r+1][c] === targetColor) newGrid[r+1][c] = 'green'; // Fill a bit more
+                                found = true; break;
+                            }
+                        }
+                        if(found) break;
+                    }
+                    return newGrid;
+                }}
+            ];
+            let inputGrid, outputGrid;
+            const gridSize = 5;
+            const cellSize = 30;
+            const colors = { 'black': [0,0,0], 'blue': [0,0,255], 'red': [255,0,0], 'green': [0,255,0], 'yellow': [255,255,0], 'gray': [128,128,128], 'magenta': [255,0,255], 'cyan': [0,255,255]};
+            const colorNames = Object.keys(colors);
+
+            function createRandomGrid() {
+                let grid = [];
+                for (let i = 0; i < gridSize; i++) {
+                    let row = [];
+                    for (let j = 0; j < gridSize; j++) {
+                        row.push(colorNames[p.floor(p.random(colorNames.length))]);
+                    }
+                    grid.push(row);
+                }
+                // Ensure some variety for rules
+                if (currentExample === 0) grid[p.floor(p.random(gridSize))][p.floor(p.random(gridSize))] = 'blue';
+                if (currentExample === 2) grid[p.floor(p.random(gridSize))][p.floor(p.random(gridSize))] = 'gray';
+                return grid;
+            }
+
+            function drawGrid(grid, startX, startY, label) {
+                p.fill(0);
+                p.textSize(16);
+                p.textAlign(p.CENTER);
+                p.text(label, startX + (gridSize * cellSize) / 2, startY - 10);
+                for (let i = 0; i < gridSize; i++) {
+                    for (let j = 0; j < gridSize; j++) {
+                        p.fill(colors[grid[i][j]]);
+                        p.stroke(200);
+                        p.rect(startX + j * cellSize, startY + i * cellSize, cellSize, cellSize);
+                    }
+                }
+            }
+            
+            function setupNewExample() {
+                inputGrid = createRandomGrid();
+                outputGrid = examples[currentExample].transform(inputGrid);
+                p.redraw();
+            }
+
+            p.setup = function() {
+                let canvasContainer = p.select('#arcTaskAnimationContainer');
+                let canvas = p.createCanvas(canvasContainer.width, canvasContainer.height);
+                canvas.parent('arcTaskAnimationContainer');
+                
+                playButton = p.select('#arcTaskPlayPause');
+                nextExampleButton = p.select('#arcTaskNextExample');
+
+                playButton.mousePressed(() => { 
+                    playing = !playing; 
+                    if(playing) p.loop(); else p.noLoop(); 
+                    playButton.html(playing ? "暂停" : "播放");
+                });
+                nextExampleButton.mousePressed(() => {
+                    currentExample = (currentExample + 1) % examples.length;
+                    setupNewExample();
+                });
+                
+                setupNewExample();
+                if (!playing) p.noLoop();
+                playButton.html(playing ? "暂停" : "播放");
+            };
+
+            p.draw = function() {
+                p.background(240, 248, 255);
+                let marginX = (p.width - (2 * gridSize * cellSize + 80)) / 2;
+                let marginY = (p.height - (gridSize * cellSize + 40)) / 2;
+                
+                drawGrid(inputGrid, marginX, marginY + 20, "输入网格 (Input)");
+                
+                p.fill(0);
+                p.textSize(20);
+                p.textAlign(p.CENTER, p.CENTER);
+                p.text("→", marginX + gridSize * cellSize + 40, marginY + 20 + (gridSize * cellSize) / 2);
+                
+                drawGrid(outputGrid, marginX + gridSize * cellSize + 80, marginY + 20, "输出网格 (Output)");
+
+                p.fill(50);
+                p.textSize(14);
+                p.textAlign(p.CENTER, p.BOTTOM);
+                p.text("推理规则: " + examples[currentExample].rule, p.width / 2, p.height - 10);
+
+                if (playing) {
+                    // Simple animation placeholder: slightly wiggle arrow
+                    let arrowX = marginX + gridSize * cellSize + 40;
+                    let arrowY = marginY + 20 + (gridSize * cellSize) / 2;
+                    p.push();
+                    p.translate(arrowX, arrowY);
+                    p.rotate(p.sin(p.frameCount * 0.1) * 0.05);
+                    p.fill(0);p.textSize(20);p.textAlign(p.CENTER, p.CENTER);p.text("→", 0,0);
+                    p.pop();
+                }
+            };
+             p.windowResized = function() {
+                let canvasContainer = p.select('#arcTaskAnimationContainer');
+                p.resizeCanvas(canvasContainer.width, canvasContainer.height);
+                p.redraw();
+            };
+            setTimeout(() => { if (p.redraw && !playing) p.redraw(); }, 0); // Initial draw if not playing
+        };
+        new p5(sketchArcTask);
+
+        // --- Animation 2: ARC-1 Limitations vs ARC-2 Goals ---
+        let sketchArcComparison = function(p) {
+            let playButton, nextButton;
+            let playing = true;
+            let currentIndex = 0;
+            const comparisons = [
+                { lim: "易受暴力破解", goal: "抵抗暴力破解", limIcon: "🔓", goalIcon: "🛡️" },
+                { lim: "人类基准缺失", goal: "大规模人类测试", limIcon: "❓", goalIcon: "👨‍👩‍👧‍👦" },
+                { lim: "认知天花板低", goal: "拓宽信号带宽", limIcon: "📊📉", goalIcon: "📊📈" },
+                { lim: "难度分布不均", goal: "校准难度分布", limIcon: " uneven ", goalIcon: " balanced "},
+                { lim: "信息泄露风险", goal: "任务独特性高", limIcon: "🤫", goalIcon: "✨"}
+            ];
+            let alpha = 0;
+
+            p.setup = function() {
+                let canvasContainer = p.select('#arcComparisonAnimationContainer');
+                let canvas = p.createCanvas(canvasContainer.width, canvasContainer.height);
+                canvas.parent('arcComparisonAnimationContainer');
+                
+                playButton = p.select('#arcComparisonPlayPause');
+                nextButton = p.select('#arcComparisonNext');
+
+                playButton.mousePressed(() => { 
+                    playing = !playing; 
+                    if(playing) { p.loop(); alpha = 0; } else p.noLoop(); 
+                    playButton.html(playing ? "暂停" : "播放");
+                });
+                nextButton.mousePressed(() => {
+                    currentIndex = (currentIndex + 1) % comparisons.length;
+                    alpha = 0; // Reset alpha for fade-in effect
+                    if (!playing) p.redraw();
+                });
+                
+                if (!playing) p.noLoop();
+                playButton.html(playing ? "暂停" : "播放");
+            };
+
+            p.draw = function() {
+                p.background(240, 248, 255);
+                let item = comparisons[currentIndex];
+                
+                if (playing || alpha < 255) {
+                     alpha = p.min(255, alpha + 15); // Fade in speed
+                }
+
+
+                p.textAlign(p.CENTER, p.CENTER);
+                
+                // Column Titles
+                p.fill(0,0,0, alpha);
+                p.textSize(20);
+                p.text("ARC-AGI-1 局限", p.width * 0.25, p.height * 0.2);
+                p.text("ARC-AGI-2 目标", p.width * 0.75, p.height * 0.2);
+                
+                // Icons
+                p.textSize(40);
+                p.text(item.limIcon, p.width * 0.25, p.height * 0.45);
+                p.text(item.goalIcon, p.width * 0.75, p.height * 0.45);
+
+                // Text
+                p.textSize(16);
+                p.text(item.lim, p.width * 0.25, p.height * 0.65, p.width*0.4, p.height*0.2);
+                p.text(item.goal, p.width * 0.75, p.height * 0.65, p.width*0.4, p.height*0.2);
+                
+                if (playing && alpha >= 255) { // If playing and fully faded in, advance after a delay
+                    if (p.frameCount % 120 === 0) { // Change every 2 seconds (60fps * 2s)
+                         currentIndex = (currentIndex + 1) % comparisons.length;
+                         alpha = 0;
+                    }
+                }
+            };
+            p.windowResized = function() {
+                let canvasContainer = p.select('#arcComparisonAnimationContainer');
+                p.resizeCanvas(canvasContainer.width, canvasContainer.height);
+                p.redraw();
+            };
+             setTimeout(() => { if (p.redraw && !playing) p.redraw(); }, 0);
+        };
+        new p5(sketchArcComparison);
+
+        // --- Animation 3: Model Performance Cliff ---
+        let sketchModelPerformance = function(p) {
+            let playButton;
+            let playing = true;
+            const models = [
+                { name: "o3-mini (H)", arc1: 34.5, arc2: 3.0 },
+                { name: "o3 (M)", arc1: 53.0, arc2: 3.0 },
+                { name: "ARChitects", arc1: 56.0, arc2: 2.5 },
+                { name: "o4-mini (M)", arc1: 41.8, arc2: 2.4 },
+                { name: "Icecuber", arc1: 17.0, arc2: 1.6 }
+            ];
+            let currentProgress = 0; // 0 to 1 for animation
+
+            p.setup = function() {
+                let canvasContainer = p.select('#modelPerformanceAnimationContainer');
+                let canvas = p.createCanvas(canvasContainer.width, canvasContainer.height);
+                canvas.parent('modelPerformanceAnimationContainer');
+                
+                playButton = p.select('#modelPerformancePlayPause');
+                playButton.mousePressed(() => {
+                    playing = !playing;
+                    if (playing) {
+                        currentProgress = 0; // Restart animation
+                        p.loop();
+                    } else {
+                        p.noLoop();
+                    }
+                    playButton.html(playing ? "暂停动画" : "播放动画");
+                });
+                if (!playing) p.noLoop();
+                 playButton.html(playing ? "暂停动画" : "播放动画");
+            };
+
+            p.draw = function() {
+                p.background(240, 248, 255);
+                
+                if (playing && currentProgress < 1) {
+                    currentProgress += 0.02; // Animation speed
+                }
+                currentProgress = p.min(currentProgress, 1);
+
+                let barHeight = (p.height * 0.8) / (models.length * 2.5);
+                let maxScore = 60; // Slightly more than max ARC1 score for scale
+                let chartWidth = p.width * 0.7;
+                let startX = p.width * 0.25;
+                let startY = p.height * 0.1;
+
+                // Draw axes and labels
+                p.stroke(0);
+                p.line(startX, startY, startX, startY + models.length * barHeight * 2.5); // Y axis
+                p.line(startX, startY + models.length * barHeight * 2.5, startX + chartWidth, startY + models.length * barHeight * 2.5); // X axis
+
+                p.fill(0);
+                p.noStroke();
+                p.textAlign(p.CENTER, p.CENTER);
+                for (let i = 0; i <= maxScore; i += 10) {
+                    let x = startX + (i / maxScore) * chartWidth;
+                    p.text(i + "%", x, startY + models.length * barHeight * 2.5 + 15);
+                    p.stroke(200);
+                    p.line(x, startY, x, startY + models.length * barHeight * 2.5);
+                    p.noStroke();
+                }
+                p.text("模型得分 (%)", startX + chartWidth / 2, startY + models.length * barHeight * 2.5 + 35);
+
+
+                models.forEach((model, index) => {
+                    let yPos = startY + index * barHeight * 2.5;
+                    
+                    p.fill(0);
+                    p.textAlign(p.RIGHT, p.CENTER);
+                    p.text(model.name, startX - 10, yPos + barHeight / 2);
+
+                    // ARC-1 Bar (Blue)
+                    p.fill(0, 102, 204, 200); // Blue
+                    let arc1Width = (model.arc1 / maxScore) * chartWidth * currentProgress;
+                    p.rect(startX, yPos, arc1Width, barHeight);
+                    if (currentProgress === 1 && p.mouseX > startX && p.mouseX < startX + arc1Width && p.mouseY > yPos && p.mouseY < yPos + barHeight) {
+                         p.fill(0); p.text(model.arc1.toFixed(1) + "%", startX + arc1Width + 30, yPos + barHeight/2);
+                    }
+
+
+                    // ARC-2 Bar (Red)
+                    p.fill(204, 0, 0, 200); // Red
+                    let arc2Width = (model.arc2 / maxScore) * chartWidth * currentProgress;
+                    p.rect(startX, yPos + barHeight * 1.2, arc2Width, barHeight);
+                     if (currentProgress === 1 && p.mouseX > startX && p.mouseX < startX + arc2Width && p.mouseY > yPos + barHeight * 1.2 && p.mouseY < yPos + barHeight * 2.2) {
+                         p.fill(0); p.text(model.arc2.toFixed(1) + "%", startX + arc2Width + 30, yPos + barHeight * 1.7);
+                    }
+                });
+                
+                // Legend
+                p.fill(0, 102, 204); p.rect(startX, p.height - 30, 15, 15);
+                p.fill(0); p.textAlign(p.LEFT, p.CENTER); p.text("ARC-AGI-1", startX + 20, p.height - 22.5);
+                p.fill(204, 0, 0); p.rect(startX + 120, p.height - 30, 15, 15);
+                p.fill(0); p.text("ARC-AGI-2", startX + 140, p.height - 22.5);
+
+
+                if (currentProgress >= 1 && !playing) {
+                    p.noLoop(); // Stop animation when done if not continuously playing
+                }
+            };
+            p.windowResized = function() {
+                let canvasContainer = p.select('#modelPerformanceAnimationContainer');
+                p.resizeCanvas(canvasContainer.width, canvasContainer.height);
+                currentProgress = 0; // Reset animation on resize
+                if (playing) p.loop(); else p.redraw();
+            };
+            setTimeout(() => { if (p.redraw && !playing) p.redraw(); currentProgress = 1; p.redraw(); currentProgress = 0;}, 0); // Draw final state once then reset for animation
+        };
+        new p5(sketchModelPerformance);
+
+        // --- Animation 4: Compositional Generalization Challenge ---
+        let sketchCompositional = function(p) {
+            let playButton, nextStepButton, resetButton;
+            let playing = false; // Start paused
+            let currentStep = 0;
+            const totalSteps = 5;
+            let shapes = [];
+            let frame = { x: 0, y: 0, w: 0, h: 0, active: false, holes: [] };
+            let outputShapes = [];
+
+            // Colors
+            const C_BG = [240, 248, 255];
+            const C_GRID = [200];
+            const C_SHAPE1 = [255, 0, 0]; // Red
+            const C_SHAPE2 = [0, 0, 255]; // Blue
+            const C_SHAPE3 = [0, 128, 0]; // Green
+            const C_FRAME = [100, 100, 100];
+            const C_HOLE = [50, 50, 50];
+            const C_HIGHLIGHT = [255, 255, 0, 100];
+
+            let cellSize, gridOffsetX, gridOffsetY, numCells;
+
+            function resetSketch() {
+                currentStep = 0;
+                shapes = [];
+                outputShapes = [];
+                frame.active = false;
+                frame.holes = [];
+
+                numCells = 10; // 10x10 grid
+                cellSize = p.min(p.width, p.height) * 0.8 / numCells;
+                gridOffsetX = (p.width - numCells * cellSize) / 2;
+                gridOffsetY = (p.height - numCells * cellSize) / 2 - 20; // Shift up for text
+
+                // Define initial shapes (example: L-shape, square, small rect)
+                // { type: 'rect', x, y, w, h, color, id }
+                shapes.push({ type: 'rect', x: 1, y: 1, w: 2, h: 3, color: C_SHAPE1, id: 1, originalSize: {w:2,h:3} }); // L-part 1
+                shapes.push({ type: 'rect', x: 1, y: 4, w: 1, h: 1, color: C_SHAPE1, id: 1, originalSize: {w:1,h:1} }); // L-part 2
+                shapes.push({ type: 'rect', x: 5, y: 2, w: 2, h: 2, color: C_SHAPE2, id: 2, originalSize: {w:2,h:2} }); // Square
+                shapes.push({ type: 'rect', x: 7, y: 6, w: 2, h: 1, color: C_SHAPE3, id: 3, originalSize: {w:2,h:1} }); // Rectangle
+
+                // Define frame and holes (for step 1 and 3)
+                frame.x = 2; frame.y = 2; frame.w = 6; frame.h = 6;
+                // Holes should match rescaled shapes
+                frame.holes.push({ type: 'rect', x: 3, y: 3, w: 1, h: 2, shapeId: 1 }); // For rescaled L
+                frame.holes.push({ type: 'rect', x: 6, y: 3, w: 1, h: 1, shapeId: 2 }); // For rescaled Square
+                frame.holes.push({ type: 'rect', x: 4, y: 6, w: 1, h: 1, shapeId: 3 }); // For rescaled Rect (example sizes)
+                
+                if (!playing) p.redraw();
+            }
+            
+            function drawGridLines() {
+                p.stroke(C_GRID);
+                for (let i = 0; i <= numCells; i++) {
+                    p.line(gridOffsetX + i * cellSize, gridOffsetY, gridOffsetX + i * cellSize, gridOffsetY + numCells * cellSize);
+                    p.line(gridOffsetX, gridOffsetY + i * cellSize, gridOffsetX + numCells * cellSize, gridOffsetY + i * cellSize);
+                }
+            }
+
+            function drawShape(s, offsetX = gridOffsetX, offsetY = gridOffsetY, cs = cellSize) {
+                p.fill(s.color);
+                p.noStroke();
+                p.rect(offsetX + s.x * cs, offsetY + s.y * cs, s.w * cs, s.h * cs);
+            }
+            
+            function drawHole(h, offsetX = gridOffsetX, offsetY = gridOffsetY, cs = cellSize) {
+                p.fill(C_HOLE);
+                p.noStroke();
+                p.rect(offsetX + h.x * cs, offsetY + h.y * cs, h.w * cs, h.h * cs);
+            }
+
+
+            p.setup = function() {
+                let canvasContainer = p.select('#compositionalAnimationContainer');
+                let canvas = p.createCanvas(canvasContainer.width, canvasContainer.height);
+                canvas.parent('compositionalAnimationContainer');
+                
+                playButton = p.select('#compositionalPlayPause');
+                nextStepButton = p.select('#compositionalNextStep');
+                resetButton = p.select('#compositionalReset');
+
+                playButton.mousePressed(() => { 
+                    playing = !playing; 
+                    if(playing) p.loop(); else p.noLoop(); 
+                    playButton.html(playing ? "暂停" : "播放");
+                });
+                nextStepButton.mousePressed(() => {
+                    currentStep = (currentStep + 1);
+                    if (currentStep > totalSteps) currentStep = totalSteps;
+                    if (currentStep === 1) frame.active = true;
+                    if (currentStep === 2) { // Rescale shapes (e.g., by half)
+                        shapes.forEach(s => { s.w = s.originalSize.w * 0.5; s.h = s.originalSize.h * 0.5; });
+                    }
+                    if (currentStep === 3) { // "Move" to output (simplified)
+                        outputShapes = [];
+                        frame.holes.forEach(hole => {
+                            let originalShape = shapes.find(s => s.id === hole.shapeId);
+                            if (originalShape) {
+                                outputShapes.push({...originalShape, x: hole.x, y: hole.y, w: hole.w, h: hole.h }); // Use hole's dims
+                            }
+                        });
+                    }
+                    if (!playing) p.redraw();
+                });
+                resetButton.mousePressed(() => {
+                    resetSketch();
+                });
+                
+                resetSketch();
+                if (!playing) p.noLoop();
+                playButton.html(playing ? "暂停" : "播放");
+            };
+
+            p.draw = function() {
+                p.background(C_BG);
+                drawGridLines();
+                let stepText = "";
+
+                // Draw based on current step
+                if (currentStep === 0) { // Initial state: Show input shapes
+                    stepText = "步骤 0: 原始输入网格";
+                    shapes.forEach(s => drawShape(s));
+                } else if (currentStep === 1) { // Step 1: Identify and crop frame
+                    stepText = "步骤 1: 识别并裁剪框架";
+                    p.fill(C_HIGHLIGHT); // Highlight frame area
+                    p.rect(gridOffsetX + frame.x * cellSize, gridOffsetY + frame.y * cellSize, frame.w * cellSize, frame.h * cellSize);
+                    p.fill(C_FRAME); // Draw frame itself
+                    p.rect(gridOffsetX + frame.x * cellSize, gridOffsetY + frame.y * cellSize, frame.w * cellSize, cellSize*0.5); // Top
+                    p.rect(gridOffsetX + frame.x * cellSize, gridOffsetY + (frame.y + frame.h - 0.5) * cellSize, frame.w * cellSize, cellSize*0.5); // Bottom
+                    p.rect(gridOffsetX + frame.x * cellSize, gridOffsetY + frame.y * cellSize, cellSize*0.5, frame.h * cellSize); // Left
+                    p.rect(gridOffsetX + (frame.x + frame.w - 0.5) * cellSize, gridOffsetY + frame.y * cellSize, cellSize*0.5, frame.h * cellSize); // Right
+                    
+                    shapes.forEach(s => { // Draw shapes outside frame
+                        if (s.x < frame.x || s.x + s.w > frame.x + frame.w || s.y < frame.y || s.y + s.h > frame.y + frame.h) {
+                           // drawShape(s); // For this example, we assume shapes are outside and will be processed
+                        }
+                    });
+                     shapes.forEach(s => drawShape(s)); // Draw all original shapes for context
+                } else if (currentStep === 2) { // Step 2: Rescale objects
+                    stepText = "步骤 2: 缩放对象 (示例: 缩小)";
+                     p.fill(C_FRAME); // Draw frame
+                    p.rect(gridOffsetX + frame.x * cellSize, gridOffsetY + frame.y * cellSize, frame.w * cellSize, cellSize*0.5);
+                    p.rect(gridOffsetX + frame.x * cellSize, gridOffsetY + (frame.y + frame.h - 0.5) * cellSize, frame.w * cellSize, cellSize*0.5);
+                    p.rect(gridOffsetX + frame.x * cellSize, gridOffsetY + frame.y * cellSize, cellSize*0.5, frame.h * cellSize);
+                    p.rect(gridOffsetX + (frame.x + frame.w - 0.5) * cellSize, gridOffsetY + frame.y * cellSize, cellSize*0.5, frame.h * cellSize);
+                    // Draw rescaled shapes (conceptually, still outside or being processed)
+                    shapes.forEach((s, i) => drawShape(s, gridOffsetX + i*(numCells/shapes.length)*cellSize*0.2 , gridOffsetY - cellSize*2)); // Show them separately
+                } else if (currentStep === 3) { // Step 3: Place rescaled objects into holes
+                    stepText = "步骤 3: 将缩放后对象放入对应孔洞";
+                     p.fill(C_FRAME); // Draw frame
+                    p.rect(gridOffsetX + frame.x * cellSize, gridOffsetY + frame.y * cellSize, frame.w * cellSize, cellSize*0.5);
+                    p.rect(gridOffsetX + frame.x * cellSize, gridOffsetY + (frame.y + frame.h - 0.5) * cellSize, frame.w * cellSize, cellSize*0.5);
+                    p.rect(gridOffsetX + frame.x * cellSize, gridOffsetY + frame.y * cellSize, cellSize*0.5, frame.h * cellSize);
+                    p.rect(gridOffsetX + (frame.x + frame.w - 0.5) * cellSize, gridOffsetY + frame.y * cellSize, cellSize*0.5, frame.h * cellSize);
+
+                    frame.holes.forEach(h => drawHole(h, gridOffsetX + frame.x*cellSize, gridOffsetY + frame.y*cellSize, cellSize)); // Holes relative to frame
+                    outputShapes.forEach(s => drawShape(s, gridOffsetX + frame.x*cellSize, gridOffsetY + frame.y*cellSize, cellSize)); // Shapes in holes
+                } else if (currentStep >= 4) { // Step 4 & 5: Show final output
+                    stepText = "步骤 4: 最终输出";
+                     p.fill(C_FRAME); // Draw frame
+                    p.rect(gridOffsetX + frame.x * cellSize, gridOffsetY + frame.y * cellSize, frame.w * cellSize, cellSize*0.5);
+                    p.rect(gridOffsetX + frame.x * cellSize, gridOffsetY + (frame.y + frame.h - 0.5) * cellSize, frame.w * cellSize, cellSize*0.5);
+                    p.rect(gridOffsetX + frame.x * cellSize, gridOffsetY + frame.y * cellSize, cellSize*0.5, frame.h * cellSize);
+                    p.rect(gridOffsetX + (frame.x + frame.w - 0.5) * cellSize, gridOffsetY + frame.y * cellSize, cellSize*0.5, frame.h * cellSize);
+                    outputShapes.forEach(s => drawShape(s, gridOffsetX + frame.x*cellSize, gridOffsetY + frame.y*cellSize, cellSize));
+                    if (currentStep === totalSteps) stepText = "完成!";
+                }
+
+                // Display step text
+                p.fill(0);
+                p.noStroke();
+                p.textAlign(p.CENTER, p.TOP);
+                p.textSize(16);
+                p.text(stepText, p.width / 2, 10);
+
+                if (playing && p.frameCount % 60 === 0) { // Auto-advance if playing
+                    nextStepButton.elt.click(); // Simulate click
+                }
+                 if (currentStep >= totalSteps && playing) {
+                    playing = false; // Stop playing at the end
+                    p.noLoop();
+                    playButton.html("播放");
+                }
+            };
+            p.windowResized = function() {
+                let canvasContainer = p.select('#compositionalAnimationContainer');
+                p.resizeCanvas(canvasContainer.width, canvasContainer.height);
+                resetSketch(); // Recalculate sizes
+            };
+            setTimeout(() => { if (p.redraw && !playing) p.redraw(); }, 0);
+        };
+        new p5(sketchCompositional);
+
+        // --- Animation 5: Human Testing Insights ---
+        let sketchHumanInsights = function(p) {
+            let playButton, dataPointsSlider, dataPointsValueSpan;
+            let playing = true;
+            let dataPoints = [];
+            let numDataPoints = 50;
+
+            // Outcome categories and their typical time distributions (conceptual)
+            const outcomes = {
+                correct: { color: [0, 180, 0, 150], meanTime: 2.5, stdDev: 1 }, // Green
+                incorrect: { color: [220, 50, 50, 150], meanTime: 5, stdDev: 2 }, // Red
+                no_submission: { color: [100, 100, 100, 150], meanTime: 1, stdDev: 0.5 } // Gray (short views or very long stuck)
+            };
+            const maxTime = 15; // Max time in minutes for x-axis
+
+            function generateDataPoint() {
+                let outcomeKeys = Object.keys(outcomes);
+                let randOutcomeKey = outcomeKeys[p.floor(p.random(outcomeKeys.length))];
+                let outcomeDetails = outcomes[randOutcomeKey];
+                
+                let timeSpent = p.randomGaussian(outcomeDetails.meanTime, outcomeDetails.stdDev);
+                timeSpent = p.constrain(timeSpent, 0.1, maxTime); // Ensure time is positive and within bounds
+
+                // Add some for "no submission" being very long too
+                if (randOutcomeKey === 'no_submission' && p.random() < 0.3) {
+                    timeSpent = p.random(8, maxTime);
+                }
+
+                return { time: timeSpent, outcome: randOutcomeKey, color: outcomeDetails.color, yPos: p.random(p.height * 0.8, p.height * 0.2) };
+            }
+            
+            function regenerateAllDataPoints() {
+                dataPoints = [];
+                for (let i = 0; i < numDataPoints; i++) {
+                    dataPoints.push(generateDataPoint());
+                }
+                if(!playing) p.redraw();
+            }
+
+            p.setup = function() {
+                let canvasContainer = p.select('#humanInsightsAnimationContainer');
+                let canvas = p.createCanvas(canvasContainer.width, canvasContainer.height);
+                canvas.parent('humanInsightsAnimationContainer');
+                
+                playButton = p.select('#humanInsightsPlayPause');
+                dataPointsSlider = p.select('#humanInsightsDataPoints');
+                dataPointsValueSpan = p.select('#humanInsightsDataPointsValue');
+
+                numDataPoints = parseInt(dataPointsSlider.value());
+                dataPointsValueSpan.html(numDataPoints);
+                
+                regenerateAllDataPoints();
+
+                playButton.mousePressed(() => { 
+                    playing = !playing; 
+                    if(playing) p.loop(); else p.noLoop(); 
+                    playButton.html(playing ? "暂停" : "播放");
+                });
+                dataPointsSlider.input(() => {
+                    numDataPoints = parseInt(dataPointsSlider.value());
+                    dataPointsValueSpan.html(numDataPoints);
+                    regenerateAllDataPoints();
+                });
+                
+                if (!playing) p.noLoop();
+                playButton.html(playing ? "暂停" : "播放");
+            };
+
+            p.draw = function() {
+                p.background(240, 248, 255);
+                let marginX = p.width * 0.1;
+                let chartWidth = p.width * 0.8;
+                let chartHeight = p.height * 0.7;
+                let bottomY = p.height * 0.85;
+
+                // Draw X-axis (Time Spent)
+                p.stroke(0);
+                p.line(marginX, bottomY, marginX + chartWidth, bottomY);
+                p.fill(0);
+                p.noStroke();
+                p.textAlign(p.CENTER, p.TOP);
+                for (let t = 0; t <= maxTime; t += 3) {
+                    let x = marginX + (t / maxTime) * chartWidth;
+                    p.text(t + "m", x, bottomY + 5);
+                }
+                p.text("任务耗时 (分钟)", marginX + chartWidth / 2, bottomY + 25);
+                
+                // Draw Y-axis label (conceptual)
+                p.textAlign(p.CENTER, p.CENTER);
+                p.push();
+                p.translate(marginX - 30, bottomY - chartHeight/2);
+                p.rotate(-p.HALF_PI);
+                p.text("尝试次数 (概念分布)", 0, 0);
+                p.pop();
+
+
+                // Draw data points (conceptual scatter plot / density)
+                if (playing && dataPoints.length < numDataPoints && p.frameCount % 5 == 0) {
+                     dataPoints.push(generateDataPoint());
+                }
+                if (dataPoints.length > numDataPoints) { // Trim if slider reduced count
+                    dataPoints.splice(numDataPoints);
+                }
+
+
+                for (let i = 0; i < dataPoints.length; i++) {
+                    let dp = dataPoints[i];
+                    let x = marginX + (dp.time / maxTime) * chartWidth;
+                    //let y = bottomY - p.random(10, chartHeight - 10); // Random y for scatter
+                    let y = bottomY - p.map(p.noise(dp.time*0.5, i*0.1), 0, 1, 10, chartHeight -10); // Perlin noise for more organic distribution
+                    
+                    p.fill(dp.color);
+                    p.noStroke();
+                    p.ellipse(x, y, 8, 8);
+
+                    if (playing) { // Simple animation: slightly change y position
+                        dataPoints[i].yPos = bottomY - p.map(p.noise(dp.time*0.5, i*0.1 + p.frameCount*0.01), 0, 1, 10, chartHeight -10);
+                    }
+                }
+                
+                // Legend
+                let legendX = marginX + 10;
+                let legendY = p.height * 0.1;
+                p.fill(outcomes.correct.color); p.ellipse(legendX, legendY, 10, 10);
+                p.fill(0); p.textAlign(p.LEFT, p.CENTER); p.text("正确", legendX + 15, legendY);
+                
+                legendY += 20;
+                p.fill(outcomes.incorrect.color); p.ellipse(legendX, legendY, 10, 10);
+                p.fill(0); p.text("错误", legendX + 15, legendY);
+                
+                legendY += 20;
+                p.fill(outcomes.no_submission.color); p.ellipse(legendX, legendY, 10, 10);
+                p.fill(0); p.text("无提交/放弃", legendX + 15, legendY);
+
+            };
+            p.windowResized = function() {
+                let canvasContainer = p.select('#humanInsightsAnimationContainer');
+                p.resizeCanvas(canvasContainer.width, canvasContainer.height);
+                regenerateAllDataPoints();
+            };
+            setTimeout(() => { if (p.redraw && !playing) p.redraw(); }, 0);
+        };
+        new p5(sketchHumanInsights);
+
+    </script>
+</body>
+</html>

@@ -1,0 +1,959 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>儿童英语范文学习：趣味物理逻辑解读与动画演示</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
+    <style>
+        /* A3 and custom styles based on user's example */
+        body {
+            font-family: 'LXGW WenKai Lite', 'KaiTi', 'SimSun', sans-serif; /* 活泼的字体 */
+            font-size: 16pt; /* 三号字 (16pt) */
+            line-height: 1.8;
+            background-color: #f8f9fa; /* 干净的背景色 */
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Styling for A3 printing */
+        @media print {
+            html, body {
+                width: 297mm;
+                margin: 0;
+                padding: 0;
+                font-size: 12pt; /* Adjust font size for print if 16pt is too large */
+            }
+            .content-wrapper {
+                width: 277mm; /* 297mm - 10mm margin on each side */
+                margin: 10mm auto; /* Standard A3 margins */
+                box-shadow: none;
+                border: none;
+            }
+            .page-break {
+                page-break-after: always;
+            }
+            .no-print { display: none !important; }
+            canvas { 
+                max-width: 100% !important; 
+                height: auto !important; 
+                border: 1px solid #ccc !important; /* Add border for print clarity */
+            }
+            .animation-container {
+                page-break-inside: avoid; /* Try to keep animation and its text together */
+            }
+            h1,h2,h3,h4 { page-break-after: avoid; page-break-inside: avoid; }
+            p, ul, ol { page-break-inside: avoid; }
+        }
+
+        .content-wrapper {
+            max-width: 1000px; /* Readable width on screen */
+            margin: 20px auto;
+            padding: 20px 40px; /* More padding for better look */
+            background-color: #ffffff;
+            border-radius: 12px; /* Softer corners */
+            box-shadow: 0 8px 16px rgba(0,0,0,0.08); /* More pronounced shadow */
+        }
+        h1, h2, h3 {
+            color: #1a237e; /* Darker, more academic blue */
+            margin-top: 1.8em;
+            margin-bottom: 1em;
+            font-weight: 600; /* Bolder headings */
+        }
+        h1 { 
+            font-size: 2.2em; /* Slightly smaller H1 for balance */
+            text-align: center; 
+            border-bottom: 3px solid #3f51b5; /* Indigo border */
+            padding-bottom: 0.4em; 
+            margin-bottom: 1.2em;
+        }
+        h2 { font-size: 1.7em; color: #3f51b5; /* Indigo sub-headings */ border-left: 5px solid #3f51b5; padding-left: 10px;}
+        h3 { font-size: 1.3em; color: #ad1457; /* Pinkish-red for H3 */ margin-top: 1.5em;}
+        
+        strong, .highlight { 
+            color: #c62828; /* Stronger red for highlight */ 
+            font-weight: 600; /* Ensure highlighted text is bold */
+        }
+        .text-content p { 
+            margin-bottom: 1.2em; 
+            text-indent: 2em; 
+            text-align: justify; 
+        }
+        .text-content ul, .text-content ol {
+            margin-left: 2em;
+            margin-bottom: 1em;
+            padding-left: 1.5em; 
+        }
+        .text-content li { margin-bottom: 0.5em; }
+
+        .animation-container {
+            margin: 40px 0;
+            padding: 25px;
+            border: 1px solid #ced4da; 
+            border-radius: 10px; 
+            background-color: #fdfdff; 
+            box-shadow: 0 4px 8px rgba(0,0,0,0.04);
+        }
+        .animation-canvas {
+            width: 100%;
+            /* height: 300px; /* Default height, specific canvases can override */
+            margin: 15px auto;
+            display: block;
+            border-radius: 6px;
+            background-color: #fff; 
+            border: 1px solid #e0e0e0;
+        }
+        
+        .control-buttons button {
+            background-color: #3f51b5; 
+            color: white;
+            padding: 12px 20px; 
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.95em; 
+            margin-right: 12px;
+            transition: background-color 0.2s ease-in-out, transform 0.1s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .control-buttons button:hover {
+            background-color: #303f9f; 
+            transform: translateY(-1px);
+        }
+        .control-buttons button:active {
+            transform: translateY(0px);
+        }
+        .formula-like { /* For simple text formulas */
+            font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace;
+            background-color: #e8eaf6; 
+            padding: 8px 12px;
+            border-radius: 5px;
+            display: inline-block;
+            margin: 5px 0;
+            color: #1a237e; 
+            border: 1px solid #c5cae9; 
+            font-size: 0.9em; 
+        }
+        @font-face {
+            font-family: 'LXGW WenKai Lite';
+            src: url('https://cdn.jsdelivr.net/npm/lxgw-wenkai-lite-webfont@1.7.0/lxgwwenkailite-regular.woff2') format('woff2');
+            font-weight: normal;
+            font-style: normal;
+        }
+        @font-face {
+            font-family: 'LXGW WenKai Lite';
+            src: url('https://cdn.jsdelivr.net/npm/lxgw-wenkai-lite-webfont@1.7.0/lxgwwenkailite-bold.woff2') format('woff2');
+            font-weight: bold;
+            font-style: normal;
+        }
+        .text-center { text-align: center; }
+        .text-gray-600 { color: #5f6368; } 
+        .mb-12 { margin-bottom: 3rem; }
+        .mt-2 { margin-top: 0.5rem; }
+        .text-sm { font-size: 0.875rem; }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <div class="content-wrapper">
+        <h1>儿童英语范文学习：趣味物理逻辑解读与动画演示</h1>
+        <p class="text-center text-gray-600 mb-12 text-sm">（根据您提供的三篇英语短文进行分析）</p>
+
+        <section id="intro" class="text-content">
+            <h2>引言：给孩子的“物理逻辑”小魔镜</h2>
+            <p>小朋友们，你们知道吗？我们每天读的小故事、小短文，里面其实藏着好多有趣的“小机关”和“小道理”，就像我们玩积木、看动画片一样，都有它自己的<strong class="highlight">“搭建方法”</strong>和<strong class="highlight">“运行规则”</strong>。今天，我们就一起拿起一面特别的“物理逻辑小魔镜”，来照一照你们的英语范文，看看能不能发现一些能让学习变得更简单、更好玩的小秘密！</p>
+            <p>“物理逻辑”听起来好像很高深，但在这里，我们可以把它想象成是<strong class="highlight">事物运作的基本道理</strong>。比如，为什么推东西它会动（力与运动）？为什么水会往低处流（能量与势能）？为什么搭积木要底座稳固（结构与平衡）？我们将用类似这样的“道理”去观察作文是怎么“搭建”起来的，它的“力量”从哪里来，怎样才能让它“稳稳地”表达清楚意思，并且深深地印在我们的脑海里。准备好了吗？让我们开始这场奇妙的探索之旅吧！</p>
+        </section>
+
+        <section id="essay1" class="text-content">
+            <h2>范文一：“我的趣味活动”（网游篇）的物理逻辑透视</h2>
+            <p>这篇小作文讲的是“我”喜欢玩网络游戏，游戏带来了很多乐趣，但也花掉了“我”太多的时间，导致忘记作业，还错过了和家人朋友的相处时光。后来，“我”意识到应该站起来，离开屏幕，多和朋友家人进行户外活动，这样才能过上<strong class="highlight">“平衡的生活”</strong>。</p>
+            
+            <h3>“时间能量”的分配与转换</h3>
+            <p>我们可以把每个人一天的时间看作是一份<strong class="highlight">固定的“时间能量包”</strong>。玩游戏很快乐，就像给我们的“快乐电池”充电，这是一种能量输入。但是，如果投入过多的“时间能量”到游戏里，这份能量就不能用在写作业、陪家人这些同样重要的事情上了。这就好比一个水池，总容量是固定的，游戏占的水多了，其他活动能用的水就少了。这体现了一种<strong class="highlight">“能量守恒与转化”</strong>的思想：时间花在哪里，效果就出在哪里，但总的时间是有限的。</p>
+            <p>作文里提到“get lost in the games and forget about my homework”，这就是“游戏能量场”太强，把“我”的注意力“吸”过去了，导致分配给“作业能量场”的能量不足。最后的解决方案是重新分配能量，增加户外活动和家庭时间的能量投入，达到一种新的<strong class="highlight">“生活能量平衡态”</strong>。可以用一个简单的“公式”来表示这种平衡的追求：<span class="formula-like">理想生活 = 适度游戏乐趣 + 学习成就 + 家庭温暖 + 朋友情谊</span>。</p>
+
+            <div class="animation-container no-print">
+                <h3>动画1：时间能量分配仪</h3>
+                <div id="timeEnergyCanvas" class="animation-canvas" style="height: 350px;"></div>
+                <div class="control-buttons">
+                    <button onclick="animInstances.timeEnergy.play()">演示分配</button>
+                    <button onclick="animInstances.timeEnergy.reset()">重置</button>
+                </div>
+                <p class="text-sm text-gray-600 mt-2">交互说明：点击“演示分配”，观察代表“游戏”、“学习”、“家庭”、“户外”的能量条如何变化。初始状态可能游戏能量过多，学习和家庭能量不足。动画将演示调整过程，最终达到各项能量相对均衡的状态。</p>
+            </div>
+
+            <h3>行动的“因果链条”</h3>
+            <p>作文清晰地展示了行为与其后果之间的<strong class="highlight">“因果链”</strong>。比如：</p>
+            <ul>
+                <li>原因1：Spend too much time on games (过度投入“游戏力”)</li>
+                <li>结果1a：Forget homework (学习“动能”减弱)</li>
+                <li>结果1b：Miss out sweet moments with family and friends (情感“连接力”减弱)</li>
+            </ul>
+            <p>而改变行动（“站起来，离开屏幕”）则启动了新的因果链：</p>
+            <ul>
+                <li>原因2：Go outside and hike, have picnics (投入新的“健康力”和“亲情力”)</li>
+                <li>结果2：Live a balanced life (生活系统达到“和谐振动”状态)</li>
+            </ul>
+            <p>理解这些“因果链”，就像理解多米诺骨牌一样，一个行为会引发一系列连锁反应。这能帮助我们预测行为的后果，从而做出更明智的选择。</p>
+            <div class="animation-container no-print">
+                <h3>动画2：因果多米诺</h3>
+                <div id="dominoEffectCanvas" class="animation-canvas" style="height: 300px;"></div>
+                <div class="control-buttons">
+                    <button onclick="animInstances.dominoEffect.triggerBad()">演示不良后果</button>
+                    <button onclick="animInstances.dominoEffect.triggerGood()">演示积极行动</button>
+                    <button onclick="animInstances.dominoEffect.reset()">重置</button>
+                </div>
+                <p class="text-sm text-gray-600 mt-2">交互说明：点击“演示不良后果”，观看代表“沉迷游戏”的第一块骨牌倒下，引发“忘记作业”、“错过陪伴”等后续骨牌倒塌。点击“演示积极行动”，观看“走向户外”的骨牌如何建立一个积极的序列。</p>
+            </div>
+        </section>
+        
+        <div class="page-break"></div>
+        <section id="essay2" class="text-content">
+            <h2>范文二：“我的趣味活动”（看电视篇）的物理逻辑透视</h2>
+            <p>这篇作文讲的是“我”最喜欢的趣味活动是看电视。看电视能放松，能学到新知识（比如从旅游节目了解不同文化，看动画片开怀大笑）。但是，花太多时间看电视也不好，可能伤眼睛、浪费时间，变成“沙发土豆”，还会错过和家人相处的时光。所以，“我”认为应该<strong class="highlight">“适度地”</strong>进行趣味活动，比如每天完成作业后只看一小时电视，并且要和家人交流。</p>
+
+            <h3>“双刃剑效应”与“阈值”概念</h3>
+            <p>看电视就像一把<strong class="highlight">“双刃剑”</strong>，它既有有利的一面（放松、学习），也有不利的一面（伤眼、浪费时间）。这在物理上可以看作一个系统同时受到<strong class="highlight">“正向激励”</strong>和<strong class="highlight">“负向阻力”</strong>。关键在于“量”的把握。作文中提到“spending too much time on TV is not good”，这里就出现了一个<strong class="highlight">“阈值”</strong>（threshold）的概念。适量看电视，正向激励大于负向阻力，我们获得益处；一旦超过某个“时间阈值”，负向阻力（如眼睛疲劳的“累积效应”、时间流逝的“机会成本”）开始显现并可能占据主导。</p>
+            <p>我们可以想象一个“健康指针”，适度看电视时，指针指向“绿色区域”；过度时，指针滑向“红色警戒区”。“Couch potato with a sore neck and dry eyes”就是系统失衡，身体发出的“警报信号”。</p>
+
+            <div class="animation-container no-print">
+                <h3>动画3：“趣味活动”健康仪表盘</h3>
+                <div id="healthDashboardCanvas" class="animation-canvas" style="height: 300px;"></div>
+                <div class="control-buttons">
+                    <button onclick="animInstances.healthDashboard.increaseTime()">增加“看电视”时间</button>
+                    <button onclick="animInstances.healthDashboard.decreaseTime()">减少“看电视”时间</button>
+                    <button onclick="animInstances.healthDashboard.reset()">重置</button>
+                </div>
+                <p class="text-sm text-gray-600 mt-2">交互说明：仪表盘显示当前的“健康状态”。点击“增加看电视时间”，观察指针如何从绿色区域（放松、学习）逐渐移向黄色（警告），甚至红色区域（伤眼、沙发土豆）。点击“减少看电视时间”则反向移动。</p>
+            </div>
+
+            <h3>“信息流”的输入与互动</h3>
+            <p>看电视是一种<strong class="highlight">“信息输入”</strong>过程。“I can learn about different cultures from travel program.” 这就像打开了一个“信息通道”，知识和文化“流”入我们的大脑。动画片带来的欢笑，可以看作是积极的<strong class="highlight">“情绪能量流”</strong>。</p>
+            <p>然而，这种信息流主要是单向的。作文最后强调“Don't forget to talk about your day with your family”，这是在提醒我们，除了单向的“信息接收”，双向的<strong class="highlight">“信息交流和情感互动”</strong>（和家人谈话）同样重要。一个健康的“个人系统”需要平衡输入和输出，以及与外部环境（家庭、朋友）的良好互动。这就像一个生态系统，既需要阳光雨露（外部输入），也需要内部的循环和物质交换。</p>
+        </section>
+
+        <div class="page-break"></div>
+        <section id="essay3" class="text-content">
+            <h2>范文三：“我的家乡”（南宁篇）的物理逻辑透视</h2>
+            <p>这篇作文介绍了“我”的家乡南宁。它描述了南宁的地理位置（广西南部的大城市）、人口（400万）、气候特点（夏热冬不冷）、美誉（绿城）、著名景点（青秀山、邕江）、美食（老友粉、粉饺）以及当地人的特点（友好、乐于助人）。</p>
+
+            <h3>描述的“空间结构”与“层级逻辑”</h3>
+            <p>介绍一个地方，就像在<strong class="highlight">构建一个“空间模型”</strong>。作文从“大范围”到“小细节”来组织信息，体现了一种<strong class="highlight">“层级递进”</strong>的逻辑结构：</p>
+            <ol>
+                <li><strong>宏观定位</strong>：Nanning is my hometown. It's a big city in the south of Guangxi. (如同在地图上先找到省份，再找到城市的大致位置和级别)</li>
+                <li><strong>基本属性</strong>：Population of 4 million people. Hot in summer, but not cold in winter. (如同给这个“城市模型”赋予基本参数，如大小、气候“场特性”)</li>
+                <li><strong>核心特征/名片</strong>：Famous as a green city. (最显著的“标签”或“吸引子”)
+                    <ul>
+                        <li>具体表现：Many trees and flowers along streets. So it's really beautiful. (用具体物象来支撑核心特征，形成“视觉证据链”)</li>
+                    </ul>
+                </li>
+                <li><strong>兴趣点/吸引中心</strong>：Qingxiu Mountain and Yongjiang River are the most popular places. Lots of delicious food. (如同在模型中标注出重要的“地标建筑”和“能量补给站”)</li>
+                <li><strong>人文环境/社会氛围</strong>：Local people here are very friendly. They are ready to help others. (描述了城市“软环境”的特性，即人际间的“作用力”是友善的)</li>
+            </ol>
+            <p>这种由整体到局部，由概括到具体的描述方式，就像用不同焦距的镜头观察物体，能让读者清晰、有序地建立起对南宁的印象。这是一种高效的<strong class="highlight">“信息组织和传递”</strong>策略。</p>
+
+            <div class="animation-container no-print">
+                <h3>动画4：家乡南宁印象拼图</h3>
+                <div id="hometownPuzzleCanvas" class="animation-canvas" style="height: 380px;"></div>
+                <div class="control-buttons">
+                    <button onclick="animInstances.hometownPuzzle.startAssembly()">开始拼搭家乡印象</button>
+                    <button onclick="animInstances.hometownPuzzle.reset()">重置</button>
+                </div>
+                <p class="text-sm text-gray-600 mt-2">交互说明：点击“开始拼搭家乡印象”，代表南宁不同特征（位置、绿城、青秀山、美食、友好的人）的拼图块会逐一飞入并组合成一个完整的南宁印象图。每个拼图块出现时会短暂高亮其文字标签。</p>
+            </div>
+            
+            <h3>“吸引力”与“连接”</h3>
+            <p>作文中提到的“Qingxiu Mountain and Yongjiang River are the most popular places to visit”以及“lots of delicious food”，这些都可以看作是家乡的<strong class="highlight">“吸引力核心”</strong>。它们像磁铁一样，吸引着游客和本地居民。而“The local people here are very friendly. They are ready to help others.”则描述了一种人与人之间的<strong class="highlight">积极“连接力”</strong>，这种友善的氛围使得城市更具魅力，也更容易让外来者产生归属感。</p>
+            <p>最后的“I hope you can visit my hometown one day. I'm sure you will love it.”则是在发出一个<strong class="highlight">“邀请连接”</strong>的信号，希望读者也能被这份“吸引力”所打动，并亲身体验这种“连接”。</p>
+            <div class="animation-container no-print">
+                <h3>动画5：“友好力场”与连接</h3>
+                <div id="friendlyForceFieldCanvas" class="animation-canvas" style="height: 300px;"></div>
+                <div class="control-buttons">
+                    <button onclick="animInstances.friendlyForceField.toggleField()">展示/隐藏友好力场</button>
+                    <button onclick="animInstances.friendlyForceField.addVisitor()">吸引一位“访客”</button>
+                    <button onclick="animInstances.friendlyForceField.reset()">重置</button>
+                </div>
+                <p class="text-sm text-gray-600 mt-2">交互说明：画布中央代表“南宁”。点击“展示/隐藏友好力场”，可以看到一个温暖的光环（代表友好氛围）。点击“吸引一位访客”，一个小点（访客）会被吸引并愉快地融入城市中心。</p>
+            </div>
+        </section>
+
+        <section id="conclusion" class="text-content">
+            <h2>结语：用“物理逻辑小魔镜”照亮学习之路</h2>
+            <p>小朋友们，通过这面“物理逻辑小魔镜”，我们是不是发现，原来这些英语范文里藏着这么多有趣的“小机关”和“运行道理”呀？</p>
+            <p>我们看到了<strong class="highlight">“时间能量”如何分配</strong>，过度沉迷游戏就像让能量分配失衡；我们也看到了<strong class="highlight">“因果多米诺”</strong>，一个行动会带来一连串的后果；我们还玩了<strong class="highlight">“健康仪表盘”</strong>，明白了凡事都要有个“度”，不能超过“阈值”；我们还一起<strong class="highlight">“拼搭了家乡印象”</strong>，知道了怎样有条理地介绍一个地方；最后，我们感受了家乡的<strong class="highlight">“友好力场”</strong>和它发出的“连接邀请”。</p>
+            <p>这些“物理逻辑”的视角，其实就是在帮我们<strong class="highlight">理解文章的骨架和脉络</strong>，看清楚作者想要表达的核心意思，以及他是怎么一步步把意思说明白的。当我们能看懂这些“内部结构”和“运作方式”后，不仅能更好地理解课文，记住它们也会变得更容易、更有趣，就像我们记住了一个好玩的游戏规则或者一个精彩的动画片情节一样！</p>
+            <p>希望这面“物理逻辑小魔镜”能成为你们学习路上的好伙伴，帮助你们发现更多知识的乐趣！以后在读别的文章，甚至在观察生活中的事情时，也不妨试试用这些“道理”去想一想，你们一定会成为小小“逻辑观察家”的！</p>
+        </section>
+    </div>
+
+<script>
+    // Global control variables for animations
+    let animInstances = {};
+
+    // --- Animation 1: Time Energy Allocation ---
+    const timeEnergySketch = (p) => {
+        let energies = { game: 60, study: 15, family: 15, outdoor: 10 };
+        let targetEnergies = { game: 25, study: 30, family: 25, outdoor: 20 };
+        let currentEnergies = {};
+        let labels = { game: "游戏", study: "学习", family: "家庭", outdoor: "户外" };
+        let colors = { game: [255, 99, 132], study: [54, 162, 235], family: [255, 206, 86], outdoor: [75, 192, 192] };
+        let playing = false;
+        let animationProgress = 0; // 0 to 1
+
+        p.setup = () => {
+            let canvasContainer = p.select('#timeEnergyCanvas');
+            let canvas = p.createCanvas(canvasContainer.width, canvasContainer.height);
+            canvas.parent('timeEnergyCanvas');
+            p.resetSim();
+            p.noLoop();
+            p.drawScene();
+        };
+
+        p.resetSim = () => {
+            currentEnergies = {...energies};
+            animationProgress = 0;
+            playing = false;
+        };
+        
+        p.drawScene = () => {
+            p.background(245, 250, 255);
+            p.textSize(16);
+            p.textAlign(p.CENTER, p.CENTER);
+            p.fill(50);
+            p.text("各项活动时间能量分配", p.width / 2, 30);
+
+            let barWidth = (p.width - 100) / 4;
+            let maxBarHeight = p.height - 120;
+            let totalCurrentEnergy = Object.values(currentEnergies).reduce((a, b) => a + b, 0);
+
+            let i = 0;
+            for (let key in currentEnergies) {
+                let barHeight = (currentEnergies[key] / 100) * maxBarHeight; // Assuming 100 is max possible for one category for scaling
+                let x = 50 + i * barWidth;
+                
+                p.fill(colors[key][0], colors[key][1], colors[key][2], 150);
+                p.rect(x, p.height - 60 - barHeight, barWidth - 10, barHeight, 5);
+                
+                p.fill(50);
+                p.textAlign(p.CENTER, p.CENTER);
+                p.textSize(14);
+                p.text(labels[key], x + (barWidth - 10) / 2, p.height - 40);
+                p.textSize(12);
+                p.text(Math.round(currentEnergies[key]) + "%", x + (barWidth - 10) / 2, p.height - 70 - barHeight - 10);
+                i++;
+            }
+            
+            if (animationProgress >= 1) {
+                 p.fill(0,150,0);
+                 p.text("达到平衡!", p.width/2, p.height - 95);
+            } else if (animationProgress > 0) {
+                 p.fill(200,150,0);
+                 p.text("调整中...", p.width/2, p.height - 95);
+            } else {
+                 p.fill(200,0,0);
+                 p.text("初始状态 (游戏过多)", p.width/2, p.height - 95);
+            }
+        };
+
+        p.draw = () => {
+            if (!playing) return;
+            
+            if (animationProgress < 1) {
+                animationProgress += 0.01; // Speed of animation
+                for (let key in currentEnergies) {
+                    currentEnergies[key] = p.lerp(energies[key], targetEnergies[key], animationProgress);
+                }
+            } else {
+                animationProgress = 1; // Ensure it locks at target
+                 for (let key in currentEnergies) { // Lock to target
+                    currentEnergies[key] = targetEnergies[key];
+                }
+                playing = false; // Stop animation
+                p.noLoop();
+            }
+            p.drawScene();
+        };
+        
+        p.play = () => { if (!playing || animationProgress >=1) {p.resetSim(); animationProgress = 0;} playing = true; p.loop(); };
+        p.reset = () => {
+            p.resetSim();
+            p.noLoop();
+            p.drawScene();
+        };
+    };
+
+    // --- Animation 2: Domino Effect ---
+    const dominoEffectSketch = (p) => {
+        let dominos = [];
+        let spacing = 60;
+        let dominoWidth = 20, dominoHeight = 70;
+        let playing = false;
+        let currentChain = null; // 'bad' or 'good'
+        let fallSpeed = 0.15; // Radians per frame
+        let maxAngle = p.HALF_PI + 0.1;
+
+        class Domino {
+            constructor(x, y, label, color) {
+                this.x = x;
+                this.y = y; // Base y
+                this.label = label;
+                this.angle = 0;
+                this.falling = false;
+                this.fallen = false;
+                this.color = color;
+            }
+
+            display() {
+                p.push();
+                p.translate(this.x, this.y);
+                p.rotate(this.angle);
+                p.fill(this.color);
+                p.stroke(50);
+                p.strokeWeight(1);
+                p.rectMode(p.CENTER);
+                p.rect(0, -dominoHeight / 2, dominoWidth, dominoHeight, 3);
+                p.fill(0);
+                p.noStroke();
+                p.textAlign(p.CENTER, p.CENTER);
+                p.textSize(10);
+                // Rotate text back to be readable
+                p.translate(0, -dominoHeight / 2);
+                p.rotate(-this.angle); 
+                p.text(this.label, 0, 0);
+                p.pop();
+            }
+
+            update() {
+                if (this.falling && !this.fallen) {
+                    this.angle += fallSpeed;
+                    if (this.angle >= maxAngle) {
+                        this.angle = maxAngle;
+                        this.fallen = true;
+                        this.falling = false;
+                    }
+                }
+            }
+
+            startFall() {
+                if (!this.fallen && !this.falling) {
+                    this.falling = true;
+                }
+            }
+            
+            reset() {
+                this.angle = 0;
+                this.falling = false;
+                this.fallen = false;
+            }
+        }
+
+        p.setup = () => {
+            let canvasContainer = p.select('#dominoEffectCanvas');
+            let canvas = p.createCanvas(canvasContainer.width, canvasContainer.height);
+            canvas.parent('dominoEffectCanvas');
+            p.resetSim();
+            p.noLoop();
+            p.drawScene();
+        };
+
+        p.resetSim = (chainType = null) => {
+            dominos = [];
+            playing = false;
+            currentChain = chainType;
+            let startX = p.width / 2 - ( (chainType === 'bad' ? 3 : 3) * spacing) / 2; // Adjust for number of dominos
+            let yPos = p.height - 50;
+
+            if (chainType === 'bad') {
+                dominos.push(new Domino(startX, yPos, "沉迷游戏", [255, 100, 100]));
+                dominos.push(new Domino(startX + spacing, yPos, "忘记作业", [255, 150, 100]));
+                dominos.push(new Domino(startX + spacing * 2, yPos, "错过陪伴", [255, 180, 100]));
+            } else if (chainType === 'good') {
+                dominos.push(new Domino(startX, yPos, "走向户外", [100, 255, 100]));
+                dominos.push(new Domino(startX + spacing, yPos, "身心健康", [150, 255, 100]));
+                dominos.push(new Domino(startX + spacing * 2, yPos, "生活平衡", [180, 255, 100]));
+            }
+        };
+        
+        p.drawScene = () => {
+            p.background(255, 250, 245);
+            p.textSize(16);
+            p.textAlign(p.CENTER, p.CENTER);
+            p.fill(50);
+            p.text("行为的因果多米诺效应", p.width / 2, 30);
+
+            for (let i = 0; i < dominos.length; i++) {
+                dominos[i].display();
+            }
+        };
+
+        p.draw = () => {
+            if (!playing) return;
+            
+            for (let i = 0; i < dominos.length; i++) {
+                dominos[i].update();
+                // If a domino has fallen enough, trigger the next one
+                if (dominos[i].angle > p.PI / 5 && i + 1 < dominos.length && !dominos[i+1].falling && !dominos[i+1].fallen) {
+                     if(p.abs(dominos[i+1].x - dominos[i].x) < dominoHeight * p.sin(dominos[i].angle) + dominoWidth) { // Basic collision
+                        dominos[i+1].startFall();
+                     }
+                }
+            }
+            
+            let allFallen = dominos.every(d => d.fallen);
+            if (allFallen && dominos.length > 0) {
+                playing = false;
+                p.noLoop();
+            }
+            p.drawScene();
+        };
+        
+        p.triggerChain = (type) => {
+            p.resetSim(type);
+            if (dominos.length > 0) {
+                dominos[0].startFall();
+                playing = true;
+                p.loop();
+            }
+             p.drawScene(); // Initial draw after reset
+        };
+        
+        p.reset = () => {
+            p.resetSim();
+            p.noLoop();
+            p.drawScene();
+        };
+    };
+
+    // --- Animation 3: Health Dashboard ---
+    const healthDashboardSketch = (p) => {
+        let tvTime = 0; // 0 to 10 (representing hours for simplicity)
+        let maxTvTime = 10;
+        let optimalTime = 1; // 1 hour is optimal
+        let warningTime = 3; // More than 3 hours is warning
+        let playing = false; // Not used here, direct interaction
+
+        p.setup = () => {
+            let canvasContainer = p.select('#healthDashboardCanvas');
+            let canvas = p.createCanvas(canvasContainer.width, canvasContainer.height);
+            canvas.parent('healthDashboardCanvas');
+            p.noLoop();
+            p.drawScene();
+        };
+        
+        p.drawScene = () => {
+            p.background(250, 255, 250);
+            p.textSize(16);
+            p.textAlign(p.CENTER, p.CENTER);
+            p.fill(50);
+            p.text("“看电视”健康仪表盘", p.width / 2, 30);
+            p.textSize(14);
+            p.text(`当前模拟看电视时间: ${tvTime.toFixed(1)} 小时`, p.width/2, p.height - 30);
+
+            let centerX = p.width / 2;
+            let centerY = p.height / 2 + 20;
+            let radius = p.min(p.width, p.height) / 3;
+
+            // Draw gauge background
+            p.noFill();
+            p.strokeWeight(20);
+            // Green part
+            p.stroke(0, 200, 0, 150);
+            p.arc(centerX, centerY, radius * 2, radius * 2, p.PI, p.PI + p.map(optimalTime, 0, maxTvTime, 0, p.PI));
+            // Yellow part
+            p.stroke(255, 200, 0, 150);
+            p.arc(centerX, centerY, radius * 2, radius * 2, p.PI + p.map(optimalTime, 0, maxTvTime, 0, p.PI), p.PI + p.map(warningTime, 0, maxTvTime, 0, p.PI));
+            // Red part
+            p.stroke(200, 0, 0, 150);
+            p.arc(centerX, centerY, radius * 2, radius * 2, p.PI + p.map(warningTime, 0, maxTvTime, 0, p.PI), 0);
+
+            // Draw needle
+            let angle = p.map(tvTime, 0, maxTvTime, p.PI, 0); // Map time to angle (PI to 0)
+            p.push();
+            p.translate(centerX, centerY);
+            p.rotate(angle);
+            p.stroke(50);
+            p.strokeWeight(3);
+            p.line(0, 0, radius - 5, 0);
+            p.pop();
+            
+            p.fill(50);
+            p.ellipse(centerX, centerY, 15, 15);
+
+            // Labels for gauge
+            p.textSize(12);
+            p.fill(50);
+            p.noStroke();
+            p.text("0h", centerX - radius - 15, centerY + 5);
+            p.text((maxTvTime/2).toFixed(0)+"h", centerX, centerY - radius - 15);
+            p.text(maxTvTime+"h", centerX + radius + 15, centerY + 5);
+
+            // Status text
+            let statusText = "";
+            let statusColor = p.color(0);
+            if (tvTime <= optimalTime) {
+                statusText = "健康区域 (放松、学习)";
+                statusColor = p.color(0, 150, 0);
+            } else if (tvTime <= warningTime) {
+                statusText = "警告区域 (注意时间)";
+                statusColor = p.color(200, 150, 0);
+            } else {
+                statusText = "危险区域 (伤眼、沙发土豆警告!)";
+                statusColor = p.color(200, 0, 0);
+            }
+            p.fill(statusColor);
+            p.textSize(14);
+            p.text(statusText, p.width/2, centerY + radius + 30);
+        };
+
+        p.increaseTime = () => {
+            tvTime = p.min(tvTime + 0.5, maxTvTime);
+            p.drawScene();
+        };
+        p.decreaseTime = () => {
+            tvTime = p.max(tvTime - 0.5, 0);
+            p.drawScene();
+        };
+        p.reset = () => {
+            tvTime = 0;
+            p.drawScene();
+        };
+    };
+
+    // --- Animation 4: Hometown Impression Puzzle ---
+    const hometownPuzzleSketch = (p) => {
+        class PuzzlePiece {
+            constructor(label, targetX, targetY, w, h, imgChar, color) {
+                this.label = label;
+                this.targetX = targetX;
+                this.targetY = targetY;
+                this.w = w;
+                this.h = h;
+                this.imgChar = imgChar; // Character to represent image
+                this.color = color;
+                this.currentX = p.random(-p.width/2, p.width * 1.5);
+                this.currentY = p.random(-p.height/2, p.height * 1.5);
+                this.isPlaced = false;
+                this.alpha = 0;
+            }
+
+            update() {
+                if (!this.isPlaced) {
+                    this.currentX = p.lerp(this.currentX, this.targetX, 0.05);
+                    this.currentY = p.lerp(this.currentY, this.targetY, 0.05);
+                    this.alpha = p.lerp(this.alpha, 255, 0.05);
+                    if (p.dist(this.currentX, this.currentY, this.targetX, this.targetY) < 1) {
+                        this.currentX = this.targetX;
+                        this.currentY = this.targetY;
+                        this.isPlaced = true;
+                    }
+                }
+            }
+
+            display() {
+                p.fill(this.color[0], this.color[1], this.color[2], this.alpha);
+                p.stroke(255, this.alpha);
+                p.strokeWeight(2);
+                p.rect(this.currentX, this.currentY, this.w, this.h, 5);
+                
+                p.fill(0,0,0, this.alpha);
+                p.noStroke();
+                p.textAlign(p.CENTER, p.CENTER);
+                p.textSize(this.w / 4); // Dynamic text size
+                p.text(this.imgChar, this.currentX + this.w / 2, this.currentY + this.h / 2.5);
+                p.textSize(this.w / 7);
+                p.text(this.label, this.currentX + this.w / 2, this.currentY + this.h * 0.8);
+            }
+            reset() {
+                 this.currentX = p.random(-p.width/2, p.width * 1.5);
+                 this.currentY = p.random(-p.height/2, p.height * 1.5);
+                 this.isPlaced = false;
+                 this.alpha = 0;
+            }
+        }
+
+        let pieces = [];
+        let assemblyOrder = 0;
+        let playing = false;
+        let pieceData = [
+            {label: "南方大城", char: "桂", color: [100,150,255]}, // Guangxi
+            {label: "绿意盎然", char: "🌳", color: [70,200,100]}, // Green City
+            {label: "青秀山景", char: "⛰️", color: [150,120,100]}, // Mountain
+            {label: "邕江水秀", char: "🌊", color: [80,180,220]}, // River
+            {label: "特色美食", char: "🍜", color: [255,160,50]}, // Food
+            {label: "人民友好", char: "😊", color: [255,100,150]}  // Friendly
+        ];
+        let pieceW, pieceH;
+
+
+        p.setup = () => {
+            let canvasContainer = p.select('#hometownPuzzleCanvas');
+            let canvas = p.createCanvas(canvasContainer.width, canvasContainer.height);
+            canvas.parent('hometownPuzzleCanvas');
+            p.resetSim();
+            p.noLoop();
+            p.drawScene();
+        };
+
+        p.resetSim = () => {
+            pieces = [];
+            playing = false;
+            assemblyOrder = 0;
+            
+            let numCols = 3;
+            let numRows = 2;
+            pieceW = (p.width - 80) / numCols; // margins
+            pieceH = (p.height - 100) / numRows; // margins and title space
+
+            for(let r=0; r<numRows; r++) {
+                for(let c=0; c<numCols; c++) {
+                    let index = r * numCols + c;
+                    if (index < pieceData.length) {
+                        let data = pieceData[index];
+                        pieces.push(new PuzzlePiece(
+                            data.label,
+                            30 + c * (pieceW + 10), // targetX
+                            60 + r * (pieceH + 10), // targetY
+                            pieceW, pieceH, data.char, data.color
+                        ));
+                    }
+                }
+            }
+             pieces.forEach(piece => piece.reset()); // Ensure initial random positions
+        };
+        
+        p.drawScene = () => {
+            p.background(255, 255, 240);
+            p.textSize(18);
+            p.textAlign(p.CENTER, p.CENTER);
+            p.fill(50);
+            p.text("家乡南宁印象拼图", p.width / 2, 30);
+
+            for (let piece of pieces) {
+                piece.display();
+            }
+        };
+
+        p.draw = () => {
+            if (!playing) return;
+
+            if (assemblyOrder < pieces.length) {
+                pieces[assemblyOrder].update();
+                if (pieces[assemblyOrder].isPlaced) {
+                    assemblyOrder++;
+                }
+            } else {
+                playing = false; // All pieces placed
+                p.noLoop();
+            }
+            p.drawScene();
+        };
+        
+        p.startAssembly = () => {
+            if (!playing || assemblyOrder >= pieces.length) {
+                 p.resetSim(); // Reset and randomize positions
+            }
+            playing = true;
+            assemblyOrder = 0; // Start from the first piece
+            p.loop();
+        };
+        
+        p.reset = () => {
+            p.resetSim();
+            p.noLoop();
+            p.drawScene();
+        };
+    };
+
+    // --- Animation 5: Friendly Force Field ---
+    const friendlyForceFieldSketch = (p) => {
+        let cityCenter;
+        let visitors = [];
+        let fieldActive = false;
+        let fieldRadius = 0;
+        let targetFieldRadius = 120;
+        let playing = false; // Not used for continuous animation, but for triggering events
+
+        class Visitor {
+            constructor() {
+                this.pos = p.createVector(p.random(p.width), p.random(p.height));
+                while(p.dist(this.pos.x, this.pos.y, cityCenter.x, cityCenter.y) < targetFieldRadius * 1.2) {
+                     this.pos = p.createVector(p.random(p.width), p.random(p.height)); // Ensure starts outside field
+                }
+                this.vel = p.createVector(0,0);
+                this.acc = p.createVector(0,0);
+                this.maxSpeed = 2;
+                this.maxForce = 0.1;
+                this.color = p.color(p.random(100,255), p.random(100,200), p.random(200,255), 200);
+                this.isAttracted = false;
+                this.isInside = false;
+            }
+
+            applyForce(force) {
+                this.acc.add(force);
+            }
+
+            seek(target) {
+                let desired = p5.Vector.sub(target, this.pos);
+                desired.setMag(this.maxSpeed);
+                let steer = p5.Vector.sub(desired, this.vel);
+                steer.limit(this.maxForce);
+                return steer;
+            }
+
+            update() {
+                if (this.isAttracted && !this.isInside) {
+                    let attractionForce = this.seek(cityCenter);
+                    this.applyForce(attractionForce);
+                }
+
+                this.vel.add(this.acc);
+                this.vel.limit(this.maxSpeed);
+                this.pos.add(this.vel);
+                this.acc.mult(0); // Reset acceleration
+
+                if (p.dist(this.pos.x, this.pos.y, cityCenter.x, cityCenter.y) < 20) {
+                    this.isInside = true;
+                    this.vel.mult(0); // Stop when reached center
+                }
+            }
+
+            display() {
+                p.fill(this.color);
+                p.noStroke();
+                p.ellipse(this.pos.x, this.pos.y, 12, 12);
+            }
+             reset() {
+                this.pos = p.createVector(p.random(p.width), p.random(p.height));
+                this.isAttracted = false;
+                this.isInside = false;
+                this.vel.mult(0);
+                this.acc.mult(0);
+            }
+        }
+
+        p.setup = () => {
+            let canvasContainer = p.select('#friendlyForceFieldCanvas');
+            let canvas = p.createCanvas(canvasContainer.width, canvasContainer.height);
+            canvas.parent('friendlyForceFieldCanvas');
+            cityCenter = p.createVector(p.width / 2, p.height / 2);
+            p.resetSim();
+            p.noLoop();
+            p.drawScene();
+        };
+
+        p.resetSim = () => {
+            visitors = [];
+            fieldActive = false;
+            fieldRadius = 0;
+            playing = false; // Reset playing state
+        };
+        
+        p.drawScene = () => {
+            p.background(240, 255, 240);
+            p.textSize(16);
+            p.textAlign(p.CENTER, p.CENTER);
+            p.fill(50);
+            p.text("家乡的“友好力场”与连接", p.width / 2, 30);
+
+            // Draw city center (Nanning)
+            p.fill(100, 200, 100, 180);
+            p.noStroke();
+            p.ellipse(cityCenter.x, cityCenter.y, 60, 60);
+            p.fill(0);
+            p.textSize(14);
+            p.text("南宁", cityCenter.x, cityCenter.y);
+
+            // Draw force field if active
+            if (fieldRadius > 0) {
+                p.noFill();
+                p.stroke(255, 165, 0, 100); // Warm orange glow
+                p.strokeWeight(fieldRadius * 0.15); // Glow effect
+                p.ellipse(cityCenter.x, cityCenter.y, fieldRadius * 2, fieldRadius * 2);
+                p.stroke(255, 165, 0, 180);
+                p.strokeWeight(2);
+                p.ellipse(cityCenter.x, cityCenter.y, fieldRadius * 2, fieldRadius * 2);
+            }
+
+            for (let v of visitors) {
+                v.display();
+            }
+        };
+
+        p.draw = () => { // This draw loop is mainly for animations like field growing or visitors moving
+            if (!playing) return;
+
+            if (fieldActive && fieldRadius < targetFieldRadius) {
+                fieldRadius = p.lerp(fieldRadius, targetFieldRadius, 0.1);
+            } else if (!fieldActive && fieldRadius > 0) {
+                fieldRadius = p.lerp(fieldRadius, 0, 0.1);
+                 if (fieldRadius < 1) fieldRadius = 0;
+            }
+
+            let allVisitorsInsideOrNotAttracted = true;
+            for (let v of visitors) {
+                if(v.isAttracted && !v.isInside) {
+                    v.update();
+                    allVisitorsInsideOrNotAttracted = false;
+                }
+            }
+            
+            if (allVisitorsInsideOrNotAttracted && ((fieldActive && fieldRadius >= targetFieldRadius -1) || (!fieldActive && fieldRadius == 0) )) {
+                playing = false; // Stop if field is stable and visitors are done
+                p.noLoop();
+            }
+            p.drawScene();
+        };
+        
+        p.toggleField = () => {
+            fieldActive = !fieldActive;
+            playing = true;
+            p.loop();
+        };
+
+        p.addVisitor = () => {
+            let newVisitor = new Visitor();
+            if (fieldActive) { // Only attract if field is on
+                 newVisitor.isAttracted = true;
+            }
+            visitors.push(newVisitor);
+            playing = true;
+            p.loop();
+        };
+        
+        p.reset = () => {
+            p.resetSim();
+            p.noLoop();
+            p.drawScene();
+        };
+    };
+
+    // --- Global Animation Control Functions ---
+    // Instantiated in DOMContentLoaded
+
+    document.addEventListener('DOMContentLoaded', () => {
+        setTimeout(() => { 
+            if (typeof timeEnergySketch === 'function' && document.getElementById('timeEnergyCanvas')) {
+                animInstances.timeEnergy = new p5(timeEnergySketch, 'timeEnergyCanvas');
+            }
+            if (typeof dominoEffectSketch === 'function' && document.getElementById('dominoEffectCanvas')) {
+                animInstances.dominoEffect = new p5(dominoEffectSketch, 'dominoEffectCanvas');
+                animInstances.dominoEffect.triggerBad = (type) => animInstances.dominoEffect.triggerChain('bad'); // Alias for button
+                animInstances.dominoEffect.triggerGood = (type) => animInstances.dominoEffect.triggerChain('good'); // Alias for button
+            }
+            if (typeof healthDashboardSketch === 'function' && document.getElementById('healthDashboardCanvas')) {
+                animInstances.healthDashboard = new p5(healthDashboardSketch, 'healthDashboardCanvas');
+            }
+            if (typeof hometownPuzzleSketch === 'function' && document.getElementById('hometownPuzzleCanvas')) {
+                animInstances.hometownPuzzle = new p5(hometownPuzzleSketch, 'hometownPuzzleCanvas');
+            }
+            if (typeof friendlyForceFieldSketch === 'function' && document.getElementById('friendlyForceFieldCanvas')) {
+                animInstances.friendlyForceField = new p5(friendlyForceFieldSketch, 'friendlyForceFieldCanvas');
+            }
+        }, 150);
+    });
+
+</script>
+</body>
+</html>

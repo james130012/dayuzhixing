@@ -1,0 +1,1062 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RISE框架深度解析：AI的自我进化之路</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.2/p5.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
+    <style>
+        /* 基本重置和页面设置 */
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Noto Sans SC', sans-serif;
+            font-size: 21px; /* 模拟“三号”字体 (16pt ≈ 21.33px) */
+            line-height: 1.8;
+            background-color: #f0f4f8; /* 淡雅的浅蓝灰色背景 */
+            color: #333; /* 深灰色文字，对比清晰 */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 1200px; /* 限制最大宽度，模拟A3纸张感 */
+            margin: 30px auto;
+            padding: 30px 40px;
+            background-color: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        /* 标题样式 */
+        h1, h2, h3 {
+            font-family: 'ZCOOL KuaiLe', cursive;
+            color: #2c3e50; /* 深蓝灰色标题 */
+            margin-bottom: 0.75em;
+            text-align: center;
+        }
+        h1 {
+            font-size: 2.8em; /* 大标题 */
+            color: #1abc9c; /* 清新的青绿色 */
+            border-bottom: 3px solid #1abc9c;
+            padding-bottom: 15px;
+            margin-top: 0;
+        }
+        h2 {
+            font-size: 2.2em;
+            color: #e74c3c; /* 鲜明的红色，强调章节 */
+            margin-top: 1.8em;
+            padding-bottom: 5px;
+            border-bottom: 2px dashed #f0a098;
+        }
+        h3 {
+            font-size: 1.8em;
+            color: #3498db; /* 鲜亮的蓝色 */
+        }
+
+        /* 段落和文本样式 */
+        p {
+            margin-bottom: 1.2em;
+            text-align: justify;
+        }
+
+        /* 强调文字 */
+        strong, .highlight {
+            color: #e67e22; /* 橙色强调 */
+            font-weight: bold;
+        }
+        .concept {
+            font-weight: 500;
+            color: #8e44ad; /* 紫色概念词 */
+            padding: 2px 6px;
+            background-color: #f3eef7;
+            border-radius: 4px;
+            border: 1px solid #d5b8e6;
+        }
+
+        /* 列表样式 */
+        ul, ol {
+            margin-bottom: 1.2em;
+            padding-left: 30px;
+        }
+        li {
+            margin-bottom: 0.5em;
+        }
+
+        /* 动画容器 */
+        .animation-container {
+            width: 100%;
+            max-width: 700px; /* 动画最大宽度 */
+            height: 450px; /* 固定高度，确保canvas可见 */
+            margin: 30px auto;
+            border: 2px solid #3498db;
+            border-radius: 12px;
+            overflow: hidden;
+            background-color: #eaf5fb; /* 淡蓝色背景 */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative; /* For absolute positioning of text inside */
+        }
+        .animation-container canvas {
+            display: block;
+            max-width: 100%;
+            max-height: 100%;
+            border-radius: 10px;
+        }
+        
+        /* 交互按钮和控件样式 */
+        .controls {
+            text-align: center;
+            margin-top: 10px;
+            margin-bottom: 25px;
+            padding: 10px;
+            background-color: #f9f9f9;
+            border-radius: 8px;
+        }
+        .controls button, .controls input[type="range"], .controls label {
+            padding: 10px 20px;
+            font-size: 0.9em; /* slightly smaller for controls */
+            font-family: 'Noto Sans SC', sans-serif;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            margin: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .controls button:hover {
+            background-color: #2980b9;
+            transform: translateY(-2px);
+        }
+        .controls button:active {
+            transform: translateY(1px);
+        }
+        .controls input[type="range"] {
+            vertical-align: middle;
+            cursor: grab;
+            width: 150px;
+        }
+        .controls label {
+            background-color: transparent;
+            color: #333;
+            box-shadow: none;
+            padding: 10px 5px;
+        }
+
+        /* 页脚 */
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding: 25px;
+            background-color: #2c3e50; /* 深蓝灰色页脚 */
+            color: #ecf0f1; /*浅色文字*/
+            width: 100%;
+            box-sizing: border-box;
+        }
+        footer p {
+            margin: 0;
+            font-size: 0.85em;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            body {
+                font-size: 18px; /* 移动设备上稍小字体 */
+            }
+            .container {
+                width: 95%;
+                padding: 20px;
+                margin: 15px auto;
+            }
+            h1 { font-size: 2.2em; }
+            h2 { font-size: 1.8em; }
+            h3 { font-size: 1.5em; }
+            .animation-container {
+                height: 350px; /* 移动设备上调整高度 */
+            }
+            .controls button, .controls input[type="range"], .controls label {
+                padding: 8px 12px;
+                font-size: 0.8em;
+                margin: 5px;
+            }
+            .controls input[type="range"] {
+                width: 120px;
+            }
+        }
+         @media (max-width: 480px) {
+            body {
+                font-size: 16px;
+            }
+             h1 { font-size: 2em; }
+             h2 { font-size: 1.6em; }
+             h3 { font-size: 1.3em; }
+            .animation-container {
+                height: 300px;
+            }
+        }
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>RISE框架深度解析：AI的<span class="highlight">自我进化</span>之路</h1>
+        </header>
+
+        <main>
+            <article>
+                <section id="intro">
+                    <h2>引言：当AI学会“反思”</h2>
+                    <p>大型语言模型（LLM）在理解和生成文本方面展现出了惊人的能力，它们能写诗、编代码、回答复杂问题，仿佛无所不能。然而，这些聪明的“大脑”有时也会犯一些“低级错误”，甚至会<strong class="highlight">“一本正经地胡说八道”</strong>而浑然不觉。这暴露了一个深层问题：许多LLM缺乏真正的<span class="concept">自我检验</span>和<span class="concept">深度反思</span>能力。它们可能只是在进行一种“表面上”的思考，而不是真正理解自己生成内容的对错。</p>
+                    <p>想象一下，一个学生如果只会埋头做题，从不检查验算，他的学习效率和准确率会大打折扣。AI也是如此。为了解决这个问题，研究者们提出了 <strong class="highlight">RISE (Reinforcing Reasoning with Self-Verification)</strong> 框架。这是一种新颖的强化学习方法，旨在教会LLM不仅要会“做事”（解决问题），更要学会“检查自己做得对不对”（自我验证）。这就像是为AI同时培养了“解题能力”和“验算能力”。本文将从系统运作的<span class="concept">逻辑视角</span>，带你深入探索RISE框架是如何巧妙地引导AI走向更深层次的自我进化，变得更可靠、更“心中有数”。</p>
+                </section>
+
+                <section id="core-logic">
+                    <h2>RISE框架的核心逻辑：<span class="concept">双管齐下</span>的自我进化</h2>
+                    <p>RISE框架的核心思想，可以概括为“双管齐下”：一方面让模型学习如何解决问题，另一方面让模型学习如何验证自己给出的解决方案。这两个过程不是孤立的，而是紧密集成在一个统一的强化学习循环中，共同促进模型的成长。这套机制主要依赖两大“神器”：</p>
+                    
+                    <h3>第一大神器：问题求解与自我验证<span class="highlight">双料生成</span></h3>
+                    <p>在RISE的训练流程中，模型首先扮演“学生”的角色，尝试解决一批给定的问题。它会生成详细的解题思路（Chain-of-Thought, CoT）和最终答案。紧接着，有趣的部分来了：模型摇身一变，又成了“小老师”。它需要针对自己刚刚生成的答案进行批判性评估，并给出一个评分。这个评分标准并非随意设定，而是基于一个客观的<span class="concept">“结果验证器” (Outcome Verifier)</span>。这个验证器会判定模型最初的解题是否正确，其判断结果既作为解题任务的奖励信号，也作为模型进行自我验证时的“标准答案”或参照。</p>
+                    <p>这里的奖励机制非常巧妙：</p>
+                    <ul>
+                        <li>如果模型成功解决了问题，它会得到奖励。</li>
+                        <li>如果模型作为“小老师”时，对自己的解题过程和结果给出了准确的评价（即其评分与结果验证器的判断一致），它同样会得到奖励。</li>
+                    </ul>
+                    <p>这样一来，模型就被激励着在两个方面都做得更好：既要提高解题的准确性，也要提升自我评估的精准度。</p>
+
+                    <h3>第二大神器：强化学习的<span class="highlight">统一优化</span></h3>
+                    <p>生成了解题数据和自我验证数据（以及相应的奖励）之后，RISE会将这两部分数据“打包”起来，共同用于模型的更新。这里通常采用像 <strong class="highlight">PPO (Proximal Policy Optimization)</strong> 这样成熟的强化学习算法。PPO能够帮助模型在探索新策略和利用现有经验之间取得平衡，从而稳定地提升性能。</p>
+                    <p>通过这种统一的优化过程，模型在每次迭代中都会同时接收到来自“解题任务”和“自我验证任务”的反馈。这使得模型的<span class="concept">问题解决能力</span>和<span class="concept">自我验证能力</span>能够协同发展，相互促进，最终目标是培养出一个既能干又会反思的“全能型”AI。</p>
+                    
+                    <div id="riseFrameworkAnimation" class="animation-container">
+                        </div>
+                    <div class="controls">
+                        <button id="playPauseFramework">播放/暂停</button>
+                        <label for="frameworkSpeedSlider">动画速度: <span id="frameworkSpeedValue">1</span>x</label>
+                        <input type="range" id="frameworkSpeedSlider" min="0.5" max="2" value="1" step="0.1">
+                    </div>
+                    <p style="text-align:center; font-size:0.9em; color:#555;"><i>动画1：RISE框架概览。展示数据如何在问题求解、自我验证和强化学习优化阶段之间流动。</i></p>
+                </section>
+
+                <section id="online-learning">
+                    <h2>“在线”学习的奥秘：<span class="concept">即时反馈</span>，<span class="concept">即时成长</span></h2>
+                    <p>RISE框架特别强调其<strong class="highlight">“在线” (online)</strong>学习的特性。这意味着在整个训练过程中，模型是利用自己<em>当前</em>的能力和策略去生成用于学习的样本（包括解题尝试和自我验证尝试）。这与一些“离线” (offline) 方法形成了对比，后者可能依赖于一个固定的、预先收集好的数据集，或者由一个能力不再变化的旧模型生成的数据。</p>
+                    <p>“在线”学习的优势在于：</p>
+                    <ul>
+                        <li><strong class="highlight">策略探索与利用的动态平衡</strong>：模型可以根据自己最新的学习进展来调整其探索行为，从而更有效地发现更优的解题和验证策略。</li>
+                        <li><strong class="highlight">能力同步发展与相互促进</strong>：由于解题和验证都是基于模型当前的状态生成的，这两个能力的学习过程能够更好地相互协调。例如，当模型在解题上取得突破时，它可以立即尝试用新的理解去验证更复杂的情况；反之，更强的验证能力也能帮助模型更快地识别并修正解题中的错误。</li>
+                        <li><strong class="highlight">数据分布的适应性</strong>：在线生成的数据与模型当前所处的“能力圈”更匹配，这使得学习信号更直接有效，避免了模型在与自身能力脱节的数据上进行低效学习。</li>
+                    </ul>
+                    <p>简单来说，RISE的在线机制就像一个<span class="concept">敏捷的自学习循环</span>：模型不断尝试、不断从自己的尝试（包括成功和失败）中获得即时反馈，然后迅速调整和改进。这种“现学现卖，及时总结”的方式，是RISE能够高效培养LLM自我验证能力的关键所在。</p>
+
+                    <div id="onlineVerificationAnimation" class="animation-container">
+                        </div>
+                    <div class="controls">
+                        <button id="playPauseOnlineVerification">播放/暂停</button>
+                        <button id="stepOnlineVerification">单步执行</button>
+                    </div>
+                    <p style="text-align:center; font-size:0.9em; color:#555;"><i>动画2：RISE在线自我验证循环。动态展示一个问题如何被解决，然后被同一模型验证，并获得即时反馈。</i></p>
+                </section>
+
+                <section id="results">
+                    <h2>RISE的超能力展示：<span class="concept">实验数据</span>会说话</h2>
+                    <p>理论说得再好，终究要靠实验结果来检验。RISE框架在多个数学推理基准测试中都表现出色，充分证明了其有效性。让我们看看数据是如何“说话”的：</p>
+                    <ul>
+                        <li><strong>自我验证能力的飞跃</strong>：与那些只学习解题的基线模型（如Zero-RL）相比，RISE模型在<span class="concept">自我验证准确率</span>上实现了惊人的提升。例如，论文中提到，对于1.5B参数量的模型，Zero-RL的平均验证准确率仅为26.8%，而RISE-1.5B则高达<strong class="highlight">74.5%</strong>！这几乎是三倍的提升，堪称“三级跳”。</li>
+                        <li><strong>解题能力亦有增益</strong>：尽管RISE的主要目标是强化自我验证，但实验表明，这种能力的提升也间接促进了<span class="concept">问题解决准确率</span>的提高。学会了“验算”，自然也更容易做出正确的题目。</li>
+                        <li><strong>普适于不同规模模型</strong>：无论是较小的1.5B模型，还是中等的3B模型，乃至更大的7B模型，RISE框架都能一致地带来性能提升，显示了其良好的<span class="concept">可扩展性</span>。</li>
+                        <li><strong>超越传统指令微调</strong>：相较于一些仅通过指令微调（SFT）来提升能力的模型，RISE训练出的模型在解题和自我验证两方面通常都表现得更为出色。</li>
+                    </ul>
+                    <p>这些实验结果有力地证明，RISE所倡导的“解题与验证同步学习”策略，确实能够培养出更强大、更可靠的LLM。</p>
+
+                    <div id="performanceComparisonAnimation" class="animation-container">
+                        </div>
+                    <div class="controls">
+                        <button id="playPausePerformance">播放/暂停动画</button>
+                         <label for="modelSizeSelect">选择模型:</label>
+                        <select id="modelSizeSelect" style="padding: 8px; border-radius: 6px; margin: 5px; font-size: 0.9em;">
+                            <option value="1.5B">Qwen2.5-1.5B</option>
+                            <option value="3B">Qwen2.5-3B</option>
+                            <option value="7B">Qwen2.5-7B</option>
+                        </select>
+                    </div>
+                    <p style="text-align:center; font-size:0.9em; color:#555;"><i>动画3：RISE vs. Zero-RL 性能大比拼。动态条形图展示在不同任务上，RISE相对于基线模型的显著优势，尤其是在自我验证准确率方面。</i></p>
+                </section>
+
+                <section id="applications">
+                    <h2>学以致用：RISE在实际应用中的<span class="concept">智慧</span></h2>
+                    <p>培养了强大的自我验证能力后，RISE模型在实际应用中也能展现出更多的“智慧”。这主要体现在两个方面：</p>
+                    
+                    <h3>测试时的“神辅助”：<span class="highlight">带权重的多数投票</span></h3>
+                    <p>在处理复杂问题时，我们有时会让模型生成多个候选答案，然后采用“少数服从多数”的<span class="concept">多数投票 (majority voting)</span>策略来选出最终答案。RISE模型由于具备自我验证能力，可以为这个过程带来升级。它不仅能给出答案，还能为自己生成的每个答案附上一个“靠谱分”（即自我验证的置信度分数）。</p>
+                    <p>这样，在进行投票时，我们就可以不仅仅是简单地数票数，而是可以进行<strong class="highlight">“验证加权投票”</strong>。那些被模型自己认为更靠谱的答案，其“发言权”就更大。这种智能的投票方式，往往能够进一步提升最终答案的准确率，帮助模型在关键时刻做出更明智的选择。</p>
+
+                    <div id="votingAnimation" class="animation-container">
+                        </div>
+                    <div class="controls">
+                        <button id="playPauseVoting">播放/暂停</button>
+                        <button id="resetVoting">重置场景</button>
+                    </div>
+                     <p style="text-align:center; font-size:0.9em; color:#555;"><i>动画4：智能投票系统。展示RISE模型如何利用自我验证分数来优化多答案选择过程。</i></p>
+
+                    <h3>内化的“验证习惯”：<span class="highlight">更频繁、更准确的自省</span></h3>
+                    <p>更深层次的影响是，RISE训练出的模型似乎<span class="concept">内化</span>了一种验证的习惯。在它们的解题过程中（即生成的思考链中），会更频繁地出现诸如“让我检查一下”、“验证这个步骤”、“重新评估这个假设”等明确的自我反思行为。</p>
+                    <p>重要的是，这种“自省”不仅仅是口头说说而已。数据显示，RISE模型进行的这些自我验证步骤，其准确性也更高。也就是说，它们不仅更爱“反思”，也更会“反思”。这种在推理过程中嵌入的、高质量的自我校准行为，是RISE模型能够生成更可靠、更值得信赖答案的深层原因。它们不再是简单地“一条路走到黑”，而是在行进过程中不断审视和修正自己的路径。</p>
+
+                    <div id="internalVerificationAnimation" class="animation-container">
+                        </div>
+                    <div class="controls">
+                        <button id="playPauseInternal">播放/暂停</button>
+                        <label for="modelTypeSelectInternal">模型类型: </label>
+                        <select id="modelTypeSelectInternal" style="padding: 8px; border-radius: 6px; margin: 5px; font-size: 0.9em;">
+                            <option value="Zero-RL">Zero-RL 模型</option>
+                            <option value="RISE">RISE 模型</option>
+                        </select>
+                    </div>
+                    <p style="text-align:center; font-size:0.9em; color:#555;"><i>动画5：LLM的“内心戏”。对比Zero-RL模型和RISE模型在解决问题时的思考过程，突出RISE模型中更频繁、更有效的自我验证行为。</i></p>
+                </section>
+
+                <section id="conclusion">
+                    <h2>总结与展望：AI的<span class="concept">“慎思笃行”</span>之路</h2>
+                    <p>RISE框架的提出，为提升大型语言模型的推理鲁棒性和可靠性提供了一条富有前景的路径。它通过一种巧妙设计的<span class="concept">在线强化学习</span>机制，成功地让LLM在学习解决问题的同时，也学会了如何<strong class="highlight">有效地自我验证</strong>。这不仅仅是教会AI一个新的技能，更是在培养AI一种重要的“元认知”能力——对自身思考过程的审视和评估。</p>
+                    <p>从系统运作的“逻辑视角”来看，RISE的成功在于其构建了一个<span class="concept">精巧的自学习闭环</span>。在这个闭环中，解题尝试、自我批判、外部反馈（来自结果验证器）以及统一的优化目标相互作用，共同驱动模型向着“更会思考、更懂反思”的方向进化。它证明了，通过合理设计学习任务和奖励机制，AI也能够培养出类似人类学习过程中的“验算”和“纠错”习惯。</p>
+                    <p>展望未来，RISE的思想有望推广到更广泛的领域。除了数学推理，像<span class="concept">代码生成与调试</span>、<span class="concept">科学文献分析与批判</span>、<span class="concept">复杂规划与决策</span>等任务，都可能从这种增强的自我验证能力中受益。随着AI在更多关键领域扮演重要角色，确保其输出的可靠性和准确性变得至关重要。RISE及其后续研究，无疑将为构建更值得信赖、更“心中有数”、能够“慎思笃行”的AI系统贡献重要力量。</p>
+                </section>
+            </article>
+        </main>
+        <footer>
+            <p>&copy; 2025 AI逻辑思辨者. 本文内容根据相关科研论文编译解读，仅供学习交流。动画为概念演示。</p>
+        </footer>
+    </div>
+
+    <script>
+        // --- Animation 1: RISE Framework Overview ---
+        let sketchFramework = function(p) {
+            let playButton, speedSlider, speedValueSpan;
+            let playing = true;
+            let animSpeed = 1;
+            let phase = 0; // Animation phase
+
+            // Define positions for elements
+            let positions = {
+                trainingData: { x: 100, y: 220, w: 100, h: 120, label: "训练数据\n(x, y*)" },
+                bGen: { x: 250, y: 100, w: 100, h: 60, label: "B_gen\n(解题批次)" },
+                model1: { x: 400, y: 100, w: 80, h: 80, label: "π_θ\n(模型)" },
+                solutions: { x: 550, y: 100, w: 100, h: 60, label: "问题解答\n(CoTs, y)" },
+                solRewards: { x: 550, y: 200, w: 100, h: 60, label: "解答奖励\n(r_s)" },
+                
+                bVer: { x: 250, y: 340, w: 100, h: 60, label: "B_ver\n(验证批次)" },
+                model2: { x: 400, y: 340, w: 80, h: 80, label: "π_θ\n(模型)" },
+                verifications: { x: 550, y: 340, w: 100, h: 60, label: "解答验证\n(critique, score)" },
+                verRewards: { x: 550, y: 440, w: 100, h: 60, label: "验证奖励\n(r_v)" },
+
+                mix: { x: 380, y: 220, w: 100, h: 60, label: "混合数据\n(B_mix)" },
+                rlOpt: { x: 250, y: 220, w: 100, h: 60, label: "RL优化\n(PPO)" },
+                updatedModel: { x: 400, y: 100, label_orig: "π_θ", label_new: "π_θ+1" } // For update indication
+            };
+            
+            let particles = [];
+
+            p.setup = function() {
+                let canvasContainer = p.select('#riseFrameworkAnimation');
+                let canvas = p.createCanvas(canvasContainer.width, canvasContainer.height);
+                canvas.parent('riseFrameworkAnimation');
+                p.textAlign(p.CENTER, p.CENTER);
+                p.textSize(11);
+
+                playButton = p.select('#playPauseFramework');
+                speedSlider = p.select('#frameworkSpeedSlider');
+                speedValueSpan = p.select('#frameworkSpeedValue');
+
+                playButton.mousePressed(() => { playing = !playing; if(playing) p.loop(); else p.noLoop(); });
+                speedSlider.input(() => { 
+                    animSpeed = parseFloat(speedSlider.value()); 
+                    speedValueSpan.html(animSpeed.toFixed(1));
+                    if (!playing) p.redraw();
+                });
+                animSpeed = parseFloat(speedSlider.value());
+                speedValueSpan.html(animSpeed.toFixed(1));
+                if (playing) p.loop(); else p.noLoop();
+                p.redraw();
+            };
+
+            function drawBox(config) {
+                p.stroke(50, 100, 150);
+                p.fill(200, 220, 255, 200);
+                p.rectMode(p.CENTER);
+                p.rect(config.x, config.y, config.w, config.h, 8);
+                p.fill(0);
+                p.noStroke();
+                p.text(config.label, config.x, config.y);
+            }
+
+            function drawArrow(fromPos, toPos, progress = 1, col = p.color(0, 150, 0, 150)) {
+                p.stroke(col);
+                p.strokeWeight(2);
+                p.line(fromPos.x, fromPos.y, p.lerp(fromPos.x, toPos.x, progress), p.lerp(fromPos.y, toPos.y, progress));
+                if (progress >= 1) {
+                    p.push();
+                    p.translate(toPos.x, toPos.y);
+                    p.rotate(p.atan2(toPos.y - fromPos.y, toPos.x - fromPos.x));
+                    p.fill(col);
+                    p.triangle(-8, -4, -8, 4, 0, 0);
+                    p.pop();
+                }
+                p.strokeWeight(1);
+            }
+            
+            function emitParticles(startX, startY, endX, endY, count = 3) {
+                for (let i = 0; i < count; i++) {
+                    particles.push({
+                        x: startX, y: startY,
+                        tx: endX, ty: endY,
+                        life: 1, 
+                        speed: p.random(1,2) * animSpeed,
+                        color: p.color(p.random(100,200), p.random(100,255), 255, 150)
+                    });
+                }
+            }
+
+            p.draw = function() {
+                p.background(234, 245, 251); // Light blue background from container
+
+                // Draw all static boxes
+                for (let key in positions) {
+                    if (positions[key].w) drawBox(positions[key]);
+                }
+                
+                // Titles for stages
+                p.fill(50, 80, 100);
+                p.textSize(14);
+                p.textStyle(p.BOLD);
+                p.text("阶段1: 问题求解与验证生成", 400, 30);
+                p.text("阶段2: 强化学习优化", 200, 180);
+                p.textStyle(p.NORMAL);
+                p.textSize(11);
+
+
+                // Animate based on phase
+                let cycleTime = 300 / animSpeed; // Total steps for one cycle
+                let currentStep = phase % cycleTime;
+                let progress = (val) => p.constrain(p.map(currentStep, 0, cycleTime * val, 0, 1), 0, 1);
+
+                // Stage 1: Generation Path
+                let progGen = progress(0.3);
+                drawArrow(positions.trainingData, positions.bGen, progGen);
+                if (progGen > 0.2 && progGen < 0.8 && p.frameCount % (10/animSpeed) < 1) emitParticles(positions.trainingData.x, positions.trainingData.y, positions.bGen.x, positions.bGen.y);
+                
+                drawArrow(positions.bGen, positions.model1, progGen > 0.1 ? progress(0.3)-0.1 : 0);
+                drawArrow(positions.model1, positions.solutions, progGen > 0.2 ? progress(0.3)-0.2 : 0);
+                drawArrow(positions.solutions, positions.solRewards, progGen > 0.25 ? progress(0.3)-0.25 : 0, p.color(200,0,0,150)); // Reward arrow
+
+                // Stage 1: Verification Path
+                let progVer = progress(0.6); // Starts after generation path
+                drawArrow(positions.trainingData, positions.bVer, progVer > 0.3 ? progress(0.6)-0.3 : 0);
+                 if (progVer > 0.35 && progVer < 0.8 && p.frameCount % (10/animSpeed) < 1) emitParticles(positions.trainingData.x, positions.trainingData.y, positions.bVer.x, positions.bVer.y);
+
+                drawArrow(positions.bVer, positions.model2, progVer > 0.4 ? progress(0.6)-0.4 : 0);
+                // Arrow from solutions to bVer (verification prompt template)
+                let solToBVerProg = progVer > 0.35 ? progress(0.6) - 0.35 : 0;
+                if (solToBVerProg > 0) {
+                     drawArrow({x: positions.solutions.x, y: positions.solutions.y + positions.solutions.h/2 + 5}, // from bottom of solutions
+                               {x: positions.bVer.x + positions.bVer.w/2 + 5, y: positions.bVer.y}, // to right of bVer
+                               solToBVerProg, p.color(100,100,0,150));
+                }
+
+                drawArrow(positions.model2, positions.verifications, progVer > 0.5 ? progress(0.6)-0.5 : 0);
+                drawArrow(positions.verifications, positions.verRewards, progVer > 0.55 ? progress(0.6)-0.55 : 0, p.color(200,0,0,150)); // Reward arrow
+
+                // Stage 2: RL Optimization
+                let progRL = progress(1.0); // Starts after verification path
+                drawArrow(positions.solRewards, positions.mix, progRL > 0.6 ? progress(1.0)-0.6 : 0);
+                drawArrow(positions.verRewards, positions.mix, progRL > 0.6 ? progress(1.0)-0.6 : 0);
+                
+                drawArrow(positions.mix, positions.rlOpt, progRL > 0.7 ? progress(1.0)-0.7 : 0);
+                
+                // Update arrow from RLOpt back to Model
+                let updateProg = progRL > 0.8 ? progress(1.0) - 0.8 : 0;
+                if (updateProg > 0) {
+                    p.stroke(255,100,0);
+                    p.strokeWeight(3);
+                    p.noFill();
+                    p.beginShape();
+                    p.vertex(positions.rlOpt.x - positions.rlOpt.w/2, positions.rlOpt.y);
+                    p.bezierVertex(positions.rlOpt.x - positions.rlOpt.w/2 - 50, positions.rlOpt.y,
+                                   positions.rlOpt.x - positions.rlOpt.w/2 - 50, positions.model1.y - 50,
+                                   positions.model1.x - positions.model1.w/2, positions.model1.y - positions.model1.w/2 -10);
+                    p.endShape();
+                    
+                    // Arrow head for update
+                    if (updateProg > 0.15) { // Show arrowhead when almost complete
+                        p.push();
+                        p.translate(positions.model1.x - positions.model1.w/2, positions.model1.y - positions.model1.w/2 -10);
+                        p.rotate(p.PI * 1.25); // Adjust angle for arrowhead
+                        p.fill(255,100,0);
+                        p.triangle(-10, -5, -10, 5, 0, 0);
+                        p.pop();
+                    }
+                    p.strokeWeight(1);
+                }
+                
+                // Dynamic label for model update
+                p.fill(0); p.noStroke();
+                if (updateProg > 0.18) {
+                    p.fill(255,100,0);
+                    p.text(positions.updatedModel.label_new, positions.updatedModel.x, positions.updatedModel.y - positions.model1.h/2 - 10);
+                } else {
+                    p.text(positions.updatedModel.label_orig, positions.updatedModel.x, positions.updatedModel.y - positions.model1.h/2 - 10);
+                }
+
+
+                // Update and draw particles
+                for (let i = particles.length - 1; i >= 0; i--) {
+                    let pt = particles[i];
+                    pt.x = p.lerp(pt.x, pt.tx, 0.05 * pt.speed);
+                    pt.y = p.lerp(pt.y, pt.ty, 0.05 * pt.speed);
+                    pt.life -= 0.01 * animSpeed;
+                    if (pt.life <= 0 || (p.abs(pt.x - pt.tx) < 2 && p.abs(pt.y - pt.ty) < 2) ) {
+                        particles.splice(i, 1);
+                    } else {
+                        p.fill(pt.color);
+                        p.noStroke();
+                        p.ellipse(pt.x, pt.y, 5, 5);
+                    }
+                }
+
+
+                if (playing) {
+                    phase++;
+                }
+            };
+             p.windowResized = function() {
+                let canvasContainer = p.select('#riseFrameworkAnimation');
+                p.resizeCanvas(canvasContainer.width, canvasContainer.height);
+            };
+        };
+        new p5(sketchFramework);
+
+        // --- Animation 2: Online Self-Verification Loop ---
+        let sketchOnlineVerification = function(p) {
+            let playButton, stepButton;
+            let playing = true;
+            let state = 0; // 0: initial, 1: problem to LLM, 2: LLM generates solution, 3: solution to LLM (verify), 4: LLM generates critique, 5: outcome verifier, 6: rewards, 7: update LLM
+            let progress = 0; // Progress within a state
+            let llmPos = { x: 0, y: -100 };
+            let problemText = "问题: 2+2=?";
+            let solutionText = "";
+            let critiqueText = "";
+            let outcomeText = "";
+            let rewardSolText = "";
+            let rewardVerText = "";
+
+            p.setup = function() {
+                let canvasContainer = p.select('#onlineVerificationAnimation');
+                let canvas = p.createCanvas(canvasContainer.width, canvasContainer.height);
+                canvas.parent('onlineVerificationAnimation');
+                p.textAlign(p.CENTER, p.CENTER);
+                p.textSize(14);
+
+                playButton = p.select('#playPauseOnlineVerification');
+                stepButton = p.select('#stepOnlineVerification');
+
+                playButton.mousePressed(() => { playing = !playing; if(playing) p.loop(); else p.noLoop(); });
+                stepButton.mousePressed(() => {
+                    playing = false; p.noLoop();
+                    progress = 0; 
+                    state = (state + 1) % 8; // 8 states including reset
+                    if (state === 0) { // Reset texts
+                        solutionText = ""; critiqueText = ""; outcomeText = ""; rewardSolText = ""; rewardVerText = "";
+                    }
+                    p.redraw();
+                });
+                if (playing) p.loop(); else p.noLoop();
+                p.redraw();
+            };
+
+            function drawLLM(x, y, label = "LLM (π_θ)") {
+                p.fill(100, 180, 255);
+                p.stroke(50, 100, 150);
+                p.ellipse(x, y, 100, 60);
+                p.fill(0);
+                p.noStroke();
+                p.text(label, x, y);
+            }
+            
+            function drawTextBox(text, x, y, w, h, bgColor = p.color(240,240,240)) {
+                p.fill(bgColor);
+                p.stroke(150);
+                p.rectMode(p.CENTER);
+                p.rect(x,y,w,h,5);
+                p.fill(0);
+                p.noStroke();
+                p.text(text, x,y, w-10, h-10);
+            }
+
+            p.draw = function() {
+                p.background(234, 245, 251);
+                p.translate(p.width / 2, p.height / 2);
+
+                drawLLM(llmPos.x, llmPos.y);
+
+                if (state === 0) { // Initial state
+                    drawTextBox(problemText, 0, 50, 150, 50);
+                } else if (state === 1) { // Problem to LLM
+                    drawTextBox(problemText, p.lerp(0, llmPos.x, progress), p.lerp(50, llmPos.y + 40, progress), 150, 50);
+                    if (progress >= 1) { state++; progress = 0; if(!playing) p.noLoop(); }
+                } else if (state === 2) { // LLM generates solution
+                    solutionText = "解答: 2+2=5"; // Example incorrect solution
+                    drawTextBox(solutionText, llmPos.x, llmPos.y + 80, 150, 50, p.color(255,255,200));
+                     if (progress >= 1) { state++; progress = 0; if(!playing) p.noLoop(); }
+                } else if (state === 3) { // Solution to LLM (for verification)
+                    let verificationPrompt = `验证:\n"${problemText}"\n解答是 "${solutionText.split(':')[1].trim()}"\n正确吗? 请评分。`;
+                    drawTextBox(verificationPrompt, p.lerp(llmPos.x, llmPos.x - 150, progress), p.lerp(llmPos.y + 80, llmPos.y, progress), 200, 100);
+                    if (progress >= 1) { state++; progress = 0; if(!playing) p.noLoop(); }
+                } else if (state === 4) { // LLM generates critique
+                    critiqueText = "模型批判:\n“解答错误。\n评分: -0.5”";
+                    drawTextBox(critiqueText, llmPos.x + 150, llmPos.y, 180, 80, p.color(200,255,200));
+                    if (progress >= 1) { state++; progress = 0; if(!playing) p.noLoop(); }
+                } else if (state === 5) { // Outcome Verifier
+                    outcomeText = "结果验证器 (OV):\n真实答案: 2+2=4\n模型解答 '2+2=5' -> 错误\n模型批判 '评分-0.5' -> 准确";
+                    drawTextBox(outcomeText, 0, 150, 250, 100, p.color(255,220,220));
+                    if (progress >= 1) { state++; progress = 0; if(!playing) p.noLoop(); }
+                } else if (state === 6) { // Rewards
+                    rewardSolText = "解答奖励: 差 (-1)";
+                    rewardVerText = "验证奖励: 好 (+1)";
+                    drawTextBox(rewardSolText, -100, llmPos.y - 180, 150, 50, p.color(255,180,180));
+                    drawTextBox(rewardVerText, 100, llmPos.y - 180, 150, 50, p.color(180,255,180));
+                    if (progress >= 1) { state++; progress = 0; if(!playing) p.noLoop(); }
+                } else if (state === 7) { // Update LLM
+                    p.stroke(0,150,0); p.strokeWeight(3);
+                    p.line(-100, llmPos.y - 150, llmPos.x, llmPos.y - 40); // Arrow from sol reward
+                    p.line(100, llmPos.y - 150, llmPos.x, llmPos.y - 40);  // Arrow from ver reward
+                    p.fill(0,150,0); p.noStroke();
+                    p.ellipse(llmPos.x, llmPos.y, 110, 70); // Highlight LLM
+                    p.fill(255);
+                    p.text("LLM 更新中...", llmPos.x, llmPos.y);
+                    if (progress >= 1) { 
+                        state = 0; progress = 0; 
+                        solutionText = ""; critiqueText = ""; outcomeText = ""; rewardSolText = ""; rewardVerText = "";
+                        if(!playing) p.noLoop(); 
+                    }
+                }
+                
+                if (playing) {
+                    progress += 0.02;
+                    if (state === 2 || state ===4 || state === 5 || state === 6 || state === 7) progress += 0.02; // Faster for display states
+                }
+            };
+             p.windowResized = function() {
+                let canvasContainer = p.select('#onlineVerificationAnimation');
+                p.resizeCanvas(canvasContainer.width, canvasContainer.height);
+            };
+        };
+        new p5(sketchOnlineVerification);
+
+        // --- Animation 3: RISE vs. Zero-RL Performance ---
+        let sketchPerformance = function(p) {
+            let playButton, modelSelect;
+            let playing = true;
+            let animProgress = 0; // 0 to 1
+
+            let data = {
+                "1.5B": { riseR: 24.4, zeroR: 24.0, riseV: 74.5, zeroV: 26.8 },
+                "3B":   { riseR: 33.5, zeroR: 32.5, riseV: 74.3, zeroV: 35.8 },
+                "7B":   { riseR: 42.9, zeroR: 41.7, riseV: 69.2, zeroV: 46.6 }
+            };
+            let currentModel = "1.5B";
+
+            p.setup = function() {
+                let canvasContainer = p.select('#performanceComparisonAnimation');
+                let canvas = p.createCanvas(canvasContainer.width, canvasContainer.height);
+                canvas.parent('performanceComparisonAnimation');
+                p.textAlign(p.CENTER, p.CENTER);
+                
+                playButton = p.select('#playPausePerformance');
+                modelSelect = p.select('#modelSizeSelect');
+
+                playButton.mousePressed(() => { 
+                    playing = !playing; 
+                    if(playing) { animProgress = 0; p.loop(); } else { p.noLoop(); }
+                });
+                modelSelect.changed(() => {
+                    currentModel = modelSelect.value();
+                    animProgress = 0;
+                    if (playing) p.loop(); else p.redraw();
+                });
+                currentModel = modelSelect.value();
+                if (playing) p.loop(); else p.noLoop();
+                p.redraw();
+            };
+
+            function drawBar(x, y, w, h, val, maxVal, label, color) {
+                let barHeight = p.map(val * animProgress, 0, maxVal, 0, h);
+                p.fill(color);
+                p.noStroke();
+                p.rectMode(p.CORNER);
+                p.rect(x, y - barHeight, w, barHeight);
+                p.fill(0);
+                p.text(label, x + w / 2, y + 15);
+                p.text((val * animProgress).toFixed(1) + "%", x + w / 2, y - barHeight - 10);
+            }
+
+            p.draw = function() {
+                p.background(234, 245, 251);
+                let d = data[currentModel];
+                let maxY = 100; // Max percentage for Y axis
+                let chartBottomY = p.height - 50;
+                let chartTopY = 50;
+                let chartHeight = chartBottomY - chartTopY;
+
+                // Draw axes
+                p.stroke(0);
+                p.line(50, chartBottomY, p.width - 50, chartBottomY); // X axis
+                p.line(50, chartBottomY, 50, chartTopY); // Y axis
+                p.fill(0);
+                p.noStroke();
+                for (let i = 0; i <= maxY; i += 20) {
+                    let yPos = p.map(i, 0, maxY, chartBottomY, chartTopY);
+                    p.text(i, 35, yPos);
+                    p.stroke(200);
+                    p.line(45, yPos, p.width - 50, yPos);
+                    p.noStroke();
+                }
+                p.text("准确率 (%)", 20, chartTopY - 20);
+
+                let barWidth = (p.width - 150) / 8;
+                let spacing = barWidth /2;
+
+                let xPos = 70;
+                // Reasoning Accuracy
+                drawBar(xPos, chartBottomY, barWidth, chartHeight, d.zeroR, maxY, "Zero-RL\n(解题)", p.color(150, 150, 255));
+                xPos += barWidth + spacing;
+                drawBar(xPos, chartBottomY, barWidth, chartHeight, d.riseR, maxY, "RISE\n(解题)", p.color(100, 100, 255));
+                
+                xPos += barWidth + spacing * 2; // More space between groups
+
+                // Self-Verification Accuracy
+                drawBar(xPos, chartBottomY, barWidth, chartHeight, d.zeroV, maxY, "Zero-RL\n(验证)", p.color(255, 150, 150));
+                xPos += barWidth + spacing;
+                drawBar(xPos, chartBottomY, barWidth, chartHeight, d.riseV, maxY, "RISE\n(验证)", p.color(255, 100, 100));
+
+                p.fill(0);
+                p.textSize(16);
+                p.textStyle(p.BOLD);
+                p.text(`模型: ${currentModel}`, p.width/2, chartTopY - 25);
+                p.textStyle(p.NORMAL);
+                p.textSize(12);
+
+
+                if (playing && animProgress < 1) {
+                    animProgress += 0.02;
+                } else if (playing && animProgress >= 1) {
+                    // animProgress = 1; // Keep it at 1
+                    // p.noLoop(); // Optional: stop animation once complete
+                }
+            };
+             p.windowResized = function() {
+                let canvasContainer = p.select('#performanceComparisonAnimation');
+                p.resizeCanvas(canvasContainer.width, canvasContainer.height);
+                animProgress = 0; // Reset animation on resize
+                if (playing) p.loop(); else p.redraw();
+            };
+        };
+        new p5(sketchPerformance);
+
+        // --- Animation 4: Test-Time Self-Verification Benefit (Voting) ---
+        let sketchVoting = function(p) {
+            let playButton, resetButton;
+            let playing = true;
+            let phase = 0; // 0: show solutions, 1: majority vote, 2: show scores, 3: weighted vote
+            let solutions = [];
+            let numSolutions = 4;
+
+            function setupSolutions() {
+                solutions = [];
+                // Example: Problem: "What is 12 * 13?" Correct Answer: 156
+                let possibleAnswers = [
+                    { text: "答案: 146", correct: false, count: 0, score: 0.3, id:0 }, // Incorrect
+                    { text: "答案: 156", correct: true,  count: 0, score: 0.9, id:1 }, // Correct
+                    { text: "答案: 156", correct: true,  count: 0, score: 0.8, id:2 }, // Correct
+                    { text: "答案: 166", correct: false, count: 0, score: 0.2, id:3 }  // Incorrect
+                ];
+                // Randomly assign to k=4 slots, can have duplicates
+                for(let i=0; i<numSolutions; i++){
+                    let sol = p.random(possibleAnswers);
+                     solutions.push({ 
+                        text: sol.text, 
+                        correct: sol.correct, 
+                        score: p.randomGaussian(sol.score, 0.1) * (sol.correct ? 1 : 0.7) , // RISE might give higher scores to correct ones
+                        id: i 
+                    });
+                }
+                 // Ensure scores are between 0 and 1
+                solutions.forEach(s => s.score = p.constrain(s.score, 0.1, 0.95));
+            }
+            
+            p.setup = function() {
+                let canvasContainer = p.select('#votingAnimation');
+                let canvas = p.createCanvas(canvasContainer.width, canvasContainer.height);
+                canvas.parent('votingAnimation');
+                p.textAlign(p.LEFT, p.TOP);
+                p.textSize(14);
+
+                playButton = p.select('#playPauseVoting');
+                resetButton = p.select('#resetVoting');
+
+                playButton.mousePressed(() => { playing = !playing; if(playing) p.loop(); else p.noLoop(); });
+                resetButton.mousePressed(() => {
+                    phase = 0;
+                    setupSolutions();
+                    if (playing) p.loop(); else p.redraw();
+                });
+                setupSolutions();
+                if (playing) p.loop(); else p.noLoop();
+                p.redraw();
+            };
+            
+            let animCounter = 0;
+
+            p.draw = function() {
+                p.background(234, 245, 251);
+                let startX = 50;
+                let startY = 50;
+                let boxW = (p.width - startX * 2 - (numSolutions-1)*20) / numSolutions;
+                let boxH = 80;
+
+                p.fill(0);
+                p.text("问题: 求解 12 * 13 = ?", startX, 20);
+
+                for (let i = 0; i < solutions.length; i++) {
+                    let s = solutions[i];
+                    let x = startX + i * (boxW + 20);
+                    p.fill(s.correct ? '#d4efdf' : '#f5b7b1'); // Greenish for correct, reddish for incorrect
+                    p.stroke(150);
+                    p.rect(x, startY, boxW, boxH, 5);
+                    p.fill(0);
+                    p.noStroke();
+                    p.text(`解 ${i+1}:\n${s.text}`, x + 10, startY + 10, boxW - 20, boxH - 20);
+
+                    if (phase >= 2) { // Show scores
+                         p.fill(50,50,200, p.map(animCounter, 0, 30, 0, 255));
+                         p.text(`RISE评分: ${s.score.toFixed(2)}`, x + 10, startY + boxH - 25);
+                    }
+                }
+
+                let majorityResultText = "多数投票结果: ";
+                let weightedResultText = "RISE加权投票结果: ";
+
+                if (phase >= 1) { // Calculate and show majority vote
+                    let votes = {};
+                    solutions.forEach(s => {
+                        votes[s.text] = (votes[s.text] || 0) + 1;
+                    });
+                    let maxVotes = 0; let majorityAnswer = "无明显多数";
+                    for (const ans in votes) {
+                        if (votes[ans] > maxVotes) {
+                            maxVotes = votes[ans];
+                            majorityAnswer = ans;
+                        } else if (votes[ans] === maxVotes) {
+                             majorityAnswer += " / " + ans; // Handle ties
+                        }
+                    }
+                    majorityResultText += majorityAnswer;
+                    p.fill(0);
+                    p.text(majorityResultText, startX, startY + boxH + 30, p.width - startX*2, 40);
+                }
+
+                if (phase >= 3) { // Calculate and show weighted vote
+                    let weightedVotes = {};
+                    solutions.forEach(s => {
+                        weightedVotes[s.text] = (weightedVotes[s.text] || 0) + s.score;
+                    });
+                    let maxWeightedScore = 0; let weightedAnswer = "无明显多数";
+                     for (const ans in weightedVotes) {
+                        if (weightedVotes[ans] > maxWeightedScore) {
+                            maxWeightedScore = weightedVotes[ans];
+                            weightedAnswer = ans;
+                        } else if (weightedVotes[ans] === maxWeightedScore) {
+                            weightedAnswer += " / " + ans;
+                        }
+                    }
+                    weightedResultText += weightedAnswer;
+                    p.fill(0,0,150); // Different color for weighted
+                    p.text(weightedResultText, startX, startY + boxH + 70, p.width - startX*2, 40);
+                }
+                
+                // Phase control text
+                let phaseDesc = [
+                    "1. 模型生成多个候选解答...",
+                    "2. 进行标准多数投票...",
+                    "3. RISE模型为每个解答进行自我验证评分...",
+                    "4. 进行RISE验证加权投票..."
+                ];
+                p.fill(80);
+                p.textAlign(p.CENTER);
+                p.text(phaseDesc[phase] || phaseDesc[3], p.width/2, p.height - 20);
+                p.textAlign(p.LEFT, p.TOP);
+
+
+                if (playing) {
+                    animCounter++;
+                    if (animCounter > 60) { // Every ~1 second if 60fps
+                        animCounter = 0;
+                        phase = (phase + 1) % 4;
+                         if (phase === 0 && playing) { // Loop back and re-randomize for continuous play
+                            setupSolutions();
+                        }
+                    }
+                }
+            };
+             p.windowResized = function() {
+                let canvasContainer = p.select('#votingAnimation');
+                p.resizeCanvas(canvasContainer.width, canvasContainer.height);
+                phase = 0; setupSolutions(); // Reset on resize
+                if (playing) p.loop(); else p.redraw();
+            };
+        };
+        new p5(sketchVoting);
+
+        // --- Animation 5: Internalized Verification Behavior ---
+        let sketchInternalVerification = function(p) {
+            let playButton, modelTypeSelect;
+            let playing = true;
+            let currentModelType = "Zero-RL"; // "Zero-RL" or "RISE"
+            let textToShow = "";
+            let charIndex = 0;
+            let frameCount = 0;
+
+            const reasoning = {
+                "Zero-RL": [
+                    "思考: 求解 17 * 23。",
+                    "步骤1: 10 * 20 = 200。",
+                    "步骤2: 10 * 3 = 30。",
+                    "步骤3: 7 * 20 = 140。",
+                    "步骤4: 7 * 3 = 21。",
+                    "步骤5: 200 + 30 + 140 + 21 = 391。",
+                    "最终答案: [boxed_391]"
+                ],
+                "RISE": [
+                    "思考: 求解 17 * 23。",
+                    "初步尝试: 17 * 23 = (20-3)*(20+3) = 400-9 = 391。",
+                    "自我验证: 这个方法适用于 (a-b)(a+b)。这里是 (10+7)*(20+3)，不适用。",
+                    "重新计算: 17 * 23",
+                    "   17 * 3 = 51",
+                    "   17 * 20 = 340",
+                    "   51 + 340 = 391。",
+                    "再次核对: 7*3=21 (个位1), 1*3+7*2=3+14=17 (十位7+进2=9), 1*2=2 (百位2+进1=3)。结果391。",
+                    "确认无误。最终答案: [boxed_391]"
+                ]
+            };
+            
+            let currentLineIndex = 0;
+
+            p.setup = function() {
+                let canvasContainer = p.select('#internalVerificationAnimation');
+                let canvas = p.createCanvas(canvasContainer.width, canvasContainer.height);
+                canvas.parent('internalVerificationAnimation');
+                p.textFont('Noto Sans SC');
+                p.textSize(16);
+
+                playButton = p.select('#playPauseInternal');
+                modelTypeSelect = p.select('#modelTypeSelectInternal');
+
+                playButton.mousePressed(() => { 
+                    playing = !playing; 
+                    if(playing) p.loop(); else p.noLoop(); 
+                });
+                modelTypeSelect.changed(() => {
+                    currentModelType = modelTypeSelect.value();
+                    resetAnimation();
+                });
+                currentModelType = modelTypeSelect.value();
+                resetAnimation();
+                if (playing) p.loop(); else p.noLoop();
+            };
+
+            function resetAnimation() {
+                charIndex = 0;
+                currentLineIndex = 0;
+                textToShow = "";
+                if (!playing) p.redraw();
+            }
+            
+            let yOffset = 30;
+
+            p.draw = function() {
+                p.background(234, 245, 251);
+                p.fill(50);
+                
+                let lines = reasoning[currentModelType];
+                let displayedText = "";
+                let currentY = yOffset;
+
+                for(let i=0; i < lines.length; i++) {
+                    let line = lines[i];
+                    if (i < currentLineIndex) {
+                        displayedText = line;
+                    } else if (i === currentLineIndex) {
+                        displayedText = line.substring(0, charIndex);
+                    } else {
+                        displayedText = "";
+                    }
+                    
+                    // Highlight verification keywords for RISE model
+                    if (currentModelType === "RISE" && (line.includes("验证") || line.includes("核对") || line.includes("检查"))) {
+                        p.fill(230, 126, 34); // Orange for verification steps
+                        p.textStyle(p.BOLD);
+                    } else {
+                        p.fill(50);
+                        p.textStyle(p.NORMAL);
+                    }
+                    p.text(displayedText, 30, currentY, p.width - 60, p.height - yOffset);
+                    currentY += p.textAscent() + p.textDescent() + 10; // Spacing for next line
+                     if (currentY > p.height - 30 && i < lines.length -1) { // Simple pagination if text overflows
+                        p.fill(200); p.text("...", 30, currentY);
+                        break;
+                    }
+                }
+
+
+                if (playing) {
+                    frameCount++;
+                    if (frameCount % 3 === 0) { // Adjust speed of typing
+                        if (currentLineIndex < lines.length) {
+                            if (charIndex < lines[currentLineIndex].length) {
+                                charIndex++;
+                            } else {
+                                currentLineIndex++;
+                                charIndex = 0;
+                                if (currentLineIndex >= lines.length) {
+                                    // End of all lines, maybe pause or loop
+                                    // For now, just stops advancing.
+                                }
+                            }
+                        }
+                    }
+                }
+                 // Title
+                p.fill(0);
+                p.textStyle(p.BOLD);
+                p.textAlign(p.CENTER);
+                p.text(`${currentModelType} 模型的思考过程`, p.width/2, 15);
+                p.textAlign(p.LEFT);
+                p.textStyle(p.NORMAL);
+            };
+             p.windowResized = function() {
+                let canvasContainer = p.select('#internalVerificationAnimation');
+                p.resizeCanvas(canvasContainer.width, canvasContainer.height);
+                resetAnimation();
+            };
+        };
+        new p5(sketchInternalVerification);
+
+    </script>
+</body>
+</html>

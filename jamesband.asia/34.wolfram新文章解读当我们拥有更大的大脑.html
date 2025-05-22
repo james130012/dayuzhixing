@@ -75,9 +75,9 @@
         }
         .animation-container {
             width: 100%;
-            min-height: 350px; /* 保证 Canvas 有足够高度 */
+            min-height: 350px; 
             height: auto;
-            margin: 25px auto;
+            margin: 3rem auto; 
             border: 2px solid #bdc3c7;
             border-radius: 8px;
             overflow: hidden;
@@ -88,16 +88,14 @@
             align-items: center;
             padding: 15px;
         }
-        .animation-canvas-container { /* New container for the canvas itself */
+        .animation-canvas-container { 
             width: 100%;
-            max-width: 600px; /* Max width for the canvas */
-            height: 300px; /* Fixed height for canvas drawing area */
             margin-bottom: 15px;
         }
         .animation-canvas-container canvas {
             display: block;
-            width: 100% !important; /* Ensure canvas fills container */
-            height: 100% !important; /* Ensure canvas fills container */
+            width: 100% !important; 
+            height: 100% !important; 
             border-radius: 6px;
         }
 
@@ -128,7 +126,7 @@
         .controls input[type="range"] {
             vertical-align: middle;
             cursor: grab;
-            accent-color: #27ae60; /* Green for slider thumb */
+            accent-color: #27ae60; 
         }
         .controls label {
             background-color: transparent;
@@ -137,11 +135,9 @@
             padding: 5px;
         }
 
-        /* Tailwind Customization */
         .font-zh-body { font-family: 'Noto Sans SC', sans-serif; }
         .font-zh-title { font-family: 'ZCOOL KuaiLe', cursive; }
 
-        /* Footer */
         footer {
             text-align: center;
             margin-top: 40px;
@@ -184,6 +180,7 @@
                 <h2 class="font-zh-title">第二章：驾驭复杂性 —— 计算可约性与不可约性之舞</h2>
                 <p>宇宙的运行充满了<span class="concept">计算不可约性</span>。这意味着，对于许多复杂系统，预测其未来行为的唯一方法就是一步步模拟它的演化，无法“抄近路”。然而，大脑（以及成功的科学探索）似乎总能巧妙地“跳跃前进”，抓住世界的某些规律。沃尔夫勒姆认为，这是因为在任何展现整体计算不可约性的系统中，都必然存在无数“<span class="highlight">计算可约性的口袋</span>”（pockets of computational reducibility）。</p>
                 <p>这些“口袋”是系统行为中可被简化、可被理解、可被预测的部分。大脑和科学的本质，就是<span class="highlight">识别和利用这些可约性口袋</span>，从而在不可约的复杂背景中导航。例如，牛顿定律 F = m*a 就是一个伟大的可约性发现，它允许我们不必追踪每个粒子就能预测宏观物体的运动。更大的大脑，或许就意味着拥有更强的雷达，能探测到更深、更广阔的可约性领域，从而更有效地理解和操控世界。</p>
+                <p class="text-center text-gray-600 text-sm mb-2">拖动鼠标发现“可约性”的区域</p>
                 <div id="reducibilityAnimationContainer" class="animation-container">
                      <div class="animation-canvas-container" id="reducibilityCanvasContainer"></div>
                     <div class="controls">
@@ -281,27 +278,25 @@ let sketchCapability = function(p) {
     };
 
     p.draw = function() {
-        p.background(248, 249, 250); // Match animation container background
+        p.background(248, 249, 250); 
 
         if (playing) {
             progress += 0.001 * speed;
-            if (progress > 1) progress = 0; // Loop animation
+            if (progress > 1) progress = 0; 
         }
 
-        // Draw progress bar representing increasing connections/scale
         let barWidth = p.width * 0.8;
         let barX = (p.width - barWidth) / 2;
         let barY = p.height * 0.15;
         p.fill(220);
         p.rect(barX, barY, barWidth, 30, 5);
-        p.fill(52, 152, 219); // Blue progress
+        p.fill(52, 152, 219); 
         p.rect(barX, barY, barWidth * progress, 30, 5);
         p.fill(0);
         p.textSize(14);
         p.text(`大脑规模 / 连接数`, p.width / 2, barY -15);
 
 
-        // Draw capability ladder/steps
         let stepWidth = barWidth / thresholds.length;
         for (let i = 0; i < thresholds.length; i++) {
             let t = thresholds[i];
@@ -309,26 +304,23 @@ let sketchCapability = function(p) {
             let isUnlocked = progress >= t.progReq;
 
             if (isUnlocked && !t.unlocked) {
-                t.unlocked = true; // Simple one-time unlock visual cue if needed
+                t.unlocked = true; 
             }
-            
+
             p.push();
             p.translate(stepX + stepWidth / 2, p.height * 0.6);
-            
+
             if (isUnlocked) {
-                p.fill(39, 174, 96, 200); // Green for unlocked
+                p.fill(39, 174, 96, 200); 
                 p.ellipse(0, 0, stepWidth * 0.8, stepWidth * 0.8);
                 p.fill(255);
                 p.textSize(stepWidth * 0.3);
                 p.text(t.icon, 0, 0);
             } else {
-                p.fill(189, 195, 199, 150); // Gray for locked
+                p.fill(189, 195, 199, 150); 
                 p.ellipse(0, 0, stepWidth * 0.6, stepWidth * 0.6);
-                 p.fill(100);
-                p.textSize(stepWidth * 0.3);
-                p.text("?",0,0);
             }
-            
+
             p.fill(isUnlocked ? 0 : 150);
             p.textSize(10);
             p.text(t.connections, 0, stepWidth * 0.5 + 10);
@@ -343,7 +335,7 @@ let sketchCapability = function(p) {
         p.resizeCanvas(container.width, container.height);
     };
 };
-new p5(sketchCapability);
+window.p5InstanceCapability = new p5(sketchCapability);
 
 // --- Animation 2: Reducibility/Irreducibility ---
 let sketchReducibility = function(p) {
@@ -351,7 +343,7 @@ let sketchReducibility = function(p) {
     let cellSize = 8;
     let cols, rows;
     let generation = 0;
-    let ruleSet = [0,1,0,1,1,0,1,0]; // Rule 90 - creates some complexity
+    let ruleSet = [0,1,0,1,1,0,1,0]; 
     let playing = true;
     let spotlightX, spotlightY, spotlightRadius;
 
@@ -368,10 +360,10 @@ let sketchReducibility = function(p) {
         p.select('#reducibilityReset').mousePressed(resetAutomaton);
         if (!playing) p.noLoop();
     };
-    
+
     function resetAutomaton() {
         cells = Array(cols).fill(0);
-        cells[p.floor(cols/2)] = 1; // Start with a single 1 in the middle
+        cells[p.floor(cols/2)] = 1; 
         generation = 0;
         p.background(248, 249, 250);
         if(playing) p.loop(); else p.redraw();
@@ -388,7 +380,7 @@ let sketchReducibility = function(p) {
         cells = nextGen;
         generation++;
         if (generation * cellSize > p.height) {
-             resetAutomaton(); // Reset if it fills the screen
+             resetAutomaton(); 
         }
     }
 
@@ -402,20 +394,17 @@ let sketchReducibility = function(p) {
         if (playing) {
             generate();
         }
-        
-        // Draw current generation of cellular automaton
+
         for (let i = 0; i < cols; i++) {
             if (cells[i] === 1) {
-                p.fill(50, 50, 50, 150); // Darker for CA cells
+                p.fill(50, 50, 50, 150); 
             } else {
-                p.fill(248, 249, 250, 50); // Lighter, almost transparent
+                p.fill(248, 249, 250, 50); 
             }
             p.noStroke();
             p.rect(i * cellSize, generation * cellSize, cellSize, cellSize);
         }
 
-        // Simulate "spotlight" finding reducible patterns (conceptual)
-        // For Rule 90, the overall pattern is complex (irreducible), but local triangles are simple (reducible)
         spotlightX = p.mouseX; 
         spotlightY = p.mouseY;
 
@@ -425,25 +414,19 @@ let sketchReducibility = function(p) {
                 let d = p.dist(x, y, spotlightX, spotlightY);
                 if (d < spotlightRadius) {
                     let index = (x + y * p.width) * 4;
-                    // Make pixels inside spotlight brighter or change color
-                    // This is a simplified visual effect
-                    if (p.pixels[index] < 100 && p.pixels[index+1] < 100 && p.pixels[index+2] < 100) { // If it's a CA cell
-                         p.pixels[index] = 39;   // R  (greenish)
-                         p.pixels[index+1] = 174; // G
-                         p.pixels[index+2] = 96;  // B
+                    if (p.pixels[index] < 100 && p.pixels[index+1] < 100 && p.pixels[index+2] < 100) { 
+                         p.pixels[index] = 39;   
+                         p.pixels[index+1] = 174; 
+                         p.pixels[index+2] = 96;  
                     }
                 }
             }
         }
         p.updatePixels();
-        
+
         p.fill(0, 100);
         p.noStroke();
         p.ellipse(spotlightX, spotlightY, spotlightRadius * 2, spotlightRadius * 2);
-        p.fill(255);
-        p.textAlign(p.CENTER, p.CENTER);
-        p.textSize(14);
-        p.text("拖动鼠标\n发现'可约性'", spotlightX, spotlightY);
 
         if (!playing) p.noLoop(); else p.loop();
     };
@@ -456,7 +439,7 @@ let sketchReducibility = function(p) {
         resetAutomaton();
     };
 };
-new p5(sketchReducibility);
+window.p5InstanceReducibility = new p5(sketchReducibility);
 
 // --- Animation 3: Concepts & Language Scale ---
 let sketchConcepts = function(p) {
@@ -481,24 +464,21 @@ let sketchConcepts = function(p) {
         applyForce(force) {
             this.acc.add(force);
         }
-        
+
         update() {
-            // Attraction to a central point for larger "brain"
             let center = p.createVector(p.width / 2, p.height / 2);
             let desired = p5.Vector.sub(center, this.pos);
             let d = desired.mag();
-            if (d < p.width/3) { // Only if within a certain radius of center
+            if (d < p.width/3) { 
                 desired.setMag(this.maxSpeed);
                 let steer = p5.Vector.sub(desired, this.vel);
-                steer.limit(this.maxForce * 0.1); // Weaker force
-                //this.applyForce(steer);
+                steer.limit(this.maxForce * 0.1); 
             }
-
 
             this.vel.add(this.acc);
             this.vel.limit(this.maxSpeed);
             this.pos.add(this.vel);
-            this.acc.mult(0); // Reset acceleration
+            this.acc.mult(0); 
         }
 
         display() {
@@ -519,13 +499,13 @@ let sketchConcepts = function(p) {
         const container = p.select('#conceptsCanvasContainer');
         let canvas = p.createCanvas(container.width, container.height);
         canvas.parent(container);
-        
+
         p.select('#brainSizeSlider').input(() => {
             targetNumConcepts = parseInt(p.select('#brainSizeSlider').value());
             p.select('#brainSizeValue').html(targetNumConcepts);
         });
         p.select('#conceptsPlayPause').mousePressed(() => { autoGrow = !autoGrow; });
-        
+
         numConcepts = parseInt(p.select('#brainSizeSlider').value());
         targetNumConcepts = numConcepts;
         createConcepts(numConcepts);
@@ -547,13 +527,12 @@ let sketchConcepts = function(p) {
             p.select('#brainSizeSlider').value(targetNumConcepts);
             p.select('#brainSizeValue').html(targetNumConcepts);
         }
-        
+
         if (concepts.length !== targetNumConcepts) {
             createConcepts(targetNumConcepts);
         }
 
-        // Draw connections (simplified)
-        p.stroke(150, 150, 200, 30); // Light blue connections
+        p.stroke(150, 150, 200, 30); 
         for (let i = 0; i < concepts.length; i++) {
             for (let j = i + 1; j < concepts.length; j++) {
                 if (p.dist(concepts[i].pos.x, concepts[i].pos.y, concepts[j].pos.x, concepts[j].pos.y) < 60) {
@@ -567,7 +546,7 @@ let sketchConcepts = function(p) {
             concept.display();
             concept.edges();
         }
-        
+
         p.fill(0, 50);
         p.noStroke();
         p.textAlign(p.LEFT, p.TOP);
@@ -580,30 +559,30 @@ let sketchConcepts = function(p) {
      p.windowResized = function() {
         const container = p.select('#conceptsCanvasContainer');
         p.resizeCanvas(container.width, container.height);
-        createConcepts(targetNumConcepts); // Recreate with current number
+        createConcepts(targetNumConcepts); 
     };
 };
-new p5(sketchConcepts);
+window.p5InstanceConcepts = new p5(sketchConcepts);
 
 // --- Animation 4: Higher-Order Constructs ---
 let sketchHigherOrder = function(p) {
     let elements = [];
     const ELEMENT_SIZE = 30;
-    let stage = 0; // 0: initial, 1: simple func, 2: higher-order func
+    let stage = 0; 
 
     class Element {
         constructor(x, y, id) {
             this.id = id;
             this.pos = p.createVector(x, y);
             this.targetPos = p.createVector(x, y);
-            this.color = p.color(150, 150, 250); // Initial color: light blue
+            this.color = p.color(150, 150, 250); 
             this.targetColor = this.color;
             this.size = ELEMENT_SIZE;
             this.targetSize = ELEMENT_SIZE;
         }
 
-        simpleFunction() { // e.g., change color
-            this.targetColor = p.color(250, 150, 150); // Change to light red
+        simpleFunction() { 
+            this.targetColor = p.color(250, 150, 150); 
         }
 
         update() {
@@ -624,17 +603,17 @@ let sketchHigherOrder = function(p) {
             p.text(this.id, this.pos.x, this.pos.y);
         }
     }
-    
-    function higherOrderFunction() { // e.g., duplicate, change color of duplicates, and arrange
+
+    function higherOrderFunction() { 
         let originalCount = elements.length;
         let newElements = [];
         for (let i = 0; i < originalCount; i++) {
             let original = elements[i];
-            original.targetColor = p.color(150,250,150); // Original turns green
-            
-            for (let j = 1; j <= 2; j++) { // Create 2 duplicates
+            original.targetColor = p.color(150,250,150); 
+
+            for (let j = 1; j <= 2; j++) { 
                 let newEl = new Element(original.pos.x, original.pos.y, `${original.id}.${j}`);
-                newEl.color = p.color(250, 200, 100); // Duplicates are orange
+                newEl.color = p.color(250, 200, 100); 
                 newEl.targetColor = newEl.color;
                 newEl.targetPos = p.createVector(
                     p.width/2 + (i - originalCount/2 + 0.5) * (ELEMENT_SIZE * 1.5) * 2 + (j-1.5) * ELEMENT_SIZE*1.2, 
@@ -647,7 +626,6 @@ let sketchHigherOrder = function(p) {
         }
         elements = elements.concat(newElements);
     }
-
 
     function resetSketch() {
         elements = [];
@@ -697,11 +675,10 @@ let sketchHigherOrder = function(p) {
      p.windowResized = function() {
         const container = p.select('#higherOrderCanvasContainer');
         p.resizeCanvas(container.width, container.height);
-        resetSketch(); // Reset on resize to re-center elements
+        resetSketch(); 
     };
 };
-new p5(sketchHigherOrder);
-
+window.p5InstanceHigherOrder = new p5(sketchHigherOrder);
 
 // --- Animation 5: Ruliad Exploration ---
 let sketchRuliad = function(p) {
@@ -714,26 +691,23 @@ let sketchRuliad = function(p) {
         constructor(x, y) {
             this.pos = p.createVector(x, y);
             this.vel = p5.Vector.random2D().mult(p.random(0.2, 0.8));
-            this.radius = p.random(10, 30); // Represents "conceptual space occupied"
+            this.radius = p.random(10, 30); 
             this.targetRadius = this.radius;
             this.color = p.color(p.random(100,255), p.random(100,200), p.random(100,200), 180);
-            this.lifespan = p.random(200, 500); // Frames
+            this.lifespan = p.random(200, 500); 
         }
 
         update() {
             this.pos.add(this.vel);
-            // Gentle random walk
             this.vel.rotate(p.random(-0.1, 0.1));
 
-            // Expand radius over time (simulate learning/growth)
             if (this.radius < this.targetRadius + 30 && this.radius < p.min(p.width,p.height)/4) {
                 this.radius = p.lerp(this.radius, this.radius + 0.1, 0.5);
             }
-            
-            // Bounce off edges
+
             if (this.pos.x < this.radius || this.pos.x > p.width - this.radius) this.vel.x *= -1;
             if (this.pos.y < this.radius || this.pos.y > p.height - this.radius) this.vel.y *= -1;
-            
+
             this.lifespan--;
         }
 
@@ -741,8 +715,7 @@ let sketchRuliad = function(p) {
             p.noStroke();
             p.fill(this.color);
             p.ellipse(this.pos.x, this.pos.y, this.radius * 2);
-            
-            // Draw some internal "structure"
+
             p.stroke(p.red(this.color)-50, p.green(this.color)-50, p.blue(this.color)-50, 100);
             p.strokeWeight(1);
             for(let i=0; i<3; i++){
@@ -751,27 +724,26 @@ let sketchRuliad = function(p) {
                 p.line(this.pos.x, this.pos.y, this.pos.x + p.cos(angle)*r, this.pos.y + p.sin(angle)*r);
             }
         }
-        
+
         isDead() {
             return this.lifespan < 0;
         }
     }
-    
+
     function addMind() {
         minds.push(new Mind(p.random(p.width), p.random(p.height)));
-        if (minds.length > 15) minds.shift(); // Keep max minds
+        if (minds.length > 15) minds.shift(); 
     }
 
     p.setup = function() {
         const container = p.select('#ruliadCanvasContainer');
         let canvas = p.createCanvas(container.width, container.height);
         canvas.parent(container);
-        for(let i=0; i<3; i++) addMind(); // Start with a few minds
+        for(let i=0; i<3; i++) addMind(); 
 
         p.select('#ruliadPlayPause').mousePressed(() => { playing = !playing; });
         p.select('#ruliadAddMind').mousePressed(addMind);
-        
-        // Create static background points for Ruliad feel
+
         for(let i=0; i<RULIAD_POINTS; i++) {
             ruliadBgPoints.push(p.createVector(p.random(p.width), p.random(p.height)));
         }
@@ -779,9 +751,8 @@ let sketchRuliad = function(p) {
     };
 
     p.draw = function() {
-        p.background(40, 45, 50); // Dark background for Ruliad
+        p.background(40, 45, 50); 
 
-        // Draw Ruliad background (abstract network)
         p.stroke(80, 80, 90, 50);
         p.strokeWeight(0.5);
         for(let i=0; i<ruliadBgPoints.length; i++) {
@@ -795,20 +766,16 @@ let sketchRuliad = function(p) {
             p.ellipse(ruliadBgPoints[i].x, ruliadBgPoints[i].y, 3,3);
         }
 
-
         if (playing) {
             for (let i = minds.length - 1; i >= 0; i--) {
                 minds[i].update();
-                if (minds[i].isDead()) {
-                   // minds.splice(i, 1); // Option to remove dead minds
-                }
             }
         }
-        
+
         for (let mind of minds) {
             mind.display();
         }
-        
+
         p.fill(200);
         p.textAlign(p.CENTER, p.TOP);
         p.textSize(14);
@@ -819,53 +786,39 @@ let sketchRuliad = function(p) {
      p.windowResized = function() {
         const container = p.select('#ruliadCanvasContainer');
         p.resizeCanvas(container.width, container.height);
-        ruliadBgPoints = []; // Recreate background points on resize
+        ruliadBgPoints = []; 
         for(let i=0; i<RULIAD_POINTS; i++) {
             ruliadBgPoints.push(p.createVector(p.random(p.width), p.random(p.height)));
         }
-         // Reposition minds within new bounds
         minds.forEach(mind => {
             mind.pos.x = p.constrain(mind.pos.x, mind.radius, p.width - mind.radius);
             mind.pos.y = p.constrain(mind.pos.y, mind.radius, p.height - mind.radius);
         });
     };
 };
-new p5(sketchRuliad);
+window.p5InstanceRuliad = new p5(sketchRuliad);
 
-// Ensure P5 canvases are redrawn once after setup to show initial state if not looping
 window.onload = () => {
-    // Small delay to ensure canvas elements are fully in DOM and sized
     setTimeout(() => {
-        if (typeof sketchCapability !== 'undefined' && sketchCapability.redraw) sketchCapability.redraw();
-        if (typeof sketchReducibility !== 'undefined' && sketchReducibility.redraw) sketchReducibility.redraw();
-        if (typeof sketchConcepts !== 'undefined' && sketchConcepts.redraw) sketchConcepts.redraw();
-        if (typeof sketchHigherOrder !== 'undefined' && sketchHigherOrder.redraw) sketchHigherOrder.redraw();
-        if (typeof sketchRuliad !== 'undefined' && sketchRuliad.redraw) sketchRuliad.redraw();
-
-        // Force resize and redraw for all sketches to adapt to container
-        const p5Instances = [window.p5InstanceCapability, window.p5InstanceReducibility, window.p5InstanceConcepts, window.p5InstanceHigherOrder, window.p5InstanceRuliad];
+        const p5Instances = [
+            window.p5InstanceCapability, 
+            window.p5InstanceReducibility, 
+            window.p5InstanceConcepts, 
+            window.p5InstanceHigherOrder, 
+            window.p5InstanceRuliad
+        ];
         p5Instances.forEach(instance => {
-            if (instance && instance._setupDone) { // Check if setup has run
-                const containerId = instance.canvas.parentElement.id;
-                const containerElement = document.getElementById(containerId);
-                if (containerElement) {
-                    instance.resizeCanvas(containerElement.clientWidth, containerElement.clientHeight);
-                    instance.redraw();
+            if (instance && instance.canvas && instance.canvas.parentElement) { 
+                const containerElement = instance.canvas.parentElement;
+                instance.resizeCanvas(containerElement.clientWidth, containerElement.clientHeight);
+                if (typeof instance.redraw === 'function' && !instance.isLooping()) {
+                     instance.redraw();
                 }
             }
         });
-    }, 200); // Increased delay
+    }, 250); // Slightly increased delay
 };
 
-// Store P5 instances globally if needed for resize logic
-window.p5InstanceCapability = new p5(sketchCapability);
-window.p5InstanceReducibility = new p5(sketchReducibility);
-window.p5InstanceConcepts = new p5(sketchConcepts);
-window.p5InstanceHigherOrder = new p5(sketchHigherOrder);
-window.p5InstanceRuliad = new p5(sketchRuliad);
-
-
-// General resize handler for P5 canvases
 window.addEventListener('resize', () => {
     const p5Instances = [
         window.p5InstanceCapability, 
@@ -875,21 +828,17 @@ window.addEventListener('resize', () => {
         window.p5InstanceRuliad
     ];
     p5Instances.forEach(instance => {
-        if (instance && typeof instance.windowResized === 'function') {
-            // P5's windowResized function will internally handle resizing based on its parent.
-            // We just need to ensure the parent container itself is responsive.
-            // The canvas parent container (#capabilityCanvasContainer etc.) should have responsive width.
-            // The canvas itself will be resized by p5.js to fit its parent.
+        if (instance && instance.canvas && instance.canvas.parentElement) {
              const parentContainer = instance.canvas.parentElement;
              if (parentContainer) {
                 instance.resizeCanvas(parentContainer.clientWidth, parentContainer.clientHeight);
-                instance.redraw(); // Redraw after resize
+                 if (typeof instance.redraw === 'function' && !instance.isLooping()) {
+                    instance.redraw();
+                }
              }
         }
     });
 });
-
-
 </script>
 </body>
 </html>

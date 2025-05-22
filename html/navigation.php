@@ -33,16 +33,8 @@ if (is_dir($dir_path)) {
     exit;
 }
 
-$file_details = array();
-foreach ($html_files as $filename) {
-    $file_path_for_time = $dir_path . $filename;
-    if (is_file($file_path_for_time)) {
-        $file_details[$filename] = filemtime($file_path_for_time);
-    }
-}
-
-asort($file_details); 
-$sorted_filenames = array_keys($file_details);
+natsort($html_files);
+$sorted_filenames = $html_files;
 
 echo "<ul>\n";
 
@@ -52,7 +44,7 @@ if (empty($sorted_filenames)) {
     foreach ($sorted_filenames as $file) {
         $link_text = htmlspecialchars(pathinfo($file, PATHINFO_FILENAME));
         $link_href = htmlspecialchars($base_url . $file);
-        $file_timestamp = $file_details[$file]; // 获取文件时间戳
+        $file_timestamp = filemtime($dir_path . $file); // 获取文件时间戳
         $display_date = date("m-d", $file_timestamp); // 格式化日期为 月-日
 
         $icon_class = "fas fa-file-alt"; 

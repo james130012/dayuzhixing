@@ -1,0 +1,1035 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LLM训练的幂律之美：超参数调优的物理逻辑解读</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.2/p5.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
+    <style>
+        /* 基本重置和页面设置 */
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Noto Sans SC', sans-serif;
+            font-size: 21px; /* 模拟“三号”字体大小 (16pt ≈ 21.33px) */
+            line-height: 1.9;
+            background-color: #1a1a2e; /* 深空蓝背景 */
+            color: #e0e0e0; /* 浅色文字 */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            overflow-x: hidden; /* 防止水平溢出 */
+        }
+
+        /* 背景动画容器 */
+        #backgroundCanvasContainer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 0;
+            pointer-events: none; 
+        }
+
+        /* 内容容器 */
+        .container {
+            position: relative;
+            z-index: 1;
+            width: 90%;
+            max-width: 1100px; /* 优化阅读宽度，模拟A3比例感 */
+            margin: 30px auto;
+            padding: 40px 50px; /* 增加内边距，模拟页边距 */
+            background-color: rgba(26, 26, 46, 0.88); /* 半透明深色背景 */
+            border: 1px solid #4a4a6a;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        /* 标题样式 */
+        h1, h2, h3 {
+            font-family: 'ZCOOL KuaiLe', cursive;
+            color: #82aaff; /* 淡蓝色标题 */
+            margin-bottom: 0.75em;
+            text-align: center;
+            letter-spacing: 1px;
+        }
+        h1 {
+            font-size: 2.8em; /* 主标题 */
+            color: #a6c8ff; 
+            border-bottom: 2px solid #5a7fba;
+            padding-bottom: 20px;
+            margin-top: 0;
+        }
+        h2 {
+            font-size: 2.2em; /* 章节标题 */
+            color: #ffb3cc; 
+            margin-top: 2.5em;
+        }
+        h3 {
+            font-size: 1.8em; /* 副标题或小节标题 */
+            color: #99d9ea;
+            margin-top: 1.5em;
+            text-align: left;
+        }
+
+        /* 段落和文本样式 */
+        p {
+            margin-bottom: 1.6em;
+            text-align: justify;
+            color: #c8c8d8; /* 柔和的文字颜色 */
+        }
+
+        /* 强调文字 */
+        strong, .highlight {
+            color: #ffca80; /* 暖黄色强调 */
+            font-weight: bold;
+        }
+        .concept {
+            font-weight: 500;
+            color: #80ffdb; /* 青绿色概念词 */
+            padding: 4px 8px;
+            background-color: rgba(128, 255, 219, 0.12);
+            border-radius: 6px;
+            border: 1px solid rgba(128, 255, 219, 0.35);
+            display: inline-block;
+        }
+        .formula-text {
+            display: block;
+            text-align: center;
+            font-family: 'Courier New', Courier, monospace;
+            color: #f0f0f0;
+            background-color: rgba(0,0,0,0.2);
+            padding: 15px;
+            margin: 20px auto;
+            border-radius: 8px;
+            border: 1px dashed #5a7fba;
+            font-size: 1.1em;
+            width: fit-content;
+            max-width: 90%;
+            overflow-x: auto;
+        }
+
+        /* 动画容器 */
+        .animation-container {
+            width: 100%;
+            max-width: 600px; /* 动画区域宽度 */
+            height: 400px; /* 动画区域高度 */
+            margin: 30px auto;
+            border: 2px solid #4a4a6a;
+            border-radius: 12px;
+            overflow: hidden;
+            background-color: rgba(15, 15, 30, 0.75); 
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: inset 0 0 15px rgba(0,0,0,0.5);
+        }
+        .animation-container canvas {
+            display: block;
+            max-width: 100%;
+            max-height: 100%;
+            border-radius: 10px;
+        }
+        
+        /* 交互按钮和控件样式 */
+        .controls {
+            text-align: center;
+            margin-bottom: 30px;
+            margin-top: 20px;
+            padding: 10px;
+            background-color: rgba(0,0,0,0.1);
+            border-radius: 8px;
+        }
+        .controls button {
+            padding: 12px 25px;
+            font-size: 0.9em; /* 调整按钮内字体大小 */
+            font-family: 'Noto Sans SC', sans-serif;
+            background-image: linear-gradient(45deg, #7b2cbf 0%, #3b5998 100%); /* 深邃渐变 */
+            color: white;
+            border: none;
+            border-radius: 25px; 
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 10px;
+            box-shadow: 0 5px 12px rgba(0, 0, 0, 0.4);
+            letter-spacing: 0.8px;
+        }
+        .controls button:hover {
+            transform: translateY(-3px) scale(1.08);
+            box-shadow: 0 7px 18px rgba(59, 89, 152, 0.6);
+        }
+        .controls button:active {
+            transform: translateY(0px) scale(1);
+        }
+        .controls label {
+            color: #b0b0c0;
+            margin: 0 10px 0 5px;
+            font-size: 0.85em;
+        }
+        .controls input[type="range"] {
+            vertical-align: middle;
+            cursor: grab;
+            width: 160px; 
+        }
+        .controls .value-display {
+            display: inline-block;
+            min-width: 40px;
+            text-align: left;
+            color: #ffca80;
+        }
+
+        /* 引用/关键结论块 */
+        .key-finding {
+            background-color: rgba(74, 74, 106, 0.25);
+            border-left: 5px solid #82aaff;
+            padding: 20px 25px;
+            margin: 25px 0;
+            border-radius: 0 10px 10px 0;
+            font-style: italic;
+            color: #d8d8e8;
+        }
+        .key-finding p {
+            margin-bottom: 0.6em;
+        }
+
+        /* 页脚 */
+        footer {
+            text-align: center;
+            margin-top: 50px;
+            padding: 30px;
+            background-color: rgba(15, 15, 30, 0.92);
+            color: #999;
+            width: 100%;
+            font-size: 0.85em;
+            border-top: 1px solid #4a4a6a;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            body {
+                font-size: 18px; /* 移动端稍小字号 */
+            }
+            .container {
+                width: 95%;
+                padding: 20px 25px;
+                margin: 15px auto;
+            }
+            h1 {
+                font-size: 2.2em;
+            }
+            h2 {
+                font-size: 1.8em;
+            }
+            h3 {
+                font-size: 1.5em;
+            }
+            .animation-container {
+                height: 320px;
+            }
+            .controls button {
+                padding: 10px 20px;
+                font-size: 0.85em;
+            }
+            .controls input[type="range"] {
+                width: 120px;
+            }
+            .formula-text {
+                font-size: 1em;
+                padding: 10px;
+            }
+        }
+         @media (max-width: 480px) {
+            body {
+                font-size: 17px;
+            }
+            h1 { font-size: 1.9em; }
+            h2 { font-size: 1.6em; }
+            h3 { font-size: 1.3em; }
+            .animation-container { height: 280px; }
+            .controls { display: flex; flex-direction: column; align-items: center; }
+            .controls div { margin-bottom: 10px; }
+        }
+    </style>
+</head>
+<body>
+    <div id="backgroundCanvasContainer"></div>
+    <div class="container">
+        <header>
+            <h1>LLM训练的幂律之美：超参数调优的物理逻辑解读</h1>
+        </header>
+
+        <main>
+            <article>
+                <section id="intro">
+                    <p>大型语言模型（LLM）的预训练是一项浩大的工程，动辄消耗海量的计算资源和时间。在这场“炼丹”大赛中，<strong class="highlight">超参数（Hyperparameters, HPs）</strong>的设定至关重要，它们如同控制反应过程的旋钮，直接影响着模型的最终性能和训练效率。然而，面对模型规模（N）、数据集大小（D）和批量大小（B）等因素的不断扩展，如何科学地调整这些超参数，尤其是学习率（η）和权重衰减（λ），一直是困扰研究者们的难题。</p>
+                    <p>近期，一篇题为《Power Lines: Scaling Laws for Weight Decay and Batch Size in LLM Pre-training》的论文（arXiv:2505.13738v1）为我们揭示了其中隐藏的<span class="concept">幂律（Power Law）</span>关系。这篇论文不仅提供了预测和调整超参数的实用公式，更重要的是，它启发我们从一种更接近“物理规律”的视角来理解LLM训练的内在机制。本文将尝试从<strong class="highlight">物理逻辑</strong>的视角，对该论文的核心发现进行解读，并通过一系列交互动画，带你领略这些“幂律之美”。</p>
+                </section>
+
+                <section id="adamw-timescale">
+                    <h2>遐想一：AdamW的时间标尺与权重衰减的奥秘</h2>
+                    <p>在优化器AdamW中，权重衰减（λ）扮演着正则化的角色，防止模型过拟合。但它与学习率（η）、批量大小（B）和数据集大小（D）之间存在着微妙的联动。论文引入了一个关键概念——<span class="concept">AdamW时间尺度（AdamW timescale, τ_EMA）</span>，其定义为：</p>
+                    <p class="formula-text">τ_EMA = B / (η * λ * D)</p>
+                    <p>这个 `τ_EMA` 可以理解为优化器在更新权重时，“回顾”或“平均”过去信息的范围占总数据量的比例。如果把训练过程比作一段旅程，`τ_EMA` 就是你视野的宽度与总路程长度的比值。一个核心发现是，对于给定的模型（N）和数据集（D），当调整批量大小B时，为了保持训练效果的稳定，<strong class="highlight">最佳的 `τ_EMA` 值应该保持相对恒定</strong>。这意味着，如果B增大，λ也应相应增大，以维持 `τ_EMA` 的稳定。</p>
+                    <div id="timescaleAnimationContainer" class="animation-container"></div>
+                    <div class="controls">
+                        <div>
+                            <label for="ts_B">批量大小 (B): <span id="ts_B_value" class="value-display">128</span></label>
+                            <input type="range" id="ts_B" min="32" max="1024" value="128" step="16">
+                        </div>
+                        <div>
+                            <label for="ts_eta">学习率 (η x10<sup>-4</sup>): <span id="ts_eta_value" class="value-display">2.0</span></label>
+                            <input type="range" id="ts_eta" min="0.5" max="5.0" value="2.0" step="0.1">
+                        </div>
+                        <div>
+                            <label for="ts_lambda">权重衰减 (λ): <span id="ts_lambda_value" class="value-display">0.1</span></label>
+                            <input type="range" id="ts_lambda" min="0.01" max="1.0" value="0.1" step="0.01">
+                        </div>
+                        <div>
+                            <label for="ts_D">数据集大小 (D x10<sup>9</sup> tokens): <span id="ts_D_value" class="value-display">100</span></label>
+                            <input type="range" id="ts_D" min="10" max="1000" value="100" step="10">
+                        </div>
+                        <p>当前 τ_EMA ≈ <strong id="ts_tau_value" class="highlight">...</strong></p>
+                    </div>
+                    <p>上面的动画是一个交互式计算器，你可以调整B, η, λ, D的值，观察 `τ_EMA` 如何变化。这直观地展示了它们之间的相互依赖关系。从物理逻辑上看，`τ_EMA` 的稳定意味着模型在不同训练配置下，其参数学习的“平滑度”或“遗忘速率”保持在一个相似的水平，这有助于保证学习过程的一致性。</p>
+                </section>
+
+                <section id="optimal-timescale-tpp">
+                    <h2>遐想二：“每参数词元数”与最佳时间尺度的幂律共舞</h2>
+                    <p>更有趣的是，论文发现最佳的AdamW时间尺度 `τ_EMA_opt` 并非一成不变，而是与一个叫做<span class="concept">“每参数词元数”（Tokens-Per-Parameter, TPP）</span>的比率（即 D/N）存在精确的幂律关系。TPP可以看作是模型每个参数平均“消化”的数据量，反映了训练的充分程度。</p>
+                    <p class="formula-text">τ_EMA_opt(TPP) = c_τ * TPP <sup>m_τ</sup></p>
+                    <p>根据论文的拟合结果（如图1左侧所示），这个关系近似为 `τ_EMA_opt ≈ 1.084 * TPP ^ -0.527`。这意味着，当TPP增加时（例如，模型变小或数据量增大，模型被“过度训练”），最佳的 `τ_EMA` 会减小。从物理上理解，当每个参数见过的词元更多时，模型对近期信息的依赖性可以降低，即优化器可以“看得更远”，整合更少比例的过去迭代信息就足够了。</p>
+                    <p>这个幂律关系非常强大，因为它使得我们可以预测在不同模型规模N和数据集大小D下的最佳权重衰减 `λ_opt`：</p>
+                    <p class="formula-text">λ_opt = B / (η * D * τ_EMA_opt(D/N))</p>
+                    <div id="tppAnimationContainer" class="animation-container"></div>
+                    <div class="controls">
+                        <button id="tppPlayPause">播放/暂停动画</button>
+                        <label for="tpp_slider">TPP (D/N): <span id="tpp_slider_value" class="value-display">20</span></label>
+                        <input type="range" id="tpp_slider" min="1" max="1000" value="20" step="1">
+                    </div>
+                    <p>此动画展示了 `τ_EMA_opt` 随TPP变化的幂律曲线。你可以拖动滑块改变TPP值，观察对应的 `τ_EMA_opt` 如何变化。当TPP较低（例如20，通常认为是计算最优的区域），`τ_EMA_opt` 较大；当TPP非常高（例如1000，表示深度过训练），`τ_EMA_opt` 会显著减小。这为我们在大规模训练前预设 `λ_opt` 提供了有力的理论依据。</p>
+                </section>
+
+                <section id="batch-size-scaling">
+                    <h2>遐想三：批量大小的缩放之舞——`B_opt` 与 `B_crit` 的数据驱动</h2>
+                    <p>批量大小（B）是另一个关键超参数。论文研究了两个重要的批量大小概念：<span class="concept">最佳批量大小（Optimal Batch Size, B_opt）</span>和<span class="concept">临界批量大小（Critical Batch Size, B_crit）</span>。</p>
+                    <p>`B_opt` 是指在给定的模型N和数据集D下，能够以最少的计算量（通常与总处理词元数D成正比）达到目标损失的批量大小。而 `B_crit` 则是一个转折点：当批量大小B超过 `B_crit` 后，进一步增大B对减少训练时间（训练步数S）的收益急剧下降，但需要消耗更多的总词元数D。论文的一个核心发现是，与先前一些工作认为它们主要依赖于计算量C或损失L不同，<strong class="highlight">`B_opt` 和 `B_crit` 都主要随着数据集总词元数D（或达到目标损失所需的最小词元数 `D_min`）呈幂律增长，且基本独立于模型大小N</strong>。</p>
+                    <p class="formula-text">B_opt ≈ 0.0306 * D <sup>0.383</sup></p>
+                    <p class="formula-text">B_crit ≈ 0.0471 * D_min <sup>0.462</sup></p>
+                    <p>这意味着，数据集越大，我们可以（也应该）使用的最佳和临界批量大小就越大。从物理逻辑上看，更大的数据集意味着有更多的信息可供学习。当数据量充足时，每个批次可以包含更多样本而不会导致梯度信息的快速饱和或冗余，从而允许更大的B值来加速并行处理。</p>
+                    <div id="batchSizeAnimationContainer" class="animation-container"></div>
+                    <div class="controls">
+                        <button id="bsPlayPause">播放/暂停生长</button>
+                        <label for="bs_D_slider">数据集大小 D (或 D_min) (x10<sup>9</sup> tokens): <span id="bs_D_value" class="value-display">100</span></label>
+                        <input type="range" id="bs_D_slider" min="10" max="2000" value="100" step="10">
+                    </div>
+                    <p>这个动画同时展示了 `B_opt` 和 `B_crit` 随数据集大小D（或 `D_min`）增长的幂律曲线。拖动滑块或点击播放，观察这两条曲线如何随D的增加而上升。这清晰地表明，数据规模是决定有效批量大小的关键驱动因素。</p>
+                </section>
+
+                <section id="tradeoff-hyperbola">
+                    <h2>遐想四：效率权衡的圆舞曲——训练时间 vs. 计算成本</h2>
+                    <p>在实际操作中，我们常常需要在训练时间（与训练步数S相关）和计算成本（与总处理词元数D相关）之间做出权衡。论文中引用了McCandlish等人提出的一个经典关系式，描述了当批量大小B变化时，达到同一目标损失所需的总词元数D和总步数S之间的双曲线关系。这个关系可以通过 `B_crit` 来表达：</p>
+                    <p class="formula-text">D = D_min * (1 + B / B_crit)</p>
+                    <p>其中 `D_min` 是使用 `B_opt` 时达到目标损失所需的最少词元数。这个公式告诉我们：
+                    <ul>
+                        <li>当 `B < B_crit` 时，增大B可以显著减少训练步数S（D/B），而D的增加相对温和。</li>
+                        <li>当 `B = B_crit` 时，`D = 2 * D_min`，即需要两倍于最优情况的词元量。</li>
+                        <li>当 `B > B_crit` 时，进一步增大B对减少S的帮助越来越小，但D会急剧增加，导致计算成本飙升。</li>
+                    </ul>
+                    这种关系就像在走钢丝，一方面想通过增大B来减少训练轮次（时间），另一方面又要避免D（计算量）的过度膨胀。`B_crit` 就是那个关键的平衡提示点。</p>
+                    <div id="hyperbolaAnimationContainer" class="animation-container"></div>
+                    <div class="controls">
+                        <button id="hyperbolaPlayPause">播放/暂停调整B</button>
+                        <label for="hyperbola_B_slider_display">当前 B / B_crit: <span id="hyperbola_B_ratio_value" class="value-display">1.0</span></label>
+                        <input type="range" id="hyperbola_B_slider" min="0.1" max="5" value="1.0" step="0.1" style="display:none;"> <p>D ≈ <span id="hyperbola_D_value" class="highlight">...</span> * D_min, S ≈ <span id="hyperbola_S_value" class="highlight">...</span> * S_min_at_B_crit</p>
+                    </div>
+                    <p>此动画演示了上述的权衡曲线。一个点代表当前的（D, S）组合。当批量大小B（通过 B/B_crit 的比率间接表示）变化时，观察该点如何在曲线上移动。当B较小时，点偏向右下方（步数多，词元数少）；当B增大时，点向左上方移动（步数少，词元数多）。特别关注 `B = B_crit`（即滑块值为1.0）时的位置。</p>
+                </section>
+
+                <section id="pareto-frontier">
+                    <h2>遐想五：帕累托前沿的星图——寻找N, D, B的最佳组合</h2>
+                    <p>最终，LLM的训练目标是在给定的计算预算和时间限制下，达到尽可能低的损失。论文探讨了如何在模型大小N、数据集大小D（以及由此决定的TPP）和批量大小B之间进行战略选择，以找到<span class="concept">帕累托最优（Pareto-optimal）</span>的配置。这意味着，没有其他配置可以在不牺牲一个目标（如时间）的情况下改善另一个目标（如计算成本）。</p>
+                    <p>一个有趣的发现是，在某些情况下，<strong class="highlight">小型、但经过充分“过训练”（高TPP）的模型，配合较大的批量大小B，可能比那些严格遵循“计算最优”（如TPP≈20）规则但批量大小受限的模型，在特定时间预算下达到更优的FLOPs效率</strong>。这是因为高TPP（即大的D_min）可以支持更大的 `B_crit`，从而允许使用更大的B来并行化训练，尽管总FLOPs可能会略高，但训练时间可以显著缩短。</p>
+                    <p>这就像选择交通工具：如果时间充裕且预算有限，可能会选择经济但慢速的方式（类似小B，低D_min）；如果时间非常宝贵，即使花费更高，也可能选择高速方式（类似大B，可能需要更大的D来支持，但 `B_crit(D_min)` 也更大）。</p>
+                    <div id="paretoAnimationContainer" class="animation-container"></div>
+                    <div class="controls">
+                        <button id="pareto_strategy_compute">策略：计算优先</button>
+                        <button id="pareto_strategy_time">策略：时间优先</button>
+                        <button id="pareto_strategy_balanced">策略：平衡</button>
+                    </div>
+                    <p>这个概念动画描绘了训练时间与总计算量之间的帕累托前沿。不同的曲线可能代表不同基础模型配置（N, D_min）。点击不同的策略按钮，可以想象理想的训练点如何在这些曲线上或前沿上移动。例如，“时间优先”可能会选择一个允许极大B值的配置，即使总计算量不是最低的。</p>
+                </section>
+
+                <section id="conclusion">
+                    <h2>结语：驾驭幂律，迈向高效炼丹新境界</h2>
+                    <p>《Power Lines》这篇论文为我们揭示的超参数缩放定律，不仅仅是一系列经验公式，更像是一幅描绘LLM训练内在“物理机制”的藏宝图。从AdamW时间尺度的巧妙定义，到权重衰减与TPP的幂律关联，再到批量大小选择的数据驱动逻辑，这些发现共同指向了一个更加理性、可预测的LLM训练范式。</p>
+                    <p>理解并运用这些幂律关系，就如同掌握了航海图和天体运行规律的船长，能够更自信地驾驭超参数这艘巨轮，在茫茫的计算海洋中，以更小的代价、更快的时间，抵达理想性能的彼岸。这些“物理逻辑”的洞察，无疑将推动LLM研究向着更高效、更科学的“炼金术”新境界迈进。</p>
+                </section>
+            </article>
+        </main>
+        <footer>
+            <p>&copy; 2025 LLM超参数调优解读。内容基于 arXiv:2505.13738v1 论文，融合物理逻辑视角与创意思考，仅供学习交流。</p>
+        </footer>
+    </div>
+
+    <script>
+        // --- 全局背景动画 (来自模板) ---
+        let sketchBackground = function(p) {
+            // ... (保持WANYOUYINLI.html中的背景动画代码不变，或根据需要微调颜色/粒子数量)
+            let particles = [];
+            const numParticles = navigator.userAgent.match(/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i) ? 30 : 80; // 移动端减少粒子
+
+            p.setup = function() {
+                let canvas = p.createCanvas(p.windowWidth, p.windowHeight);
+                canvas.parent('backgroundCanvasContainer');
+                for (let i = 0; i < numParticles; i++) {
+                    particles.push(new Particle());
+                }
+                p.noStroke();
+            };
+
+            p.draw = function() {
+                p.clear(); 
+                for (let particle of particles) {
+                    particle.update();
+                    particle.display();
+                }
+            };
+
+            p.windowResized = function() {
+                p.resizeCanvas(p.windowWidth, p.windowHeight);
+            };
+
+            class Particle {
+                constructor() {
+                    this.pos = p.createVector(p.random(p.width), p.random(p.height));
+                    this.vel = p.createVector(p.random(-0.2, 0.2), p.random(-0.2, 0.2)); // Slower particles
+                    this.size = p.random(1, 2.5);
+                    this.color = p.color(p.random(80, 180), p.random(120, 200), 255, p.random(40, 120)); // Adjusted colors
+                }
+                update() {
+                    this.pos.add(this.vel);
+                    if (this.pos.x < 0 || this.pos.x > p.width) this.vel.x *= -1;
+                    if (this.pos.y < 0 || this.pos.y > p.height) this.vel.y *= -1;
+                }
+                display() {
+                    p.fill(this.color);
+                    p.ellipse(this.pos.x, this.pos.y, this.size, this.size);
+                }
+            }
+        };
+        new p5(sketchBackground);
+
+        // --- 动画1: AdamW 时间尺度 τ_EMA ---
+        let sketchTimescale = function(p) {
+            let B_slider, eta_slider, lambda_slider, D_slider;
+            let B_val_span, eta_val_span, lambda_val_span, D_val_span, tau_val_span;
+            let targetTau = 0.1; // Example target
+
+            p.setup = function() {
+                let container = p.select('#timescaleAnimationContainer');
+                let canvas = p.createCanvas(container.width, container.height);
+                canvas.parent('timescaleAnimationContainer');
+                p.textAlign(p.CENTER, p.CENTER);
+                p.textSize(16);
+
+                B_slider = p.select('#ts_B');
+                eta_slider = p.select('#ts_eta');
+                lambda_slider = p.select('#ts_lambda');
+                D_slider = p.select('#ts_D');
+
+                B_val_span = p.select('#ts_B_value');
+                eta_val_span = p.select('#ts_eta_value');
+                lambda_val_span = p.select('#ts_lambda_value');
+                D_val_span = p.select('#ts_D_value');
+                tau_val_span = p.select('#ts_tau_value');
+                
+                B_slider.input(updateTau);
+                eta_slider.input(updateTau);
+                lambda_slider.input(updateTau);
+                D_slider.input(updateTau);
+                updateTau(); // Initial calculation
+            };
+            
+            function updateTau() {
+                let B = parseFloat(B_slider.value());
+                let eta = parseFloat(eta_slider.value()) * 0.0001; // Scale eta
+                let lambda = parseFloat(lambda_slider.value());
+                let D_val = parseFloat(D_slider.value()) * 1e9; // Scale D
+
+                B_val_span.html(B.toFixed(0));
+                eta_val_span.html((eta*10000).toFixed(1));
+                lambda_val_span.html(lambda.toFixed(2));
+                D_val_span.html((D_val/1e9).toFixed(0));
+
+                if (eta === 0 || lambda === 0 || D_val === 0) {
+                    tau_val_span.html("N/A (分母为0)");
+                    return;
+                }
+                let tau = B / (eta * lambda * D_val);
+                tau_val_span.html(tau.toFixed(4));
+                targetTau = tau; // Update targetTau for visualization
+            }
+
+            p.draw = function() {
+                p.background(15, 15, 30);
+                let centerX = p.width / 2;
+                let centerY = p.height / 2;
+                
+                let B = parseFloat(B_slider.value());
+                let eta = parseFloat(eta_slider.value()) * 0.0001;
+                let lambda = parseFloat(lambda_slider.value());
+                let D_val = parseFloat(D_slider.value()) * 1e9;
+                let currentTau = 0;
+                if (!(eta === 0 || lambda === 0 || D_val === 0)) {
+                     currentTau = B / (eta * lambda * D_val);
+                }
+
+                // Visual representation: A bar for τ_EMA
+                let barWidth = p.width * 0.6;
+                let barHeight = 30;
+                let maxTauVisual = 2.0; // Max tau for visual scaling, adjust if needed
+                let currentTauWidth = p.map(p.constrain(currentTau, 0, maxTauVisual), 0, maxTauVisual, 0, barWidth);
+
+                p.fill(100, 150, 255, 150);
+                p.noStroke();
+                p.rectMode(p.CORNER);
+                p.rect(centerX - barWidth/2, centerY - barHeight/2, currentTauWidth, barHeight, 5);
+                
+                p.stroke(200);
+                p.noFill();
+                p.rect(centerX - barWidth/2, centerY - barHeight/2, barWidth, barHeight, 5);
+
+                p.fill(220);
+                p.text(`τ_EMA ≈ ${currentTau.toFixed(4)}`, centerX, centerY + barHeight);
+                p.textSize(14);
+                p.text("B / (η * λ * D)", centerX, centerY - barHeight - 10);
+
+                // Draw parameters as "gears" or inputs
+                drawGear(centerX - barWidth/2 - 50, centerY - 80, "B", B.toFixed(0), p.map(B, 32, 1024, 20, 50));
+                drawGear(centerX + barWidth/2 + 50, centerY - 80, "η", (eta*10000).toFixed(1)+"e-4", p.map(eta, 0.5e-4, 5e-4, 20, 50));
+                drawGear(centerX - barWidth/2 - 50, centerY + 80, "λ", lambda.toFixed(2), p.map(lambda, 0.01, 1.0, 20, 50));
+                drawGear(centerX + barWidth/2 + 50, centerY + 80, "D", (D_val/1e9).toFixed(0)+"e9", p.map(D_val, 10e9, 1000e9, 20, 50));
+            };
+
+            function drawGear(x, y, label, value, size) {
+                p.push();
+                p.translate(x,y);
+                p.fill(70,90,120);
+                p.ellipse(0,0,size,size);
+                p.fill(200);
+                p.textSize(12);
+                p.text(label, 0, -size/2 - 10);
+                p.textSize(10);
+                p.text(value, 0, size/2 + 10);
+                p.pop();
+            }
+        };
+        new p5(sketchTimescale);
+
+        // --- 动画2: τ_EMA_opt vs TPP ---
+        let sketchTpp = function(p) {
+            let tpp_slider;
+            let tpp_val_span;
+            let playing = false;
+            let animatedTpp = 1;
+            const c_tau = 1.084;
+            const m_tau = -0.527;
+
+            p.setup = function() {
+                let container = p.select('#tppAnimationContainer');
+                let canvas = p.createCanvas(container.width, container.height);
+                canvas.parent('tppAnimationContainer');
+                
+                tpp_slider = p.select('#tpp_slider');
+                tpp_val_span = p.select('#tpp_slider_value');
+                p.select('#tppPlayPause').mousePressed(() => { playing = !playing; if(playing) animatedTpp = 1;});
+                
+                tpp_slider.input(() => {
+                    tpp_val_span.html(tpp_slider.value());
+                    if (!playing) animatedTpp = parseFloat(tpp_slider.value());
+                });
+                tpp_val_span.html(tpp_slider.value());
+                animatedTpp = parseFloat(tpp_slider.value());
+            };
+
+            function calculateTauOpt(tpp) {
+                return c_tau * Math.pow(tpp, m_tau);
+            }
+
+            p.draw = function() {
+                p.background(15, 15, 30);
+                if (playing) {
+                    animatedTpp += 2; // Animation speed
+                    if (animatedTpp > 1000) animatedTpp = 1; // Loop animation
+                    tpp_slider.value(animatedTpp); // Sync slider
+                    tpp_val_span.html(animatedTpp.toFixed(0));
+                } else {
+                    animatedTpp = parseFloat(tpp_slider.value());
+                }
+
+                let currentTpp = animatedTpp;
+                let currentTauOpt = calculateTauOpt(currentTpp);
+
+                // Axis
+                let padding = 50;
+                let plotWidth = p.width - 2 * padding;
+                let plotHeight = p.height - 2 * padding;
+                
+                // Draw X axis (TPP - log scale for visualization aid, but map linearly for drawing points)
+                p.stroke(200);
+                p.line(padding, p.height - padding, p.width - padding, p.height - padding);
+                p.fill(200);
+                p.noStroke();
+                p.textAlign(p.CENTER, p.TOP);
+                p.text("TPP (D/N)", p.width/2, p.height - padding + 10);
+                for (let i = 0; i <= 4; i++) { // Labels for 1, 10, 100, 1000
+                    let tppVal = Math.pow(10,i);
+                    if (tppVal > 1000 && i > 0) continue; // Max TPP for plot
+                    let x = padding + p.map(Math.log10(tppVal), 0, 3, 0, plotWidth);
+                     if (i==0 && tppVal==1) x = padding; // Ensure 1 is at start
+                    p.text(tppVal, x, p.height - padding + 5);
+                }
+
+
+                // Draw Y axis (τ_EMA_opt - linear scale)
+                p.stroke(200);
+                p.line(padding, padding, padding, p.height - padding);
+                p.fill(200);
+                p.noStroke();
+                p.textAlign(p.RIGHT, p.CENTER);
+                p.push();
+                p.translate(padding - 10, p.height/2);
+                p.rotate(-p.HALF_PI);
+                p.textAlign(p.CENTER, p.BOTTOM);
+                p.text("τ_EMA_opt", 0, 0);
+                p.pop();
+                let maxTauDisplay = calculateTauOpt(1); // approx 1.084
+                let minTauDisplay = calculateTauOpt(1000); // approx 0.03
+                for (let i = 0; i <= 5; i++) {
+                    let tauVal = p.map(i,0,5, minTauDisplay, maxTauDisplay);
+                    if (maxTauDisplay < 0.1 && i*0.02 > maxTauDisplay) continue;
+                    let y = p.height - padding - p.map(tauVal, minTauDisplay, maxTauDisplay, 0, plotHeight);
+                    p.text(tauVal.toFixed(2), padding - 5, y);
+                }
+
+
+                // Draw curve
+                p.noFill();
+                p.stroke(255, 100, 100, 200); // Reddish curve
+                p.strokeWeight(2);
+                p.beginShape();
+                for (let tpp = 1; tpp <= 1000; tpp += (tpp < 100 ? 1 : 10) ) {
+                    let tau_opt = calculateTauOpt(tpp);
+                    let x = padding + p.map(Math.log10(tpp), 0, 3, 0, plotWidth);
+                    if (tpp==1) x = padding;
+                    let y = p.height - padding - p.map(tau_opt, minTauDisplay, maxTauDisplay, 0, plotHeight);
+                    p.vertex(x, y);
+                }
+                p.endShape();
+                p.strokeWeight(1);
+
+                // Draw current point
+                let x_curr = padding + p.map(Math.log10(currentTpp), 0, 3, 0, plotWidth);
+                 if (currentTpp==1) x_curr = padding;
+                let y_curr = p.height - padding - p.map(currentTauOpt, minTauDisplay, maxTauDisplay, 0, plotHeight);
+                p.fill(255, 255, 0); // Yellow point
+                p.ellipse(x_curr, y_curr, 10, 10);
+                p.fill(220);
+                p.textAlign(p.LEFT, p.BOTTOM);
+                p.text(`TPP: ${currentTpp.toFixed(0)}\nτ_EMA_opt: ${currentTauOpt.toFixed(3)}`, x_curr + 10, y_curr - 10);
+            };
+        };
+        new p5(sketchTpp);
+
+        // --- 动画3: B_opt & B_crit vs D ---
+        let sketchBatchSize = function(p) {
+            let D_slider;
+            let D_val_span;
+            let playing = false;
+            let animatedD = 10e9; // Start with 10B tokens
+
+            // Coefficients from PDF Fig 1 (middle, right)
+            // B_opt = 0.0306 * D^0.383 (D in total tokens, B_opt in sequences)
+            // B_crit = 0.0471 * D_min^0.462 (D_min in total tokens, B_crit in sequences)
+            // Assuming sequence length 2048 for conversion if B is in tokens in formulas
+            // The PDF states B is in sequences for these plots.
+            const c_B_opt = 0.0306; 
+            const m_B_opt = 0.383;
+            const c_B_crit = 0.0471;
+            const m_B_crit = 0.462;
+
+            p.setup = function() {
+                let container = p.select('#batchSizeAnimationContainer');
+                let canvas = p.createCanvas(container.width, container.height);
+                canvas.parent('batchSizeAnimationContainer');
+                
+                D_slider = p.select('#bs_D_slider');
+                D_val_span = p.select('#bs_D_value');
+                p.select('#bsPlayPause').mousePressed(() => { playing = !playing; if(playing) animatedD = 10e9; });
+                
+                D_slider.input(() => {
+                    D_val_span.html((parseFloat(D_slider.value())/1e9).toFixed(0));
+                    if(!playing) animatedD = parseFloat(D_slider.value());
+                });
+                D_val_span.html((animatedD/1e9).toFixed(0));
+            };
+
+            function calculateB_opt(D_tokens) {
+                return c_B_opt * Math.pow(D_tokens, m_B_opt);
+            }
+            function calculateB_crit(D_min_tokens) {
+                return c_B_crit * Math.pow(D_min_tokens, m_B_crit);
+            }
+
+            p.draw = function() {
+                p.background(15, 15, 30);
+                 if (playing) {
+                    animatedD += 10e9; // Animation speed for D (10B tokens per frame)
+                    if (animatedD > 2000e9) animatedD = 10e9; // Loop
+                    D_slider.value(animatedD);
+                    D_val_span.html((animatedD/1e9).toFixed(0));
+                } else {
+                     animatedD = parseFloat(D_slider.value());
+                }
+
+                let currentD = animatedD;
+                let currentB_opt = calculateB_opt(currentD);
+                let currentB_crit = calculateB_crit(currentD); // Assuming D_min is similar to D for this visualization
+
+                // Axis setup (log-log style for D and B)
+                let padding = 60;
+                let plotWidth = p.width - 2 * padding;
+                let plotHeight = p.height - 2 * padding;
+
+                let minD = 10e9, maxD = 2000e9; // 10B to 2000B tokens
+                let minB = calculateB_opt(minD), maxB = calculateB_crit(maxD) * 1.2; // Estimate max B for Y axis
+
+                // Draw X axis (D - log scale)
+                p.stroke(200);
+                p.line(padding, p.height - padding, p.width - padding, p.height - padding);
+                p.fill(200);
+                p.noStroke();
+                p.textAlign(p.CENTER, p.TOP);
+                p.text("数据集大小 D (或 D_min) (tokens)", p.width/2, p.height - padding + 15);
+                for (let i = 10; i <= 12; i+=0.5) { // Log10 scale from 10^10 to 10^12 (10B to 1T, then to 2T)
+                    let dVal = Math.pow(10,i);
+                    if (dVal > maxD && dVal > 10e9) continue;
+                    let x = padding + p.map(Math.log10(dVal), Math.log10(minD), Math.log10(maxD), 0, plotWidth);
+                    p.text((dVal/1e9).toFixed(0) + "B", x, p.height - padding + 5);
+                }
+                
+                // Draw Y axis (B_opt / B_crit - log scale)
+                p.stroke(200);
+                p.line(padding, padding, padding, p.height - padding);
+                p.fill(200);
+                p.noStroke();
+                p.textAlign(p.RIGHT, p.CENTER);
+                p.push();
+                p.translate(padding - 15, p.height/2);
+                p.rotate(-p.HALF_PI);
+                p.textAlign(p.CENTER, p.BOTTOM);
+                p.text("批量大小 B (sequences)", 0, 0);
+                p.pop();
+                 for (let bVal = Math.pow(10,2); bVal <= Math.pow(10,5) ; bVal *=10 ) { // 100, 1k, 10k, 100k
+                    if (bVal < minB*0.8 && bVal > 100) continue;
+                    if (bVal > maxB*1.2 && bVal < Math.pow(10,5)) continue;
+                    let y = p.height - padding - p.map(Math.log10(bVal), Math.log10(minB), Math.log10(maxB), 0, plotHeight);
+                    p.text(bVal.toFixed(0), padding - 8, y);
+                }
+
+
+                // Draw B_opt curve
+                p.noFill();
+                p.stroke(100, 255, 100, 200); // Green for B_opt
+                p.strokeWeight(2);
+                p.beginShape();
+                for (let d_tokens = minD; d_tokens <= maxD; d_tokens += (maxD-minD)/100) {
+                    let b_val = calculateB_opt(d_tokens);
+                    let x = padding + p.map(Math.log10(d_tokens), Math.log10(minD), Math.log10(maxD), 0, plotWidth);
+                    let y = p.height - padding - p.map(Math.log10(b_val), Math.log10(minB), Math.log10(maxB), 0, plotHeight);
+                    if (y >= padding && y <= p.height - padding) p.vertex(x, y);
+                }
+                p.endShape();
+
+                // Draw B_crit curve
+                p.stroke(255, 100, 255, 200); // Magenta for B_crit
+                p.beginShape();
+                for (let d_tokens = minD; d_tokens <= maxD; d_tokens += (maxD-minD)/100) {
+                    let b_val = calculateB_crit(d_tokens);
+                    let x = padding + p.map(Math.log10(d_tokens), Math.log10(minD), Math.log10(maxD), 0, plotWidth);
+                    let y = p.height - padding - p.map(Math.log10(b_val), Math.log10(minB), Math.log10(maxB), 0, plotHeight);
+                     if (y >= padding && y <= p.height - padding) p.vertex(x, y);
+                }
+                p.endShape();
+                p.strokeWeight(1);
+
+                // Draw current points
+                let x_curr_d = padding + p.map(Math.log10(currentD), Math.log10(minD), Math.log10(maxD), 0, plotWidth);
+                
+                let y_curr_b_opt = p.height - padding - p.map(Math.log10(currentB_opt), Math.log10(minB), Math.log10(maxB), 0, plotHeight);
+                p.fill(100, 255, 100);
+                if (y_curr_b_opt >= padding && y_curr_b_opt <= p.height - padding) p.ellipse(x_curr_d, y_curr_b_opt, 10, 10);
+
+                let y_curr_b_crit = p.height - padding - p.map(Math.log10(currentB_crit), Math.log10(minB), Math.log10(maxB), 0, plotHeight);
+                p.fill(255, 100, 255);
+                 if (y_curr_b_crit >= padding && y_curr_b_crit <= p.height - padding) p.ellipse(x_curr_d, y_curr_b_crit, 10, 10);
+
+                p.fill(220);
+                p.textAlign(p.LEFT, p.BOTTOM);
+                p.textSize(12);
+                if (y_curr_b_opt >= padding && y_curr_b_opt <= p.height - padding) p.text(`B_opt: ${currentB_opt.toFixed(0)}`, x_curr_d + 10, y_curr_b_opt - 5);
+                if (y_curr_b_crit >= padding && y_curr_b_crit <= p.height - padding) p.text(`B_crit: ${currentB_crit.toFixed(0)}`, x_curr_d + 10, y_curr_b_crit + 15);
+                p.textSize(21); // Reset default from body
+            };
+        };
+        new p5(sketchBatchSize);
+        
+        // --- 动画4: D vs S Hyperbola ---
+        let sketchHyperbola = function(p) {
+            let B_ratio_slider; // Will be controlled by animation
+            let B_ratio_val_span, D_val_span, S_val_span;
+            let playing = true;
+            let animatedBRatio = 0.1;
+            let D_min_vis = 100; // Arbitrary unit for D_min visualization
+            let S_min_vis = 100; // Arbitrary unit for S_min visualization (B_crit = D_min/S_min)
+                                 // So if B_crit_vis = D_min_vis / S_min_vis = 1, then B = B_crit means B_ratio = 1
+
+            p.setup = function() {
+                let container = p.select('#hyperbolaAnimationContainer');
+                let canvas = p.createCanvas(container.width, container.height);
+                canvas.parent('hyperbolaAnimationContainer');
+                
+                B_ratio_slider = p.select('#hyperbola_B_slider'); // Keep for potential manual control
+                B_ratio_val_span = p.select('#hyperbola_B_ratio_value');
+                D_val_span = p.select('#hyperbola_D_value');
+                S_val_span = p.select('#hyperbola_S_value');
+
+                p.select('#hyperbolaPlayPause').mousePressed(() => { playing = !playing; if(playing) animatedBRatio = 0.1;});
+                updateDisplay(animatedBRatio);
+            };
+
+            function updateDisplay(b_ratio) {
+                B_ratio_val_span.html(b_ratio.toFixed(1));
+                let D_factor = 1 + b_ratio; // D/D_min
+                D_val_span.html(D_factor.toFixed(2));
+                // S = D/B.  D = D_min(1+B/B_crit). S_min_at_B_crit is S when B=B_crit.
+                // At B=B_crit, D = 2*D_min. S_at_B_crit = 2*D_min / B_crit.
+                // Let B_crit = D_min / S_min_true_asymptote.
+                // S_at_B_crit = 2*D_min / (D_min / S_min_true_asymptote) = 2 * S_min_true_asymptote
+                // S = D_min(1+B/B_crit) / B = D_min/B + D_min/B_crit
+                // S / S_min_true_asymptote = D_min/(B*S_min_true_asymptote) + D_min/(B_crit*S_min_true_asymptote)
+                // S / S_min_true_asymptote = B_crit/B + 1
+                let S_factor_over_S_min_asymptote = (1/b_ratio) + 1; // S / S_min_asymptote
+                S_val_span.html(S_factor_over_S_min_asymptote.toFixed(2));
+            }
+
+            p.draw = function() {
+                p.background(15, 15, 30);
+                if (playing) {
+                    animatedBRatio += 0.02;
+                    if (animatedBRatio > 5) animatedBRatio = 0.1;
+                    B_ratio_slider.value(animatedBRatio); // Sync slider if it were visible/used
+                    updateDisplay(animatedBRatio);
+                } else {
+                    animatedBRatio = parseFloat(B_ratio_slider.value()); // If manual control added
+                    updateDisplay(animatedBRatio);
+                }
+
+                let currentBRatio = animatedBRatio;
+                // D_norm = D/D_min = 1 + currentBRatio
+                // S_norm = S/S_min_asymptote = 1 + 1/currentBRatio
+                let D_norm = 1 + currentBRatio;
+                let S_norm = 1 + 1/currentBRatio;
+
+
+                let padding = 60;
+                let plotWidth = p.width - 2 * padding;
+                let plotHeight = p.height - 2 * padding;
+
+                // Define plot scales for D_norm and S_norm
+                // D_norm ranges from 1 (B=0, impossible) to 1+5 = 6
+                // S_norm ranges from 1 (B=inf, impossible) to 1+1/0.1 = 11
+                let min_D_norm_plot = 1; let max_D_norm_plot = 6;
+                let min_S_norm_plot = 1; let max_S_norm_plot = 11;
+
+
+                // Draw X axis (S_norm - Steps factor)
+                p.stroke(200);
+                p.line(padding, p.height - padding, p.width - padding, p.height - padding);
+                p.fill(200); p.noStroke(); p.textAlign(p.CENTER, p.TOP);
+                p.text("步数因子 S/S_min_asymptote (时间)", p.width/2, p.height - padding + 15);
+                for(let i=1; i<=max_S_norm_plot; i+=2) {
+                    let x = padding + p.map(i, min_S_norm_plot, max_S_norm_plot, 0, plotWidth);
+                    p.text(i.toFixed(0), x, p.height - padding + 5);
+                }
+
+
+                // Draw Y axis (D_norm - Tokens factor)
+                p.stroke(200);
+                p.line(padding, padding, padding, p.height - padding);
+                p.fill(200); p.noStroke(); p.textAlign(p.RIGHT, p.CENTER);
+                p.push();p.translate(padding - 15, p.height/2);p.rotate(-p.HALF_PI);p.textAlign(p.CENTER, p.BOTTOM);
+                p.text("词元数因子 D/D_min (计算成本)", 0, 0);
+                p.pop();
+                 for(let i=1; i<=max_D_norm_plot; i+=1) {
+                    let y = p.height - padding - p.map(i, min_D_norm_plot, max_D_norm_plot, 0, plotHeight);
+                    p.text(i.toFixed(0), padding - 8, y);
+                }
+
+                // Draw hyperbola: (S_norm - 1) * (D_norm - 1) = 1
+                p.noFill(); p.stroke(255, 165, 0, 200); p.strokeWeight(2); // Orange curve
+                p.beginShape();
+                for (let br = 0.1; br <= 5; br += 0.05) {
+                    let dn = 1 + br;
+                    let sn = 1 + 1/br;
+                    let x = padding + p.map(sn, min_S_norm_plot, max_S_norm_plot, 0, plotWidth);
+                    let y = p.height - padding - p.map(dn, min_D_norm_plot, max_D_norm_plot, 0, plotHeight);
+                    if (x >= padding && x <= p.width - padding && y >= padding && y <= p.height - padding) {
+                        p.vertex(x,y);
+                    }
+                }
+                p.endShape();
+                p.strokeWeight(1);
+
+                // Highlight B=B_crit point (B_ratio = 1)
+                let D_norm_at_Bcrit = 1 + 1; // = 2
+                let S_norm_at_Bcrit = 1 + 1/1; // = 2
+                let x_bcrit = padding + p.map(S_norm_at_Bcrit, min_S_norm_plot, max_S_norm_plot, 0, plotWidth);
+                let y_bcrit = p.height - padding - p.map(D_norm_at_Bcrit, min_D_norm_plot, max_D_norm_plot, 0, plotHeight);
+                p.fill(255,0,0,150); // Red marker
+                p.ellipse(x_bcrit, y_bcrit, 12, 12);
+                p.fill(220); p.textAlign(p.LEFT); p.textSize(12);
+                p.text("B = B_crit", x_bcrit + 10, y_bcrit);
+                p.textSize(21);
+
+
+                // Draw current point
+                let x_curr = padding + p.map(S_norm, min_S_norm_plot, max_S_norm_plot, 0, plotWidth);
+                let y_curr = p.height - padding - p.map(D_norm, min_D_norm_plot, max_D_norm_plot, 0, plotHeight);
+                p.fill(255, 255, 0); // Yellow point
+                if (x_curr >= padding && x_curr <= p.width - padding && y_curr >= padding && y_curr <= p.height - padding) {
+                    p.ellipse(x_curr, y_curr, 10, 10);
+                }
+            };
+        };
+        new p5(sketchHyperbola);
+
+        // --- 动画5: Pareto Frontier ---
+        let sketchPareto = function(p) {
+            let strategy = "balanced"; // "compute", "time", "balanced"
+            // Mock data for curves: [ {name: "Config A", baseFLOPs: X, baseTimeFactor: Y, color: [r,g,b]}, ... ]
+            // TimeFactor is inverse of B. Higher B means lower TimeFactor for same FLOPs.
+            // For simplicity, we'll show conceptual curves.
+            let configs = [
+                { name: "小型过训练", color: [100,255,100], baseFLOPs: 1.5, B_crit_factor: 1.5, points: [] }, // Higher B_crit
+                { name: "计算最优", color: [255,255,100], baseFLOPs: 1.0, B_crit_factor: 1.0, points: [] },
+                { name: "大型欠训练", color: [255,100,100], baseFLOPs: 2.0, B_crit_factor: 0.7, points: [] } // Lower B_crit
+            ];
+
+            p.setup = function() {
+                let container = p.select('#paretoAnimationContainer');
+                let canvas = p.createCanvas(container.width, container.height);
+                canvas.parent('paretoAnimationContainer');
+                
+                p.select('#pareto_strategy_compute').mousePressed(() => { strategy = "compute"; });
+                p.select('#pareto_strategy_time').mousePressed(() => { strategy = "time"; });
+                p.select('#pareto_strategy_balanced').mousePressed(() => { strategy = "balanced"; });
+
+                // Generate points for each curve D = D_min * (1 + B/B_crit)
+                // Time ~ FLOPs / B = D / B. (Relative to some base)
+                // FLOPs ~ D
+                configs.forEach(config => {
+                    let D_min_rel = config.baseFLOPs; // Relative D_min
+                    let B_crit_rel = config.B_crit_factor; // Relative B_crit
+                    for (let B_ratio = 0.2; B_ratio <= 5; B_ratio += 0.2) { // B_ratio = B / B_crit_actual
+                        let D_rel = D_min_rel * (1 + B_ratio); // B_ratio here is B_actual / B_crit_actual_for_this_D_min
+                                                              // For simplicity, let's interpret B_ratio as B_actual / (B_crit_rel * Some_Base_B_crit)
+                        let B_actual_rel = B_ratio * B_crit_rel; // Relative B_actual
+                        let Time_rel = D_rel / B_actual_rel;
+                        config.points.push({flops: D_rel, time: Time_rel});
+                    }
+                });
+            };
+
+            p.draw = function() {
+                p.background(15, 15, 30);
+                let padding = 60;
+                let plotWidth = p.width - 2 * padding;
+                let plotHeight = p.height - 2 * padding;
+
+                // Determine overall min/max for scaling
+                let allPoints = configs.flatMap(c => c.points);
+                let minFLOPs = p.min(allPoints.map(pt => pt.flops));
+                let maxFLOPs = p.max(allPoints.map(pt => pt.flops));
+                let minTime = p.min(allPoints.map(pt => pt.time));
+                let maxTime = p.max(allPoints.map(pt => pt.time));
+
+
+                // Draw X axis (Time)
+                p.stroke(200);
+                p.line(padding, p.height - padding, p.width - padding, p.height - padding);
+                p.fill(200); p.noStroke(); p.textAlign(p.CENTER, p.TOP);
+                p.text("相对训练时间 (Time ∝ FLOPs/B)", p.width/2, p.height - padding + 15);
+
+                // Draw Y axis (FLOPs)
+                p.stroke(200);
+                p.line(padding, padding, padding, p.height - padding);
+                p.fill(200); p.noStroke(); p.textAlign(p.RIGHT, p.CENTER);
+                p.push();p.translate(padding - 15, p.height/2);p.rotate(-p.HALF_PI);p.textAlign(p.CENTER, p.BOTTOM);
+                p.text("相对计算量 (FLOPs ∝ D)", 0, 0);
+                p.pop();
+
+                // Draw curves
+                configs.forEach(config => {
+                    p.noFill();
+                    p.stroke(config.color[0], config.color[1], config.color[2], 200);
+                    p.strokeWeight(2);
+                    p.beginShape();
+                    config.points.forEach(pt => {
+                        let x = padding + p.map(pt.time, minTime, maxTime, 0, plotWidth);
+                        let y = p.height - padding - p.map(pt.flops, minFLOPs, maxFLOPs, 0, plotHeight);
+                        p.vertex(x,y);
+                    });
+                    p.endShape();
+                });
+                p.strokeWeight(1);
+                
+                // Highlight strategy (conceptual)
+                p.fill(255,255,255,100);
+                p.noStroke();
+                p.textAlign(p.CENTER, p.CENTER);
+                let highlightX, highlightY, highlightR = 30;
+                if (strategy === "compute") { // Low FLOPs, potentially higher time
+                    highlightX = padding + p.map(maxTime*0.7, minTime, maxTime, 0, plotWidth); // Approximate
+                    highlightY = p.height - padding - p.map(minFLOPs*1.1, minFLOPs, maxFLOPs, 0, plotHeight);
+                } else if (strategy === "time") { // Low Time, potentially higher FLOPs
+                    highlightX = padding + p.map(minTime*1.3, minTime, maxTime, 0, plotWidth);
+                    highlightY = p.height - padding - p.map(maxFLOPs*0.8, minFLOPs, maxFLOPs, 0, plotHeight);
+                } else { // Balanced
+                    highlightX = padding + p.map((minTime+maxTime)/2.5, minTime, maxTime, 0, plotWidth);
+                    highlightY = p.height - padding - p.map((minFLOPs+maxFLOPs)/2.5, minFLOPs, maxFLOPs, 0, plotHeight);
+                }
+                p.ellipse(highlightX, highlightY, highlightR*2, highlightR*2);
+                p.fill(255);
+                p.text(strategy.charAt(0).toUpperCase() + strategy.slice(1), highlightX, highlightY);
+
+                // Legend
+                p.textSize(12);
+                configs.forEach((config, i) => {
+                    p.fill(config.color[0], config.color[1], config.color[2]);
+                    p.rect(p.width - padding - 90, padding + i * 20, 10, 10);
+                    p.fill(220);
+                    p.textAlign(p.LEFT);
+                    p.text(config.name, p.width - padding - 75, padding + i * 20 + 8);
+                });
+                p.textSize(21); // Reset
+            };
+        };
+        new p5(sketchPareto);
+
+    </script>
+</body>
+</html>

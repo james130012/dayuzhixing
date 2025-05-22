@@ -1,0 +1,2022 @@
+What the hell? This is bizarre that this 
+pattern exists. It went from zero to almost 100%  
+immediately. I was amazed. I'm extremely excited. 
+Today we're going to be talking about a new  
+paradigm of science, AI research in particular for 
+math and physics, as well as do a deep dive into  
+Professor Yang-Hue Hi's murmuration conjecture. 
+Professor, what am I leaving out? I think, well,  
+thank you very much for having me again. I 
+had so much fun talking to you last time and  
+it's great fun. I got so excited about this 
+new field of AI-assisted theoretical discovery,  
+in pure mathematics and theoretical 
+physics, that we're really entering a new  
+era of discovery. It's amazing. It's happening 
+every week. There's something new that could  
+potentially be transformative in the way we do 
+science. Yes, you said it shocked the math world,  
+maybe even the physics world and the science 
+world in general? Yes, absolutely. I'm going  
+to talk about a little bit more details about 
+this, but just private companies like DeepMind,  
+the fact that they're getting Nobel Prizes and 
+all these various AI companies, OpenAI, EpochAI,  
+they're actually doing fundamental research 
+with their models and that are beginning to  
+solve problems at the real research level. So this 
+is quite exciting, quite exciting times. Why don't  
+you talk about how the landscape of research has 
+changed with the advent of these new AI models?  
+Now there's a large class, like there's LLMs, but 
+then there's also new machine learning techniques  
+in general that you have uncovered and other 
+people have uncovered. So why don't you just  
+talk about that? Yeah, absolutely. So as I said, I 
+think I mentioned in our first long conversation,  
+I think I got into this thing as a complete 
+novice. My background was in the interface between  
+algebraic geometry and string theory. And in 2017, 
+I was just beginning to learn from Coursera just  
+the very basics of machine learning. And so since 
+then, I personally have evolved and I've seen the  
+field evolve of how far we can go, because 2017 
+was pre-Chart GPT. So this was just really machine  
+learning of data from pure mathematics. But 
+now we're much more advanced than this. We're  
+beginning to benchmark DeepMind's AlphaGeo2, 
+DeepMind's AlphaProof. They're beginning to  
+show the science of reasoning. Whether they are 
+reasoning, it's a purely philosophical question,  
+which I have no right to answer. But what I'm 
+seeing is that they're certainly beginning to  
+outperform your typical undergraduate. And 
+now Epoch AI, which is another company,  
+has launched this Tier 1, 2, 3 problems, which are 
+research-level mathematics, the kind of problems  
+you would give to graduates to give a collaborator 
+or colleague. And I can show you some of that  
+later, some of the stuff. Yeah, I'd love that. And 
+they're entering their Tier 4 phase. And in fact,  
+I'm flying to Berkeley on Thursday to have a 
+meeting with a bunch of other mathematicians to  
+benchmark how far that their Tier 4 reasoning 
+machine can go. So this is really rather,  
+you know, it's happening. It's happening as 
+we speak, how the landscape of research can be  
+changed. Yeah, sorry, yeah. Yeah, I think that's 
+in part why, firstly, it's an honor to speak with  
+you again. Our last conversation went viral. I 
+think this whole AI-assisted research in math and  
+physics is part of the reason, because our last 
+conversation was quite specialized in nature. It  
+just means the audience loves you, loves hearing 
+from you. I also love speaking with you. You also  
+have some books. In 2018, you had a book published 
+called Topology and Physics, and I believe that's  
+followed by your textbook in 2020 on machine 
+learning and pure math. Right. Yeah, so the 2018  
+one was when I finished and posted on Archive, 
+which is a very kind thing that Springer lets me  
+do. But then the final book was the first textbook 
+on... I wrote that book primarily to teach myself  
+machine learning and AI, because I was a complete 
+novice in this. And I wanted to share this  
+experience as a theoretician, as a mathematical 
+physicist, how to share with this community, how  
+to even begin with learning about machine learning 
+and AI and these advanced data techniques. But  
+now I think the field has progressed way beyond 
+that in the last eight years, and we're all very,  
+very impressed with how, we as a community, we're 
+all very impressed with how fast this thing is  
+going. So it's a great pleasure talking to you. As 
+I said, I'm a big fan. The kind of depth that you  
+go into is quite different from the normal science 
+communication, because you really... I like the  
+fact that you like to dig deep in your topics. 
+I mean, I guess even more advanced than Quanta,  
+which is really good. There's not that much out 
+there that does this. That's why I appreciate  
+what you're doing so much. Okay, well, let's dig 
+deep. What are some different ways that people use  
+machine learning? So for instance, Terry Tao uses 
+it as an assistant to proofs, but also to generate  
+conjectures and perhaps to even point to existing 
+tools that he may not have heard of. And those are  
+more of the LLM sort. Then there's another sort 
+of just finding patterns in large data sets,  
+and that connects to your murmuration conjecture. 
+Is there a third category? Yeah, that's right. So  
+I was just trying to... I think I outlined this 
+briefly last time. Because this is exactly the  
+kind of thought process that's going on, how 
+to categorize the different approaches. And of  
+course, they're all interrelated, and it's hard to 
+delineate them. So this is my top-down mathematics  
+is this intuition-guided basis of mathematical 
+research. And this LLM approach is what I call  
+meta-mathematics. And this is kind of LLM-assisted 
+copilots that Terry Tao is talking about. And then  
+this third category of bottom-up, where not 
+necessarily any AI is involved. This is I'm  
+thinking about things like lean provers and proof 
+of copilots, where you just have millions of lines  
+of code. And sooner or later, somebody is going 
+to process that by AI. The interplay between these  
+three directions, and between that and the human, 
+is clearly beginning to change the landscape of  
+mathematical research. Now, before we get into 
+your presentation here, you mentioned on another  
+talk on another, either an article or a podcast, I 
+don't recall from my research, that there are two  
+types of researchers. One is a bird, and another 
+is a hedgehog. And you're more of the type that  
+likes to fly and connect. I'm also similar. So 
+I think that's one of the reasons we get along  
+so well, and the audience loves you. But tell us 
+more about this. Yeah, I think there are various  
+tributes to this quote. I think it originated from 
+a Greek fable, where the fox and the hedgehog are  
+compared. Where the fox knows a lot of things, 
+and the hedgehog likes to dig in. And I think  
+the great mathematician Arnold made a reference 
+to this in classifying mathematicians, where he  
+calls things like, you know, one is an eagle that 
+flies and tries to see the landscape. And then the  
+hedgehog digs deep to one particular problem, 
+solves it. I mean, there's no particular...  
+Neither is superior to the other. It says we 
+definitely need both, and each mathematician  
+can function as both. But certainly, AI is helping 
+us in both personalities, simply because there's  
+so much literature out there. The AI can have 
+an overview of what everything is, in terms of  
+literature. And also, there's so much technical 
+detail. You know, there's some very boring parts  
+of the proof that you just simply don't have time 
+to iron out. And that can certainly be helped  
+by LLM models. And it is beginning to do that. 
+I was actually just at a conference last week in  
+Exeter. There was a conference called the Impact 
+of AI for Mathematics, where the organizer,  
+Madhu Das, she was saying that she's a number 
+theorist. And she said she's just recently  
+completed this very complicated paper, where she 
+had a proof of Lemma. And then what she did was,  
+she knew there's another Lemma, which has got to 
+be true. And so what she did was, she copied and  
+pasted the entire proof of her Lemma, it's a bit 
+technical stuff, into ChatGPT01. And then copied  
+the Lemma and said, can you supply the basic 
+proof strategy of this Lemma, which I know to  
+be true. Now, to be fair, this is very far from 
+automated reasoning. This is just language model.  
+And then, importantly, what she did was, and 
+then she went line by line, symbol by symbol,  
+the proof that ChatGPT gave her for the big long 
+Lemma. And it was largely correct. And with a bit  
+of prompting, she was actually able to nudge out 
+a complete version of that proof. And then that  
+was done. I mean, so it would have taken her 
+much longer to have ironed out all the details  
+herself. So this is really rather impressive. And 
+this is only because of a one and one came out,  
+I think this year, or end of last year. So 
+it's really transforming the kind of stuff  
+that the boring stuff you can delegate. And 
+also the pattern recognition part, you can  
+also delegate. So we become like superhuman all 
+of a sudden and can interact with these agents who  
+can help us actually do research and not just 
+do very elementary problems now, but serious  
+research level mathematics. Why don't you talk 
+about some of your personal use cases? So do you  
+use ChatGPT more than Claude or do you use Gemini 
+more than the others? What is your mixture? In  
+terms of research, to be honest, prior talking to 
+her, I never even really played around with this  
+kind of LLMs to help with my research. I didn't 
+know that was possible. I know it's the kind of  
+thing you can, if you want to know very quickly 
+a topic, you can go to wiki, you can Google,  
+but indeed ChatGPT or DeepSeek will probably 
+answer your question very quickly. If there's  
+some theorem that you've just forgot, or there's a 
+field that you really don't want to know about it,  
+DeepSeek will summarize it much more efficiently 
+than if I went to some expert and wasted his  
+or her time and just have that. The process is 
+much more efficient if I just want a very quick  
+overview of some specific, even a specialized 
+topic. So that's been very, very helpful to me.  
+So it's only been three years since ChatGPT came 
+out and already we're seeing this massive change  
+in the landscape. Do you imagine that three years 
+from now, or let's say 10 years from now, that the  
+role of the future academic or intellectuals 
+or mathematicians, if you want to specialize,  
+will be that of a decider or director, like 
+a curator rather than a doer. So the doer is  
+the one that right now we use computation, 
+we use syntax, we come up with some proof,  
+but the decider would be one that just, okay, 
+it governs. It says this is what you should  
+do. Compute already helped us a lot by the end of 
+the 20th century. So no professional mathematician  
+really goes, by the end of, by the 90s and early 
+2000s, no professional mathematician, for example,  
+does boring integrals anymore during research, 
+because that's completely outsourced to say  
+something like, well, from Mathematica and then 
+later SageMath, because this is just boring and  
+we know how to do it. It will take us many hours 
+if we really want to grind out some technical  
+integral. Of course, I'm not saying that you 
+shouldn't teach undergraduates integrals anymore,  
+because that's part of the learning process and 
+it's still important to teach undergraduates this  
+kind of thing. But no professional mathematician 
+will start, you know, they're really boring and  
+horrible things. Like even the simplest thing, 
+you know, sine 17x, nobody really wants to go on  
+it. It's just type into Mathematica, because if I 
+just need that result very quickly so I can supply  
+to my next step of what I envision in my paper, 
+I'm not going to waste a couple of hours trying to  
+integrate something very elementary. I'll probably 
+even get it wrong, there'll be factors wrong. So  
+that already transformed it. So I can see 10 
+years from now, simple, basic, maybe I'm being  
+conservative here, but simple bits of a proof or 
+simple bits of a derivation can just be outsourced  
+to the likes of ChatGPT or DeepSeq or something 
+even more specialized. We don't currently have  
+LLM just for mathematics. That's surely going 
+to come very soon. I'm sure the Frontier Math  
+Project by Epoch AI will start providing this 
+kind of services. Okay, well, let's get into your  
+presentation on the AI mathematician. Yeah, sure. 
+Well, thank you. So I guess, you know, last time  
+we talked about various things, and I just want to 
+share more in this chat, some of the capabilities,  
+both in the terms of top-down and bottom-up 
+of what we're looking at. And to be honest,  
+even since our conversation, which was what, five 
+months ago, the field has advanced significantly,  
+which is very, very impressive. So just briefly, 
+as I was saying last time, and as I also just  
+mentioned, I tried to classify this in this 
+review article, these three directions of  
+mathematics. Of course, they are all intertwined. 
+And the memoration conjectures that I did with my  
+collaborators, Lee, Oliver, and Pozdnyakov, is 
+really a very good example of this top-down,  
+and I'll explain why. This top-down mathematics 
+is one that I want to emphasize here. And then,  
+of course, I will go back to just refresh people's 
+minds a little bit about how people like Terence  
+Tao and all these great and top minds are doing 
+proof assistance in terms of what I would call  
+bottom-up and mathematics. This is a very, very 
+interesting point where I want to emphasize,  
+you know, the typical mathematician, and that 
+includes theoretical physicists. Historically,  
+we do things top-down by just looking at patterns 
+and spotting patterns. And we do many things in  
+terms of practice before foundation. And this 
+is very important. This is something that  
+can't really be formalized because, you know, 
+linguistically trying to formalize mathematics,  
+which is an extremely important program, right? 
+And all of these benchmarkings of problem-solving  
+using large language models is when you have a 
+precise, well-defined problem and you're trying to  
+find a solution. But the history of scientific 
+discovery is certainly not that. I would say  
+probably more than 50% is actually finding the 
+problem or have a vague notion of something before  
+you can formalize it. Can you give an example? So, 
+for example, yeah, so here I'm giving an example.  
+So, for example, Newton invented calculus without 
+any notion of what even convergence means. He just  
+had this intuitive idea of motion. And then 
+he, because it was Newton, he intuited there  
+is this thing called derivative. This is way 
+before we could even have epsilon delta limits,  
+which came in the 19th century, almost 300 years 
+later. And algebraic geometry is something closer  
+to my heart. Algebraic geometry was just started 
+with Apollonius and Euclid with just, you know,  
+shapes and stuff. And we can intuitively, the 
+kind of theorems we want to prove before this  
+Bourbaki school in the 1950s and 1960s, you 
+know, the height of the Bourbaki school, try to  
+formalize that in terms of definitions of fields 
+and rings and polynomial rings and ideals. Now,  
+this is just, this is how theoretical discovery 
+has always happened. In some sense, the reason  
+I want to emphasize this bit is not only just 
+because this is what I'm most familiar with and  
+the one that I suppose I've been mostly involved 
+with. Another reason I want to emphasize is  
+that it's hard to imagine how AI can help us with 
+this because it's so vague and it's so human. And  
+there's a lot of mistakes. And if you train some 
+language model, there's not even any data to train  
+on because these are not formal proofs. These are 
+just grasps of ideas, of intuition. And the point  
+I want to make that is even in this direction, AI 
+is beginning to help us. Okay, so let's imagine  
+we're back in the 16th, sorry, the 17th century 
+with Newton. And Newton was saying, okay, I want  
+to come up with something like calculus. He didn't 
+even have that term. He just had this notion of  
+motion, like you said. What would Newton do with 
+an LLM? Like, what is your vision? So, I don't  
+usually stop mid-conversation about mathematics 
+to talk about metabolism. But I've been using  
+something that's made an appreciable difference. 
+It's called Cell Being by Verso. Summer's coming  
+up, and if you're like me, getting lean while 
+juggling work, stress, and everything else isn't  
+exactly straightforward. I train, I eat well, but 
+as I age, as we all age, fat loss gets harder.  
+Cell Being uses research-backed ingredients that 
+help your body boost NAD levels. NAD, by the way,  
+is crucial for metabolism, energy, and even 
+DNA repair. However, there's a large added  
+benefit here to Cell Being. This formula also 
+helps regulate hunger hormones and supports fat  
+breakdown. Basically, it tells your body to burn 
+more and crave less. Since taking it, I've noticed  
+I'm not as peckish, I feel more clear-headed, 
+my energy is distinctly more stable throughout  
+the day, and I'm discernibly quicker mentally. I 
+haven't changed anything else about my supplement  
+regimen, I've just added this, and it's helped me 
+stay consistent without forcing it. Also, Verso  
+third-party tests every batch and publishes the 
+results, which matters to me personally, because  
+this way I know exactly what I'm getting. So, if 
+you're looking to dial in your energy, metabolism,  
+and shed a bit of that stubborn fat before summer, 
+then check it out. Head to cell.ver.so.TOE and use  
+the code TOE to get 15% off your first order. 
+That's cell.ver.so.TOE. The code is TOE. Thanks  
+to Verso for sponsoring this episode. What would 
+Newton do with an LLM? What is your vision? That's  
+an interesting point. What Newton would do with 
+an LLM, if he had an LLM, which was certainly to  
+process all previous literature. Now, to be fair, 
+at Newton's time, somebody like Newton could read  
+almost the entirety of any relevant literature up 
+to his point. I'm thinking about everything from  
+Euclid's Elements, Galileo, bits of Kepler. He 
+certainly wouldn't have that. Anyone would just go  
+and read it, and that's fine. But now literature 
+has grown so exponentially, there are no more  
+Newton's, human Newton's, that could possibly read 
+the entire literature of a field. And that's where  
+LLMs could come in to help. So this is in the LLM 
+space of discovery. You can summarize literature,  
+and you can try to create new possible links 
+between literature. And this is happening now,  
+I think. I think Lama, which is LLM for math, Lama 
+is something, it's an AI tool that's beginning to  
+digest the archive, for example. And on the other 
+hand, that's the LLM side of the story. And now  
+what about the other half? How could Newton, 
+based on mathematical patterns, and he did have  
+a lot of patterns. It would be things like, 
+this would be mathematical data. Certainly he  
+had data in terms of theoretical and experimental 
+physics, where you could measure the rolling of,  
+the kind of stuff that Galileo did, the rolling 
+of balls along inclined planes, that kind of data.  
+Or he had the astronomical data of Kepler. But he 
+also would have had mathematical data, or platonic  
+data. I like this word, platonic data, because 
+it's pure. The kind of data that would be like,  
+sets of polynomial equations in two variables, 
+which he actually tried to classify himself.  
+How many cubics, because he knew about the conic 
+classification problem. And he would look at these  
+things, and then he would spot patterns. And this 
+kind of stuff also gave rise, I would imagine,  
+I can't imagine the mind of Newton, but I would 
+imagine he would look at vast amounts of such  
+data, and then try to formulate a theory out of 
+it. Ah, okay. And that's kind of really nice. So  
+that's actually, that's an LLM independent thing. 
+This is just pattern spotting. So like Newton,  
+there are these things called Newton polynomials, 
+which expresses, it's a technical thing,  
+which would be certain symmetric polynomials in 
+multivariables being expressible in some basis.  
+I would imagine Newton would have written pages 
+and pages of this stuff, and spotted a pattern,  
+and then tried to prove a general theorem, which 
+is now the theory of Newton polynomials. I thought  
+where you were going was this amorphous ideation 
+with an LLM. So for instance, Newton would say,  
+okay, I have balls coming down an incline, I don't 
+have a precise formula for velocity, I don't even  
+know if velocity is a great concept, but I 
+notice that it moves faster, but it can also,  
+that may be associated with something I would call 
+acceleration, but then there's something else like  
+an impact, which I may call force. Can you help me 
+with this? Is there a way to make this concrete?  
+To take something that's ill-defined and make it 
+well-defined? I thought that's where you're going.  
+Do you think LLMs help with that, or is that not 
+what you were thinking about? No, I think that  
+definitely helps a bit. We're not quite there 
+yet, I think, where we could just start asking  
+LLMs and say, here's the literature, digest it 
+all, and give me new possible links. But we are  
+actually not insanely far away from that goal now, 
+because LLMs are getting so good at doing this  
+sort of thing. So it's actually not impossible. 
+In some sense, Newton would, the mind of Newton  
+is something like that. I guess, let me see my 
+next slide. I think I do mention, yeah, I do  
+mention that another mind as great as Newton, and 
+Gauss, and I will give that example in a minute.  
+All right, let's get back to the presentation. 
+So I think, I can't remember whether, speaking of  
+Newton, I can't remember whether I talked about 
+this last time. If not, this is a joke worth  
+repeating again, which is, what is the best neural 
+network of the 18th century? You could argue the  
+17th century was Newton, and the best neural 
+network of the 18th to 19th century is clearly  
+the brain of Gauss. And that's another, here's a 
+very, very good example as well of just top-down,  
+intuition-guided mathematics. And I might 
+have mentioned this last time, but it's  
+worth repeating. So what is the thought process of 
+this great discovery here? So everybody knew about  
+the primes. Euclid already proved that there's an 
+infinite number of primes. And the proof is very,  
+very beautiful, and it's kind of intricate. It's 
+the first thing you would teach in a number theory  
+course. It's not obvious at all there's an 
+infinite number of primes, but Euclid had this  
+proof by contradiction argument why there should 
+be an infinite number of them. Gauss certainly  
+would have known that proof. But Gauss wanted 
+to know more, and it's been 2,000 years since  
+Euclid. Gauss wanted to know about more details 
+about the distribution of primes. We know the  
+primes get rarer and rarer, even though there's 
+an infinite number of them, they do get rarer and  
+rarer. How rarer do they get? And he just devised 
+this function which we now call the prime counting  
+function, p of x. It's a terrible name because 
+p is pi, but it got stuck in the literature.  
+And p of x is just simply the number of prime 
+numbers less than a given positive real number  
+x. So that was one of his insights was to devise 
+this function which is now continuous because  
+primes are inherently discrete. And this is very 
+interesting. He plotted this, and he looked at  
+this curve. He invented regression, apparently, 
+in order to do a curve fitting because he  
+needed it. This is all done at the age of 16. He 
+invented regression to see what is the best shape  
+that fits this. And all of this is done by hand. 
+And he even had to compute the primes into the  
+hundreds of thousands because the tables stopped 
+there. And he even got some of them wrong because  
+it's a very boring and tedious computation. 
+Imagine what Gauss could have done. One, if he had  
+MathSage or Mathematica, how much more conjectures 
+would he have raised? Well, the problem with that  
+is that if he has access to the modern tools, 
+he also has access to TikTok. It's not clear if  
+Gauss would be boring. Let's hope that because 
+Gauss is Gauss, he wouldn't waste his time  
+watching YouTube videos. Maybe he would. Maybe he 
+would watch meaningful YouTube videos like other  
+conversations like the kind of conversation Okay, 
+great. But anyway, he would do this thing and he  
+looked at this p of x and he says, it's clearly x 
+over natural log of x. You wouldn't be able to see  
+this just by looking. So he really actually had 
+to invent regression to do this. So statistics was  
+a side product of this problem. As far as I know. 
+But this needs to be checked with real historians  
+of science. But at least that's the story here. 
+And this is just crazy. What do you even do? And  
+the proof of this fact was given 50 years later by 
+Hadamard and de la Vallée-Poussin because you had  
+to wait for Cauchy and Riemann to invent complex 
+analysis in order to give a tool to prove this  
+fact. So how did Gauss know this? Based on just at 
+the time would surely be called large data, right?  
+He really went into the tens and hundred thousand 
+range in order to spot this kind of patterns. And  
+it's just amazing. I can plot this by... Because 
+if you just plot the first hundred or so it looks  
+kind of like a log or kind of like a line or 
+something. But you really need to go into the  
+thousands or tenths of thousands range in order 
+to do something like this. Amazing. That's exactly  
+the kind of top down guiding intuition. There was 
+not even the foundation to prove something like  
+this until years later. Riemann as well. A great 
+example. Riemann hypothesis which is arguably  
+the most famous open problem in all of human 
+intellect. And it's certainly the one that we  
+all about and worship. So the Riemann hypothesis 
+has so many implications in mathematics. It's one  
+of the millennium prize problems. And the Riemann 
+hypothesis it's so important precisely because  
+there are now probably tens of thousands of 
+mathematics papers whose first opening line is let  
+us assume that the Riemann hypothesis is correct 
+and the rest of the paper. So it has so many  
+implications. So that's the kind of conjectures 
+that are great. That it has implications to so  
+many other possible results. The interesting about 
+the Riemann hypothesis is that it appeared as a  
+footnote in Riemann's paper. Riemann was just 
+doing the Riemann zeta function precisely to  
+address a similar problem to this. To the precise 
+distribution of primes. And he wrote in a footnote  
+that I checked the first couple of zeros and they 
+all have real part a half. I believe that this is  
+true but I don't really need this result right 
+now. Really you can see that amazing footnote.  
+We just said I can't think about this right now 
+but I think this is kind of interesting. And then  
+that was the beginning the birth of that. How 
+did Riemann intuit something like this? Well  
+these number theorists and their margins. Exactly. 
+Number theorists love margins. Exactly. I never  
+thought of it. That's a good point. That's a good 
+point. That's actually an extremely good point  
+you mentioned. They are written into margins 
+because they haven't been formally approved.  
+We put into form if it's structured it would be 
+bottom up mathematics and it would be in the main  
+text. And often these marginal marginalia are 
+just afterthoughts or just sparks of genius of  
+these people who just relegate this thing to a 
+side comment. And that kind of intuition leads  
+to centuries of research. So that's a very good 
+point you raise about how the difference between  
+margins and formal text because papers are written 
+whether it's pure mathematics or theoretical  
+physics. Papers are written in a very structured 
+backwards kind of way from quite different from  
+the way they are reached in this intuitive kind of 
+way. So that's a good point. And then this doesn't  
+stop. This is something the memorization staff 
+will get more into, which is this BSD conjecture,  
+which is another millennium price problem. This 
+is another one that carries a $1 million tag.  
+And how did this come about? I will talk more 
+about what the BSD conjecture is. This is Birch,  
+Brian Birch, who is still alive. He's, I think, 
+90-something. Mathematicians are very long-lived  
+because they're happy. And the Birch's went on to 
+die in the 60s. They're in a basement in Cambridge  
+and they just plotted loads and loads of data for 
+ranks and conductors of the Liberty Curve. Now,  
+lots by 1960 standards would be in the 
+order of hundreds to thousands. The LMFDB,  
+which I'm going to talk about in a minute, 
+is a database of 3.6 million curves. So we've  
+progressed quite a bit. 3.6 million is the kind 
+of data scale where you could really train things  
+on. That's where I could really come in. They 
+plotted this and they raised this conjecture.  
+They noticed a certain pattern between r and 
+ranks, these technical terms, which I'm going to  
+define in a minute. And that was the birth of yet 
+another great and foundational problem. And this  
+is regarded as a central piece of mathematics 
+as well. And these are all intuited, if you  
+wish. So just one quick side. I got into this 
+because of algebraic geometry. And so I think I  
+mentioned it in the last talk. I'm just trying 
+to see how machine learning can help us spot  
+patterns, if you wish. But I think since 2017, I 
+grew a lot. Alongside with my son, we both grew.  
+He's growing very fast and I'm growing 
+intellectually just to digest this field.  
+And it's a humbling experience just to see this 
+vast interaction of so many different people and  
+experts. And so again, I'd like to thank all of 
+my collaborators. Now, I can't possibly read out  
+all the names, but that's where the QR code comes. 
+Scan this QR code. We'll point you to Google Doc,  
+where I will try as much as possible to keep 
+up to date all of the names and affiliations  
+and the papers with my co-authors. So you 
+can thank them properly at some point. Now,  
+this is an interesting part. I wanted ChatGPT 
+to generate the list of these people and search  
+the internet and find a picture of each of them 
+and give them affiliations to save me the time  
+of typing them out. So we're talking about almost 
+100 people. Yeah, we can talk off air about that.  
+I can code that up for you extremely easily. But 
+what is really interesting is that ChatGPT did a  
+terrible job. It found random affiliations of 
+people who didn't exist because they're doing  
+LLMs. So it's confusing my collaborators. So I 
+couldn't possibly credit ChatGPT for this. And  
+also they just couldn't. ChatGPT could not produce 
+the correct photos of any of these people. So we  
+are limited. So as excited as I am, I must point 
+out limitations to all of that. I tried DeepSeek,  
+Claude, I tried them all. None of them could 
+even answer this problem, which should be a  
+simplish problem. There are ways of using the 
+agent or the LLM to interrogate itself so that  
+it can double check. So we can talk about that 
+off air. Oh, wow. If you can help me with that,  
+it'll be great. Because this is obviously 
+something AI can help us. Because this is boring  
+and it just needs to be done as even part of 
+scientific discovery. It took me an hour to find  
+that LLMs were useless in this. But that hour I 
+could have tried to do something more meaningful.  
+But it would take hours. If I would just do it 
+properly and include copy and paste pictures,  
+it would take many hours. So this is just to 
+tell you, we're not quite there yet, even with  
+a simple task like this. So surprisingly, it can 
+help us with mathematical discovery. But all of  
+this will change very quickly. And that's the book 
+I think you mentioned earlier. This is the book of  
+my learning experience, trying to learn about 
+machine learning. And this finally came out,  
+I think, in... There's an archive version 
+in 2018. And I think it appeared in 2020,  
+the landscape. This is from everything from 
+machine learning. And then this editorial in 2020.  
+So now let's get back to the real meat of the 
+subject, which is, I believe... This is still part  
+of this review I was trying to say. I tried to 
+emphasize that bottom-up mathematics is a natural  
+language processing. Because this is however you 
+want to define it. Metamathematics is LLM. And  
+top-down mathematics, this intuition-guided thing, 
+at the end of the day, is image processing. I like  
+this image processing idea. Which is, you know, 
+any mathematics, any mathematical data, platonic  
+data if you wish, at some level is an image, you 
+can pixelate it. I like this image analogy because  
+the great David Mumford, who is also a Fields 
+Medalist, even back in the 90s after he got the  
+Fields Medal, he stopped everything. He got the 
+Fields Medal for doing topology in K-theory, if I  
+remember, algebraic topology. And then he switched 
+fields completely, dropped mathematics altogether,  
+and started working in computer vision. And now 
+that I've read more of his recollections, he blogs  
+as well. He's a very excellent blogger like Terry 
+Tao. So David Mumford, the reason he got into  
+this computer vision thing was, I think he was 
+really having early visions of how AI can help  
+with research. Because he was trying to imagine 
+the human mind being an image processing machine.  
+What does a mathematician actually see? The 
+mathematician is beginning to have mental images  
+of formulae. There is this transformation process 
+from what you see as abstraction, as mathematics,  
+into a mentally constructed image. That's why he 
+was so interested in vision. And that image in the  
+mind is somehow, I guess in today's language, this 
+will be the latent representation of your data.  
+You know Hadamard, how he had a book on how 
+mathematicians think? Oh, I heard of that. I  
+have not read that. That's kind of interesting. 
+Is that the same Hadamard as the Hadamard  
+de la Baye-Poussin Hadamard? Oh, interesting. Oh, 
+cool guy. Yeah. And I'm wondering if you did a  
+historical analysis for Euler, because Euler was 
+blind for half his life or something like that,  
+some large portion of his life. So I'm wondering 
+if Euler still used mental imagery to formulate or  
+solve his problems, or if he then abstracted 
+something else. Absolutely. Yeah, it's quite  
+imagined. I had a student once in Oxford a few 
+years ago now. She was quite remarkable because  
+she's completely blind. I think she was blind 
+from an early age. So she sat through my lessons  
+without being able to see anything. She had to 
+picture what I was saying and then digest it all  
+in her head and do all of the mental calculations 
+in her head. Interesting. So I was wondering, what  
+was she actually doing? She did fairly well in 
+her final exams. She needed somebody, obviously,  
+to translate whatever she's had to dictate to 
+someone. Yeah, so it was quite remarkable that I  
+got to know this student. But my image processing 
+is this kind of thing. Now that I read Mumford,  
+I'm beginning to think why I was beginning to 
+think that all of mathematics, all of top-down,  
+all pattern recognition is an image processing 
+problem. I guess there is this old debate,  
+and this involved all the greats like Atiyah, 
+and Dijkgraaf, and Hitchin, and Witten,  
+all these people. Is physics, or is theoretical 
+physics, or is mathematics inherently, is nature  
+algebraic or is it geometric? Interesting. This 
+top-down mathematics, this is a debate. Newton  
+was clearly geometrical. He had such a distaste 
+and disdain for algebra because it's meaningless  
+symbols to him. He made some comment about algebra 
+is this, I can't remember the original quote,  
+but he would say it's a very disgusting thing 
+that you had to resort to these meaningless  
+symbols. He was very, very pictorial. His 
+proof, what we now call the Gauss theorem,  
+about integration over spheres. This is just 
+about a gravitational body exerting a force on  
+an external object. Gauss would just surround 
+this and then use his Gauss's law. But Newton  
+actually integrated piece by piece and used all 
+these intricate pieces together in a diagram and  
+got the same answer. It's the kind of horror show 
+you would never do because Gauss's theorem is just  
+one line. You just do this integral. But Newton 
+actually had to piece together. So Newton was  
+definitely visual. Roger Penrose is definitely 
+visual. Penrose, my last conversation with him,  
+he almost said, I think, just in case I'm 
+putting words in his mouth, but I believe he  
+said something like, if it's not intuitive and if 
+it's not geometrical, he doesn't even accept that  
+as a proof. And I think Conway was like that 
+as well. This is one of the reasons why Conway  
+never really accepted Richard Borcherds's proof 
+of the moonshine conjectures, because Borcherds  
+used this very strange vertex-operate algebra. I 
+think you had a conversation with Edward Frenkel  
+about this. And Borcherds's actually. And 
+Borcherds's, yeah, exactly. But Borcherds,  
+he borrowed this piece of completely crazy stuff, 
+vertex-operate algebras, and had this beautiful  
+structure. I mean, it's obviously awesome 
+and brilliant. He got him the Fields Medal,  
+and he was able to use that to prove the moonshine 
+conjecture from CHI. And Conway, to my knowledge,  
+who was it who told me this? It was, gosh, the 
+previous director of the IS. Oh, Robert Dijkgraaf?  
+The one before that. Oh, gosh. Goddard, Peter 
+Goddard. Peter Goddard knew Conway very well,  
+and he was telling me that Conway never really 
+deep down accepted his proof of Borcherds because  
+he's not visual. Conway's this very playful guy, 
+as you can imagine. He wanted everything to be  
+pictorial. He wanted to see his lattices. So 
+anyhow, in a way, this diagram puts geometry in  
+this direction and puts algebra in this direction. 
+Well, how is Conway visualizing the monster group?  
+Maybe in terms of the leech lattice. I see. He 
+had this picture of the leech lattice. To him,  
+the monster group is some extension of 
+the automorphism of the leech lattice,  
+which I guess in a way, that's how he and Grease 
+and Reba originally came up with Monster. It  
+wasn't by very hardcore. This whole funny business 
+of classifying simple groups, he really intuited  
+it in a way. He got this group out by doing norm 
+two lattices, and he was able to see the symmetry,  
+the group of symmetries of this lattice. And 
+that's a remarkable thing. It's just unfortunate.  
+That whole generation of people, that generation 
+of this lattice, early computer algebra,  
+finite group people are slowly dying out. Conway 
+is dead. Norton is dead. And my own dear friend,  
+John McKay, who started Moonshine, passed away. I 
+wrote this obituary because I was his last close  
+collaborator. He actually became a grandfather 
+figure to me. He saw my kids grow up. Interesting.  
+And McKay would tell me these stories about how 
+he was interacting with Conway and how all of that  
+people have portraits. And McKay is also, here's 
+another crazy, that's another whole conversation  
+about what is this bizarre intuition that McKay 
+had. If there's anybody in the later part of the  
+20th century who had a almost Ramanujan-like 
+intuition, it would be John McKay. In a way,  
+he's an unsung hero, because he would just 
+look at lists of numbers or look at pictures  
+and graphs and see, ah, but this field is related 
+to this. And that is very much like this. He's AI  
+before AI. Even physicists? I think that's a whole 
+different conversation. We're going to have to do  
+part three and four. I get very emotional when 
+I talk about John, because he's very much like  
+a father figure to me. Well, the next time 
+I'm in Oxford, we should have a part three  
+and four. We'll have a part three conversation 
+just talking about moonshine conjectures. From  
+the perspective of McKay, I know you certainly, 
+oh yeah, and he pronounces his name as McKay,  
+not McKay, even though it's written down as McKay. 
+He insisted on being called John McKay. I know you  
+chatted with Franco and you chatted with Borcherds 
+on moonshine and that stuff. But it's unfortunate  
+that he passed away before you started all this 
+thing. He passed in 2022 because he had a very  
+interesting knowledge of that world, of moonshine 
+and stuff. But anyhow. Have you heard of stone  
+duality? Stone? Yeah, stone duality or a stone 
+type duality. No, not at all. What is that? So  
+it's a duality between topology and then Boolean 
+algebras, which some people see as an analogy or  
+an equivalence between geometry and then syntax 
+or something more algebraic. Oh, interesting. Oh,  
+I'll have to look into that. Thanks for pointing 
+that out. I didn't know. Is this like the stone of  
+the Stone-Weierstrass theorem? I believe so. You 
+got them all correct, yeah. I don't know. Okay,  
+I just didn't know there was this. This is called 
+the stone correspondence? Yeah, stone duality,  
+yeah. Duality, duality. Oh, I would love to see 
+it. Sorry, I just bumped in my. I would love  
+to see that. Oh, interesting. Very interesting. 
+Anyhow, so back to our current story. So in 2022,  
+ChatGPT actually, as pertinent to this 
+conversation, ChatGPT passed the Turing test,  
+which, again, I'm very surprised it was not 
+on every single newspaper headline. I don't  
+know why this wasn't emphasized. We can't really. 
+The Turing test was a big thing. I think that the  
+fact that ChatGPT passed the Turing test just 
+simply showed that you don't need reasoning or  
+understanding to have intelligent conversation. 
+Maybe it says a lot about humans. ChatGPT passing  
+the Turing test says more about humans than it 
+says about AI thinking. We give too much credit  
+to what meaningful conversations are. So sort of 
+as a response to that, we organized a conference  
+in Cambridge with loads and loads of people, and 
+you can probably recognize some of the names,  
+Buzzard and Birch. We tried to formulate something 
+that's more stringent than a Turing test for  
+AI-guided discovery. And so we reported this. I 
+reported this with my friend Birch as a nature  
+correspondent. I can't remember whether I talked 
+about this in our... Did I talk about the Birch  
+test? Yes, the Birch test++ or the Turing test++ 
+was the Birch test? Yeah, it is the Birch test,  
+yeah. Last time. So we'll put a link on screen for 
+the last conversation in case you're just tuning  
+in and you're wondering. It was a wonderful 
+conversation. And I believe we talked about,  
+let's see, the Birch test, bottom-up, top-down, 
+metamathematics, and even classifications of CY  
+manifolds and then this database construction. 
+Okay, so I can pass with a B. So this is AI plus  
+N for the Birch test. So just, I guess, I'm 
+very good at digressing. Sometimes I digress  
+so much that I don't even remember what I'm 
+digressing on anymore. But the point is,  
+this is clear signs of ADHD, but I've never had 
+it. As you mentioned, speaking about these shower  
+thoughts or the margins, the digressions are 
+sometimes more meaty than the meat. Often, yeah,  
+often, yeah. But back to this AI-guided discovery, 
+which, in terms of AI-assisted, top-down,  
+intuition-guided discovery in mathematics. 
+There have been various candidates in the past  
+eight years or so. Some of the ones, of course, 
+everybody talks about this beautiful paper in this  
+DeepMind collaboration by Alex Davis. Alex comes 
+here a lot because DeepMind is in St. Pancras,  
+which is a 30-minute walk from this institute, 
+which is kind of very nice. We have a nice hub  
+in London for this sort of thing. Google DeepMind 
+isn't in California? There's a London office. Oh,  
+okay. So there's a branch, at least. I guess 
+that, yeah, there must be, yeah. So Alex is  
+actually in London. The Davis et al. paper on 
+DeepMind. So he comes very regularly. Of course,  
+because he works for DeepMind, he can't tell us 
+exactly what he's working on, nor can he tell us  
+what the next project will be. But at least he can 
+summarize what's going on in the tech world. Which  
+is kind of interesting, the fact that Nobel Prizes 
+are being given to non-university organizations,  
+which is very, very nice. Which is what this 
+organization is. At some point, oh, that's  
+another whole conversation again. So I think I 
+mentioned to you last time, these are the rooms  
+where Faraday lived. Okay, so we're very lucky. 
+The London Institute, we're the second floor of  
+the Royal Institution, where the likes of Humphrey 
+Davy and Thomas Young and Michael Faraday lived.  
+So I'm very fortunate to be in this space to work 
+and try to get this in. But one of our themes,  
+the reason I mentioned this, one of our four 
+research themes is AI for theoretical discovery.  
+Of this institute. And we're independent of the 
+universities, so that we could devote our time  
+fully to research. That's kind of it. So how does 
+this lead to the murmuration conjecture? Yeah,  
+I promised to tell you about murmuration. So these 
+early CloudBL manifolds, which we spent so much  
+time talking about last time, this is because 
+it was my bread and butter as I was growing up  
+as a grad student. So that was clearly the first 
+thing I'm going to apply machine learning to. The  
+kind of experiments of using neural networks to 
+predict topological invariance of these varieties  
+in an image processing kind of way, immediately 
+fails the Birch test. Out straight, because it's  
+not interpretable. Sure, now it's been improved to 
+99.999% or whatever it is, but it's useless to a  
+scientist. It just simply says that, oh yes, there 
+is an underlying pattern, but how do you actually  
+extract anything meaningful from that pattern? 
+That's the main question. So the closest so far,  
+and when I say so far, this could change in 
+a couple of months. You have no idea, because  
+the field is growing so fast. The closest so far 
+in the last, oh my gosh, it's almost a decade.  
+I guess my son is eight now. In the last decade 
+of all this AI discovery, there's been hundreds  
+of papers now on various things on how do I use 
+machine learning to do this in number theory,  
+in theoretical physics, in quantum field theory. 
+There are literally hundreds of papers. Now,  
+the one that really made Buzzard and Birch happy 
+is this memoration conjecture. The discovery  
+process of this is something that I would like to 
+see released. This is sort of the state of the art  
+of human-machine interaction. That's why it's so 
+close to my heart. This is joint work with Kyuhwan  
+Lee, Thomas Oliver, and Alexey Pozdnyakov, and 
+now with a paper to appear with Andrew Sutherland,  
+who is the guy who set up this LMFDB. I think 
+I mentioned last bits of machine learning  
+experiments in number theory. Can AI predict 
+primes? No, we're certainly not at that stage.  
+I'm not saying you can't. If an AI can detect 
+a pattern of primes by itself, then we'll be at  
+the next level in not only proving the Riemann 
+hypothesis, we would also crack every single  
+code in every single bank in the world, because 
+that's all the cryptography is dependent on this.  
+So wait, what's the main impediment for AI to not 
+predict primes? There's a large data set there.  
+Yeah, so actually, that's a good question. The 
+short answer is I don't know. I've certainly  
+fed in millions of primes into whatever 
+representation, into a neural network,  
+of whatever architecture. I just simply asked 
+it to predict the next one. It does terribly  
+on this. I think somebody's even written a 
+paper on this called, Why Prime Prediction is  
+So Hard for Neural Networks. I can't remember 
+the precise networks. I think at some level,  
+this again goes back to the Riemann hypothesis. 
+The exact patterns in the distribution of the  
+zeros of the Riemann zeta function in the critical 
+strip will give you precise patterns in the  
+distribution of the primes. And people have proven 
+statistical statements about the distribution of  
+the zeros, that they're truly stochastic up to 
+some level. I'm not an analytic number theorist.  
+Basically, there is so much noise or truly 
+stochastic randomness in the distribution of  
+the zeros of the zeta function that it's very 
+difficult if you try to train. In other words,  
+training a neural network of the zeros of the 
+zeta function is like training it with noise.  
+Something fundamental, but it could just be 
+that this representation we're using for the  
+zeta function is not very good. We should 
+dig deeper. But you need almost another,  
+of course, if you find the right representation 
+that would give a very good pattern spotter,  
+that representation is the new mathematics we're 
+looking for. So speaking of classifications, as  
+we're both fans of classifications, is there a way 
+to map this problem of doing an image processing  
+for prediction of primes slash the Riemann zeta 
+function zeros? Is it mappable to P versus NP? Or  
+is it a new class like, okay, problems that can be 
+solved with image recognition or image prediction  
+versus problems that can't in math? This is a 
+deep question. And at some point, I was talking  
+to model theorists, and especially Boris Zilber, 
+who is a leading figure in model theory, because  
+in model theory tries to classify mathematical 
+problems in terms of hierarchies of difficulty.  
+And this is not a P versus NP kind of difficulty, 
+but a difficulty in the very underlying  
+structures. The question is, why is it that a 
+polynomial over the integers is so much harder  
+than to think about a polynomial defined over the 
+complex numbers, even though the complex numbers  
+is in some sense a completion of the integers? But 
+why is it so much harder to look for models over  
+integers? And at some point, we were thinking 
+that maybe the problems that we're going to  
+encounter that neural networks will struggle with 
+are ones that will go higher in this hierarchy of  
+difficulty. But we haven't thought much more about 
+this, but it will be very interesting to correlate  
+this. But this is not computational complexity. 
+There should be a new definition of a complexity  
+in terms of how difficult a problem is. But it's 
+still hard to say how to define this. Actually,  
+just as an aside, an aside on to this. So there's 
+a contest called the Summer of Math Exposition by  
+3Blue1Brown, and it's about getting people to make 
+animations and lessons for math, different math  
+topics. We're doing one on this podcast, Theories 
+of Everything, but for physics and also complexity  
+and AI. So physics, AI, and complexity. And this 
+is a teaser of an announcement. It's not the full  
+announcement, but those who are listening, 
+it's going to be announced shortly. And there  
+will be prize money for those who have the best 
+explanation the top five gets. You'll see. Oh,  
+I'd love to see that. Amazing, amazing stuff. All 
+right, sorry, back to back to BSD. So now finally,  
+I have to... So this is the memoration. Again, 
+there's... This was considered by... It got Quanta  
+interested, and Quanta considered this one of the 
+breakthroughs of 2024 because they obviously...  
+Because this was something that was AI-guided, and 
+it really surprised the experts. And just sort of,  
+I want to tell you the story of this because 
+it shows where we are in terms of AI-assisted  
+discovery. Probably my biggest contribution to 
+this was to have insisted on this paper being  
+called memoration. Because I remember this Skype 
+that came through. The original paper was in...  
+Oh gosh, three years ago, when this patent that 
+appeared, and my collaborators were saying, you  
+know, this reminds me of this thing that birds do. 
+And I said, oh, you mean memorations of starlings.  
+And then I was like, then I said, I'm going 
+to insist that when this paper gets finished,  
+we're going to call this paper the memoration 
+phenomenon. And I kind of got stuck. That's  
+probably my biggest contribution. Because these 
+are... My collaborators are card-carrying number  
+theorists. We teamed up because they were trying 
+to explore this AI-assisted world. And I needed  
+some real experts. So this already breaks... It 
+breaks the birch test. The fact that I had to look  
+for human experts to try to generate something 
+like this already fails the birch test. But it was  
+worth it. It was worth breaking birch for. Because 
+I made friends with number theorists, and it was  
+something surprising to their community. Just a 
+bit about the importance of the BSD conjecture.  
+This is kind of nice, because it gives an 
+opportunity for me to share my own ignorance  
+on the BSD conjecture. Because I learned about 
+this as I was working, not as a number theorist,  
+which I'm not, but as an amateur number theorist 
+coming from AI discovery side. So this made me  
+appreciate why the BSD conjecture is so important, 
+and why it's so interesting. And how surprisingly  
+AI can help with this. And how the birch test 
+was almost met by this particular problem.  
+So let's go way back to Diophantine equations. 
+Diophantine equations, named after Diophantus, is  
+just about finding rational or integer solutions 
+to polynomials. I said these two are equivalent,  
+because you can always rationalize the denominator 
+and cancel out. So you're finding solutions over  
+q is really kind of the same as finding these 
+solutions over z. So a typical example of a  
+Diophantine equation is, find all the rational 
+solutions to this. And the solution, this here,  
+is Pythagoras. So Pythagoras tells us, this is 
+probably the most famous example, three-fifths  
+squared plus four-fifths squared is equal to one. 
+If you think about it, this is actually highly  
+non-trivial. The fact that these have to square 
+up to 25 and just cancel to one is already kind of  
+interesting, bizarre. But Pythagoras said, I can't 
+remember whether it's Pythagoras or Euclid who  
+gave the full solution to this equation. And the 
+solution is that there is a one-parameter infinite  
+family of rational solutions. So the rational 
+solutions are often called q-points, or q for  
+rational, or rational points on this quadratic. 
+So we say points because you can plot this, and  
+this is thanks to Descartes, you can plot this, 
+and this is a circle. So you're finding rational  
+points on a unit circle. That's why the word 
+solution and point is used interchangeably in this  
+field called arithmetic geometry. This is great, 
+but what I want to emphasize is that this is less,  
+what's less known is that this is obviously 
+just one solution, but there is a one-parameter  
+infinite solution to this. So in other words, all 
+solutions can be parametrized in a specific way.  
+So this is a quadratic case. Now if we recall high 
+school algebra or high school Cartesian geometry,  
+a quadratic is what's known as a conic section. 
+You're slicing the cone. If you bump it up,  
+it's already extremely difficult. If you bump 
+up the degree, it's already become an impossible  
+problem. So instead of considering x squared plus 
+y squared is equal to one, oh by the way, all of  
+the quadratic ones can be solved in a similar way. 
+So all the conic sections, conic sections not over  
+the complex numbers, but conic sections over the 
+rationals can be solved in a similar way. But once  
+you go into cubics, you're completely stuck. Even 
+something simple like this, so I change the two  
+into three, how do you find all rational points 
+on this? We still don't know in general in some  
+sense, but you can see the kind of problems you 
+can get. Fermat for example is about talking about  
+higher degree polynomials. Fermat's last theorem 
+is x to the n plus y to the n is equal to one  
+and find all rational points on that particular 
+curve. That's it. And the theorem states that the  
+only rational ones are the quadratic ones. And 
+they're from three and above. So x cubed plus y  
+cubed is equal to one. There cannot exist any 
+rational points and so on and so forth. So these  
+are called conic sections. That's just a curve 
+like parabolas and stuff like this and circles  
+and ellipses. Once it's a cubic, it's called an 
+elliptic curve. There's a general theorem that,  
+so you can imagine there could be more terms, 
+right? Why not have something like x cubed,  
+x squared y, that's also a cubic, is it degree 
+three? Or x y squared, that's also cubic and so  
+on. There's a theorem by Weierstrass that all of 
+these ones can be reduced after transformations  
+of variables into this form. So you have a 
+quadratic in y and a cubic in x and then a linear  
+in x. You can transform away all of the other 
+coefficients if you wish. So this is called the  
+general Weierstrass representation of an elliptic 
+curve. I grew up in this one and it's important  
+to emphasize that my bias towards favoring over 
+this is what exactly prevented me from being able  
+to understand any of this from the AI point of 
+view in the beginning. Because for an algebraic  
+geometer, this is the one that we always use and 
+it's like our favorite thing. We're always trying  
+to use something. I will tell how an experiment 
+failed playing with this just because I was taught  
+to always think in terms of Weierstrass form. 
+This is a canonical representation of elliptic  
+curves and it's in this particular form. It has 
+no quadratic in x and there's no other form,  
+no linear, no cubics in y. So just before we move 
+on, this Weierstrass form, this means that any  
+elliptic curve can be classified by these two 
+numbers g2 and g4? Yeah, exactly. There's a  
+variable transformation that puts you into this 
+canonical form. Okay, so I know you'll get to it,  
+but I'm interested as to why this prevented 
+you because I could imagine that these two  
+numbers can serve as something like pixels or RGB 
+numbers. You're reading my mind. That's exactly  
+the experiment that I tried and I failed. In 
+hindsight, it's not surprising how I failed,  
+but I'll get to that in a minute. Let's park 
+that idea. Just like canonical conics can be  
+written into some kind of standard conics 
+that we would remember from high school,  
+the canonical cubic can be written into 
+this Weierstrass form. The important thing  
+about the cubic thing is that somehow this cubic 
+curve, and there are very deep reasons for this,  
+captures a lot of the non-trivial arithmetic 
+and number theory. For example, the Fermat's  
+Last Theorem was able to be cracked because Frey 
+and friends were able to reduce Fermat's. That's  
+neither a conic nor a cubic, but they were able to 
+reduce that to a particular elliptic curve called  
+the Frey elliptic curve, and then Wiles comes 
+in and proves the modularity theorem. That's a  
+whole big story. So somehow this cubic is 
+just at the intersection. Oh, by the way,  
+cubics are great because this is an example, well, 
+this is the only example of a Clavier manifold in  
+dimension one. So there's something about Clavier, 
+the elliptic curve, the cubic. So all Clavier's in  
+complex dimension one, remember the picture that I 
+drew last time, where you have positive curvature  
+is the sphere, zero curvature is the torus, and 
+surfaces of general type are negative curvature.  
+This is the Euler-Riemann uniformization theorem. 
+But the critical case, positive curvature,  
+negative curvature, zero curvature, the torus, 
+if you were to represent this algebraically,  
+that's exactly this elliptic curve. So elliptic 
+curves are Clavier manifolds of complex dimension  
+one. And this is just the critical part that 
+also captures so much number theory. So algebraic  
+geometers, differential geometers, physicists, 
+and number theorists are interested in Clavierness  
+because of this intrinsic zero curvature. 
+There's a lot of depth about this statement.  
+A zero curvature of objects gives so much wealth 
+because it's just at the boundary of positive and  
+negative curvature. Oh, and that's what you 
+mean by criticality is zero curvature? Zero,  
+yeah. It's the dividing point. And there's lots of 
+conjectures, Yao has various conjectures on this,  
+about finiteness of this topological type 
+in this space. But anyhow, that's why I know  
+about elliptic curves, because I came from this 
+algebraic geometry, string theory background that  
+also wanted to study this richly curvature flat 
+or zero curvature objects. So back to this. So now  
+it's a theorem. And this is a theorem due to so 
+many people that have gotten the Fields Medal for  
+proving different parts of this theorem. And this 
+theorem really, really spanned a long time. People  
+like Weil, Deline, Grotendieck, Dwork, Faltings, 
+and Mordell, they all contributed to this. And  
+the theorem is this. We can't say something like 
+Pythagoras, which says that there's a one family,  
+infinite family parameter solution to the rational 
+points of the quadratic or the conic. We can't  
+say something like that, because it's too hard. 
+But at least what we can say is the following,  
+is that any elliptic curve over Q, the rational 
+points over any elliptic curve, itself forms a  
+group. And the group is of this form. The group 
+is that there's an R infinite parameter family  
+of solutions. That's called R, it's called the 
+rank. So how many copies of infinite solutions  
+there are. And then there is this finite, what's 
+called the torsion solution. There are 16 types of  
+torsion. This is really at the heart, all of this 
+stuff, by the way, it's part of the heart of the  
+Langlands. So Ed Franco would have told you about 
+how excited he is about this sort of thing. But  
+the one particular thing I want to emphasize is 
+R, this rank, is the number of infinite family of  
+solutions. And this R is the rank of an elliptic 
+curve. Yeah. This is the Mordell-Weill theorem  
+or the Mordell- Exactly. Exactly. You absolutely 
+know. Exactly. Exactly. Mordell-Weill. Andre Weil.  
+Anyhow, so the reason I want to emphasize, there 
+was still nothing to do with BSD, but this rank is  
+the infinite number, how many measures, how many 
+infinite family solutions over Q. So in the case  
+of Pythagoras, the rank, if you wish, would be one 
+because there's a one family, one infinite family,  
+infinite family. So R is the generalization of one 
+from the conic section case to the elliptic curve  
+case. So that's it. This really is the state of 
+the art in what you can say about rational points  
+of an elliptic curve. There is this wonderful 
+thing called rank, which is actually quite  
+difficult to compute. It's not like I give you, 
+no, I can just read it off. It's not like there's  
+some analytic formula that says, ah, yeah, I get 
+this. I look at this one, one, this is X cubed,  
+Y squared. I can just tell you the Y rank is what 
+I can't remember what it is in this case, two or  
+whatever it is. And the earliest experiment that 
+I did was exactly as you said, as you suggested.  
+This is back in 2019. I just took a database of 
+about 3 million elliptic curves in virus trace  
+case. I took the two numbers, G2 and G4. And 
+then this was done. So this was a paper that  
+I did with. So the reason is I did it with two 
+data scientists who are using the fanciest data  
+possible. And so we're all a bunch of armatures as 
+far as BSD is concerned, was to take the G2, G4 as  
+two parameters and just plot them and then label 
+them by R, the rank, and try to see a pattern.  
+We got a null result because it was, because this 
+G2, G4 in the database, I can show it's actually,  
+it's massive there in the trillions. So it's 
+very hard to get much. We had to take the log of  
+all these numbers to even establish a plot. And 
+the rank was so randomly distributed, even with  
+the fanciest technology. So what's the solution 
+to this problem? Plotting, yeah, we got it. We  
+didn't see anything. It was just, we couldn't, we 
+couldn't get G2 and G4 to predict to any accuracy  
+level what the rank is. But nevertheless, this was 
+featured by new scientists because it was such a  
+strange and novel thing to do, even though it was 
+a null result, but at least it was inching towards  
+something. Somebody someday will got, must be able 
+to say something intelligent about BSD from a data  
+science point of view. Anyhow, back to this. So 
+what should be the thing to do? And this is where  
+number theory expertise actually comes in. So 
+first of all, this is an old law, which is if you  
+can't solve a solution over the integers, solve it 
+modulo prime and see how far you can get. So for  
+example, I can't think of a rational number that, 
+I can't off the top of my head now. I think there  
+is, there, there exists solutions on top of my 
+head of a rational point on this elliptic curve,  
+but at least let me try to work over modulo 
+prime. So modulo 23, this is true. You can  
+check it because two cubit is eight, eight plus 
+16 is 24 and that is one modulo. So that, that,  
+that works. This one works. You can see a new 
+modulo five, this works. So, okay. This seems like  
+a game, but the, the, the deep results of all of 
+people like Deline and Vey and all these people,  
+it's that if we work over sufficient number of 
+primes, in fact, if you worked over all primes  
+and take a limit, you should know you should 
+know something very deep about a solutions over  
+Q and that's the point. So in particular, what 
+you should record are this Euler coefficients,  
+which is the number of solutions modulo prime 
+and, and how they deviate from P plus one,  
+the prime itself. So this is what's known as a, as 
+an Euler coefficients. Just keep track, start with  
+two and then try three, try four. Try three, try 
+five, try seven, and then find how many solutions  
+there are. And this is a, now this is a finite 
+problem. You can just do, in the worst case,  
+a grid search because you're doing modulo prime. 
+You just have to count the number, you know, and  
+just check by brute force. So now what you do is 
+to form a, what's called the local zeta function.  
+The local zeta function is this exponential 
+generating function that keeps track of the,  
+these, the number of solutions over P. So you 
+fix a prime and you literally count the number of  
+solutions modulo P. The more technical thing, what 
+you really should do is, because all finite fields  
+are prime powers, you form, what you actually do 
+is to do an exponential generating function over  
+the number of solutions over the, over the, of 
+the field of prime characteristic P. But that's  
+a technical side. But what you really, what you 
+really should do, what you're essentially doing  
+is to keep track of the number of solutions of 
+the elliptic curve, the number of, not Q points,  
+but the number of FP points, modulo prime P. Okay. 
+And the fact that this generating function becomes  
+this polynomial divided by polynomial form is 
+what got, they, Deline, when Deline proved this,  
+he got the Fields Medal for showing that this is, 
+it's in this particular form. Interesting. It's a  
+very, very, very deep result in number theory. So, 
+okay, long story short, is that when I met Oliver  
+and Li, they told me that whatever the hell I 
+was doing with these data scientists, no offense  
+to data scientists, we were just amateurs, we 
+shouldn't have used the Weierstrass representation  
+because the Weierstrass representation 
+inherently is not what an arithmetic geometer,  
+what a number theorist would be using that 
+would capture the fundamental arithmetic of,  
+of elliptic curves. So now there's the geometry of 
+elliptic curves, which is my background, but that  
+doesn't capture, the Weierstrass form doesn't 
+capture that. The, the, the AP coefficients  
+captures the arithmetic. So I should be using the, 
+we should be using AP coefficients to predict the,  
+the rank. So then we did, so instead of using 
+a pair of very large integers, G2 and G4,  
+and set up a neural network to predict R, you take 
+instead the first, say a hundred AP coefficients.  
+Now we, in a very interesting point cloud of 
+a hundred, a hundred dimensional point cloud,  
+it turns out 50 is enough. It doesn't have to 
+be a hundred just randomly chosen. You take  
+the first 50, 50 primes, which is not 
+too crazy now for, you know, for, for,  
+by today's AI standards, take the first, let's 
+do a hundred, take the first AP coefficient,  
+take the first 100 primes. Now take an elliptic 
+curve, reduce this elliptic curve and count how  
+many solutions modulo this primes and compute this 
+coefficients. So for each elliptic curve, you get,  
+you get this 100 dimensional vector, move for the 
+next elliptic curve, a hundred dimensional vector.  
+Now you just start labeling because of this 
+wonderful thing called LMFDB. The LMFDB was set  
+up by a bunch of people. I think Andrew Sutherland 
+at MIT is one of the, one of the instigators of  
+the Sutherland and Booker and bunch of people 
+set up this thing, which just records everything  
+you ever wanted to know about elliptic curves. It 
+would, there are tens of millions on the order of  
+10 million in this dataset. So now you've got 100 
+dimensional vectors as you march through, because  
+the LMFDB has the, has the rank information, you 
+can start set up a neural network. So we set up a  
+neural network or some other classifier. And just 
+like we did with, just, just like what I did with  
+Alessandretti and Paronkelli on using G2, G4, this 
+pair of Weierstrass coefficients to predict rank,  
+that gave null result. And when we did 
+this for 100 dimensional vector, this,  
+this immediately gave 99.99% accuracy in 
+prediction. You went from, you know, zero to  
+almost a hundred percent immediately. And you're 
+using less data as well? And, and using less data.  
+Remember with, with the data scientists, 
+with, with the G2, G4, with these guys, we  
+used something like all, all 3.5 million elliptic 
+curves. And we couldn't get any accuracies at all.  
+But with this one, even with a hundred thousand, 
+we're, so you, you give me any elliptic curve,  
+you just look at the Euler coefficients in 
+this rational demands. I can tell you with  
+almost a hundred percent accuracy, what this rank 
+going to be. Interesting. So, but of course this  
+immediately breaks birch because I had to talk 
+to real human experts who told me to actually  
+use the rational, to use the Euler representation 
+rather than the rational representation. But I, at  
+the time I was amazed. It was, I was, I was like, 
+this is so cool. Of course, this is still useless  
+for science. This was just a very, very cool thing 
+to do in terms of visualizing elliptic curves. And  
+then after some digging, we realized what, what, 
+what really was under the hood that was happening.  
+You know, this is when, when Lee and Oliver were 
+telling me, because they're number theory. So,  
+well, he says, well, this is no surprise because 
+this is the BSD conjecture at work. Somewhere  
+under the hood, this is BSD conjecture at work. 
+So now I can finally define for you with the BSD  
+conjecture. I will give you the weak version 
+so as not to bore you for two reasons. One,  
+the strong version is very too technical. And 
+two, I don't even understand it very well myself,  
+but the weak version simply says, if you take this 
+generating function that keeps track of the Euler  
+coefficients, form this product polynomial. Now 
+you take a product of all primes. This is what's  
+called the local to local to global behavior 
+because you localize it. Remember this zeta  
+function is local to a particular prime. And now 
+you take the product of all primes. You form this  
+new function called the global L function. Now, 
+I want to emphasize this is called zeta function,  
+not because of abuse of terminology, because 
+this is the Riemann zeta function. If you work  
+not over the elliptic curve, but if you worked 
+over a point, okay. And then this product is, is  
+exactly the Euler product for the zeta function. 
+If you were to work over point, but now we didn't,  
+we were more sophisticated. Our algebraic 
+variety, our manifold is not just a point,  
+but an actual elliptic curve. So it becomes a 
+much more richer structure. So you get this, so  
+this L function really is, this global L function 
+really is an analog of the Riemann zeta function.  
+So that's why this whole Langlands business is 
+so beautiful and so intricate because it unifies  
+geometry with harmonic analysis, with number 
+theory. This is why Eric Franco was so excited  
+about all of this stuff. He was saying with such, 
+because it unifies so many different branches of,  
+of mathematics. Anyhow, so the BSD conjecture 
+states, we don't know what the rank is. You can't  
+just buy, you can't do it by looking at the curve. 
+But once you have the L function by, by this  
+strange procedure of working modulo over a fixed 
+prime, and then take the product of all primes,  
+you get an analytic function. Now we have an 
+analytic function I can start mucking around with,  
+I can use complex analysis. The order of vanishing 
+of this analytic function at one, this is exactly  
+the rank. That's the BSD conjecture. If you 
+can prove that the order of vanishing given any  
+elliptic curve at one is exactly this rank, 
+then you get a million dollars. That's the BSD  
+conjecture. Remember the inverse of the Riemann 
+zeta function at one, the Riemann zeta function  
+has a simple pole at one. So it's reciprocal will 
+have a vanishing of order one, that it's order of  
+zero is one at S equal to one. So it's a good 
+analogy with the Riemann zeta function. But for  
+elliptic curves, instead of a point, this one, the 
+order of vanishing should exactly equal to rank.  
+So this gives you a way to compute rank, albeit 
+a very, very convoluted and very, very intricate  
+way to compute rank. But what surprised us was a 
+neural network was able to predict this rank, this  
+number without going through any of this stuff, 
+and predicted almost 100% accuracy. So where's  
+your million dollars? Well, there's no million 
+dollars because one, there's no proof, there is  
+no statement. And so what? So this is, we're still 
+in the, as far as the Birch test, the A test has  
+already failed because we had to talk to real 
+experts. The I test has already failed at this  
+point because there's no interpretability. So now 
+how do we, how do we break the I test? And then  
+surprisingly also break the N test, that should 
+also be non-trivial, right? So that's why the  
+memorization phenomenon was important. So then, 
+so we got to know, we got this prediction, we were  
+very excited, oh yeah, it's always really cool. 
+And then the excitement died down and we're like,  
+so what, what do we do? So this is the wonderful 
+moment where you can recruit an undergraduate  
+intern. So Alexey Pozdnyakov was at the time a 
+second year undergraduate student of Kiu-Hwan  
+Lee's. But anyhow, so Alexey was given this thing 
+like, dig under the hood and tell me, tell us what  
+this neural network or this classifier, this base 
+classifier or tree classifier are actually doing.  
+And finally, we honed in onto a PCA analysis, a 
+principal component analysis. Because basically we  
+found that this rank prediction was doing so well 
+with basically anything. Naive base classifiers,  
+you know, neural networks of a very simple 
+architecture. We didn't even have to go to  
+transformers or encoder architectures, it's just 
+a simple, you know, forward feed, linear active,  
+linear structure with, I think it was a basically 
+sigmoid activation function was good enough to  
+do this. So and PCA certainly would do it. So if 
+you remember PCA, I mean, so PCA, I had to learn,  
+I didn't know what a PCA was until 2017. PCA 
+was just a principal component analysis. Here's  
+a 100 dimensional data, you know, it's a point 
+crowding, I can't visualize it. So I find these  
+eigenvalues and find the principal components 
+of these eigenvalues, meaning like the ones that  
+the data has most variance of, and then focus and 
+project onto this eigenvalue directions. This is  
+like stats 101, which I never learned. Luckily, 
+I knew what a PCA was. So we were just mucking  
+around with PCA. So here's the remarkable fact. If 
+you take a PCA projection of this 100 dimensional  
+vector space of elliptic curve Euler coefficients, 
+you project it onto principal components, in this  
+case, a two dimensional projection is sufficient 
+to do it. You can see that ranks, the elliptic  
+curves of different ranks actually separated out 
+essentially, up to slightly to the north. Sorry,  
+is it important that you do your principal 
+component analysis down to two dimensions? Or  
+does it just happen to work out that way in this 
+case? So in our case, we chose two, because it  
+was easier to see. You would have done it, if you 
+project in the end, any other dimension, you will  
+see this kind of separation. Sure. Yeah. Two was 
+just nicest. And in retrospect, we really should  
+have chosen like an Italian flag or, you know, or 
+a French flag, because it really just looks like  
+a flag. In this one, this is elliptic curves of 
+rank 0, rank 1, and rank 2. This is already quite  
+interesting, right? It's still useless in terms of 
+actual mathematics. It was very good for AI that,  
+you know, AI was able to just, you know, 
+there's not even really AI. At this point,  
+it was just PCA analysis, which is a data analysis 
+in a picture that analyzed elliptic curves in a  
+way that was never done before. This was 2020, 
+when we had this result. So we look at this,  
+and we say, well, this is kind of nice, you know, 
+they're elliptic curves, they separated. Oh,  
+by the way, elliptic curves, the ranks of elliptic 
+curves is, again, a hugely, you can imagine,  
+because of the BSD. So Manjul Bhargava was able to 
+prove that almost all elliptic curves are ranked  
+either 0 or 1 in the infinite limit, and he got 
+the Fields Medal for that. So this is obviously a  
+very, very important result. But in the LFDB, you 
+do also have higher ranks as well. Just you know,  
+in the infinite limit, you will be vastly 
+dominated by ranks 0 and 1. So there are either  
+no rational points, no infinite families of 
+rational points, or one parameter family, just  
+like the conic section case. But the world record, 
+I believe, is the one that's held by Noam Elkies,  
+who has discovered this rank 28 elliptic curve. 
+It's huge, you can write it out. And that one is,  
+so rank 28 means there are 28 parameter infinite 
+families of rational points on that particular  
+curve. But so in LMFDB, you can already see 
+there is sufficient number of ranks 0, 1,  
+and 2 cases that there is this 3. I mean, there 
+are rank 4s as well, but you won't see that in  
+this picture. Now, so why do I emphasize on PCA? 
+No, I am finishing with this. Now, with PCA is,  
+because PCA is just a matrix projection, it's a 
+linear transformation. You could look under the  
+hood and just look at these matrices. Okay. And 
+that's what we asked Alexei to do. What does it  
+mean to look under the hood at the matrix? 
+Because this is a PCA, because, you know,  
+this is a 100-dimensional vector point cloud being 
+projected to two dimensions. So there's a whole  
+bunch of 100 by 2 matrices you can just look at. 
+Nobody ever does this, right? You don't look at,  
+you know, what the AI algorithm is doing. But in 
+this case, you can just make people look at it.  
+And so we gave it to Alexei to look at it, not 
+expecting much, and this is my undergraduate.  
+But Alexei expected all expectations. He really 
+looked at a lot of examples of these matrices and  
+noticed that almost all of the non-zero values 
+are focused on essentially just one row, that  
+one row dominated vastly over any other. So what 
+does that mean in terms of, so that's interesting.  
+So if you have a PCA projection, if you have a 
+matrix projection that's focused on just one row,  
+that means essentially you're just doing a sum. 
+You're just doing an average in some sense. And  
+that's exactly it. So now, what it's actually 
+doing is that it's taking its Euler coefficients  
+and averaging over a particular range of elliptic 
+curves, ordered by conductor, and I won't bore  
+you with the details of conductor, and it's just 
+computing this average. And if you do this average  
+plotted against primes, you will start seeing this 
+memorization phenomenon. So let me just emphasize  
+a few points on this. First of all, you're taking, 
+and we wouldn't have done this if we didn't do  
+a PCA analysis or if we, first of all, if we 
+didn't do this machine learning exercise on rank,  
+we wouldn't have dug under the hood in the 
+first place. So that was already AI guided.  
+And then it told us, we honed in on PCA because we 
+thought that might've been the most interpretable  
+thing. And once we do interpret it, it gave this 
+equation, which is a very, very simple equation,  
+which always says you just do the following. 
+Take families of elliptic curves, order them by  
+this conductor range, and average over different 
+elliptic curves, but at a fixed prime. This has  
+come to known as a vertical average. It's a very 
+strange thing to do because traditionally what you  
+would do is to average for fixed elliptic 
+curves or average over different primes,  
+right? You know, things like take a product, the 
+product formulas for a fixed elliptic curve and  
+average over different primes. But this is, the 
+PCA told us, no, you do the opposite. You take  
+different elliptic curves over a range and average 
+over a fixed curve, over a fixed prime and plot  
+the thing against prime. Once you plot it, you see 
+exactly what this is. So the red bit are all of  
+these zero rank ones, and the blue bit are exactly 
+all the rank one ones. So the reason that all of  
+the neural networks and all of the stuff were able 
+to fundamentally tell the difference between zero  
+and different elliptic curves was because they 
+were oscillating in a different way. That's why,  
+because it's so striking. You see this. So 
+now you can say, wow, it's guiding us what  
+to do. It's guiding us. You can do this to all 
+of the other ranks and just plot it, you know,  
+just isolate different ranks and plot them. And 
+it turns out that all of the even parity ranks,  
+you know, all the even ranks oscillated in this 
+way and all of the odd ranks oscillated in the  
+other way. Remember there is zero, one, zero, 
+one, two, three, they're all these different  
+ranks. So fundamentally, you can tell the parity 
+of the rank just by the way that these oscillation  
+patterns happen. And this is the point. So and 
+then this was a plot that was produced by Lee  
+and Pozdnyakov, and Pozdnyakov did this and 
+showed us this. And I remember this Zoom chat  
+very well. This is 2020, 2021, so we're still like 
+COVID times, right? So all we did all day was to  
+Zoom people. And I think, you know, my friends 
+were saying, this is like, looks like what these  
+birds do. And I say, ah, it looks like memorations 
+of, memorations, that's what it is, memorations  
+of starlings. And I said, we should absolutely 
+call this phenomenon memorations. We should call,  
+instead of calling it a boring oscillatory 
+pattern, we should just say this is a memoration  
+like, because it's not quite oscillatory, right? 
+Because it's kind of, there's noise around it. And  
+this noise is very interesting, I'll tell you in 
+a bit. So this noise is part of the statistical  
+error that you get from doing with finite 
+data, because we only had, you know, 3.6  
+million, whatever LMFDB. But the point was, then 
+we immediately wrote to Sarnak and to Sutherland,  
+who are the leaders in this field, thinking that, 
+oh, this is trivial. This is a trivial, you know,  
+this is a kind of typical kind of thing. You write 
+to the expert and you're going to get, you get a  
+reply within a day. And he says, oh yeah, this is 
+trivial. And it is a consequence of this theorem  
+that I proved in like, you know, 20 years ago 
+in this paper. This is the usual story, like,  
+you know, a hundred times it is this, right? But 
+not only do we not get back a thing, this message,  
+we got a long message back from Peter Sarnak, 
+who wrote this, what the hell guys, this is  
+bizarre that this pattern exists. So why? Right? 
+And then there was this many, many emails back  
+and forth. I mean, to be honest, a lot of these 
+emails were way over my head because, you know,  
+this is my contribution was an AI guided algebraic 
+geometry. I'm not a number theorist. So there's  
+lots of back and forth. And then this became the 
+memorization phenomenon. And then there were all  
+these conferences organized. So we're back to this 
+Birch test, right? So it failed the A because it  
+wasn't automatic. We needed human. We were mucking 
+around all the time with human experts. It passed  
+the I test because it became interpretable. This 
+was a precise formula. Most importantly, it passed  
+the N test. This was the first time that an N 
+test was passed because it actually galvanized  
+a field of study in number theory. Now there's a 
+whole field called memorization phenomenon. Wow.  
+This is totally out of like, what the hell? 
+I mean, this is above my pay grade because I  
+don't know the number theory community that well 
+at all. So that's why Ponto was so exciting. There  
+were conferences organized in ICERM. There are 
+all these people, there are workshops apparently  
+in Bristol and various universities. They're 
+like, oh yeah, there's this kind of memorization  
+workshop on this. So I'm not going to, I need 
+to wrap up because I think it's getting too  
+much detail. But I want to tell you that there 
+are other parts of this memorization thing. But  
+now you can, this is a precise conjecture. This 
+was a precise conjecture that was raised by,  
+guided by AI explorations with humans. And 
+Peter Sarnak says it really well. He says,  
+this is a conjecture that Bertrand Swinton Dyer 
+could have raised themselves, but they didn't  
+because they never thought to take this average 
+because it's a bizarre thing to do. But AI doesn't  
+know what it's doing. All it's doing is spotting 
+patterns. So just to emphasize the parts of this  
+conjecture now of the phenomena, which is expected 
+to be true for all L functions. So this is why, so  
+in other words, the memorization phenomenon should 
+be a general phenomenon in the entire Langlands  
+program. So it's now proven for Dirichlet 
+character, the memorization to Dirichlet character  
+has been now proved. So this memorization 
+actually converges to a precise curve. And  
+this was proven by, I wasn't involved in this 
+because this you need actual, it was an actual  
+number theory paper. And then Nina Zubrilina, who 
+is Sarnak's PhD student, who was Sarnak's student,  
+and then Alex Cohen. And now they proved it for 
+weight two modular forms as well. And this was  
+all in 2023, in 2024, and there are more results 
+being precisely proven. What it really is, and  
+this goes back to Gauss and to Riemann zeta, is 
+that this memorization fundamentally generalizes  
+a bias in the distribution of primes. That's 
+also quite striking. So this is an interesting  
+fact. So Chebyshev noticed this factor before. So 
+Chebyshev noticed, it's called the Chebyshev bias.  
+If you take all primes, if you take primes and 
+consider and find the remainder of this primes  
+upon division by four, you're going to get 
+remainder either one or three, right? Because  
+you're modular four. And you would have thought 
+that it's 50% one and 50% three in the large  
+limit. But Chebyshev in the 19th century already 
+noticed there's just a tiny bit of a bias towards  
+three than one. And that was just conjecture of 
+his. And this is again, mucking around with data,  
+this platonic data. Like why is it the primes are 
+more biased towards one of the ones upon division  
+by four? This is known as Chebyshev's bias. And 
+this was proven actually by Sarnak and Rubinstein  
+in the 90s, but only conditional on the Riemann 
+hypothesis being true. There is this fundamental  
+bias. So there's no unconditional proof of this, 
+but it's conditional on the Riemann hypothesis  
+that this is true. But what is interesting is that 
+the murmuration phenomenon is a generalization of  
+this Chebyshev bias to all of the L-function 
+world. So it's a generalization from prime  
+biases to the biases in all L-functions, because 
+there is this underlying oscillatory behavior.  
+And that also has this deep relation with the BSD 
+conjecture. So that's where this whole world...  
+And that's why it passes I, it passes N, people 
+are still working on it, but it doesn't pass A,  
+because human expertise were constantly involved 
+in interpreting and choosing PCA. Anyhow, to wrap  
+up this whole story, where are we in terms of 
+mathematical conjectures, in formulating problems  
+in this top-down guided mathematical discovery 
+over the centuries? And I will say that in the  
+19th century, the eyes of Gauss were good enough 
+to come up with this conjecture. But in the 20th  
+century, BSD already needed a computer to come up 
+with a groundbreaking conjecture. And we are now  
+just at the cusp, and that's why it's so exciting, 
+that AI-guided human intuition led to this  
+DeepMind paper, and led to the murmuration thing, 
+and this new matrix multiplication. So obviously,  
+where we're going is a combination of these 
+three directions. And as I mentioned earlier,  
+in these very rooms that I'm talking, that Faraday 
+would have had the conversation with Maxwell in  
+this room, not, well, about 150 years ago. Our 
+institute has devoted one of our four themes to  
+this AI for mathematical degrees, because this is 
+really a paradigm shift in terms of how science is  
+done. So just to promise this is the last slide, 
+so what is the current state of the art? Where  
+are we with this AI-guided thing? Now let's drop 
+this human-guided intuition for the time being.  
+AlphaGo2, DeepMind, has now reached silver medal. 
+I think we had this long joke and discussion about  
+how to beat the mind, the 16-year-old Terry Tau. 
+Sorry, the 12-year-old Terry Tau. When you beat  
+the 16-year-old Terry Tau, it's game over. 
+That's a new age of scientific discoveries.  
+But we're making, these guys, this field, we as 
+a field, as a community, we're making progress  
+every couple of months. It's so fast. It's 
+exponentiating. The DARPA, the US military thing,  
+now that US is defunding everything, but it will 
+not defund military. The military wing, the DARPA,  
+which is the Defense Advanced Research Institute, 
+I was just at a meeting with them two weeks ago,  
+just launched eXpMath, where they literally are 
+saying exponentiating mathematics, you can Google  
+this, the eXpMath project that DARPA is funding 
+now is how to benchmark proving, accelerating  
+mathematics by proving. But unfortunately, they're 
+not funding in this AI-guided discovery area,  
+which I think should be funded. And that's the 
+way, combination of all these three directions.  
+Anyhow, so that's AlphaGeo2. AlphaProof, 
+again, deep mind, is on proving theorems at an  
+almost research level. And I think we even 
+joked last time that at the silver medal level,  
+AlphaGeo2 is high school level. AlphaProof 
+is maybe college level, right? But this is  
+the interesting one. I think this is very, just 
+to wrap up, the Epoch AI Frontier Math Project,  
+and you can Google this, and this is really on 
+professional mathematical problems. The kind of  
+problems you would give it to a colleague or to 
+a researcher, a very advanced postdoc or graduate  
+student, and they're benchmarking this now. In 
+fact, I'm flying to Berkeley on Thursday to help,  
+there's a whole team of us we're flying in to 
+benchmark their tier four problems. And this  
+is happening this weekend, actually. So as of 
+December 2024, Epoch AI is capable of solving  
+only 2% of advanced research level mathematical 
+problems. But by March, they finished their tier  
+one to tier three problems. And they gave this 
+division of tier one to three problems, graduate  
+level problems. You can go to this website to look 
+how hard these problems are. And Terry Tao gave  
+some problems, and Ken Ono, these are all really 
+research problems. And I gave a problem to the  
+tier four, which is about to appear. And they're 
+still soliciting more. And just go to this link,  
+you can just look, oh my god, this is the kind 
+of problem I would give to my research student,  
+or to the kind of problems I would work on with 
+a collaborator, that we would write papers about.  
+And their benchmark is about 10 to 25% on tier one 
+to three. So their next benchmark is tier four,  
+and tier four is so hard that humans are not 
+likely to solve it. Not because they're tricky,  
+like Olympiad problem, but because they're actual 
+research level problems. And we are actually,  
+together as a community, are attacking this 
+kind of problems. So this is where the state  
+of the art is. So in terms of where the future of 
+mathematics is, I think I try to summarize in this  
+picture. So I'm using an old picture of Terry Tao, 
+because he's the best human mathematician. And so,  
+how would it go? So you would have literature, 
+the corpus of literature from scientific papers.  
+You go back and forth, where human 
+and I would process it together,  
+and then use top-down mathematics to formulate 
+conjectures from platonic data that's gathered  
+from the literature, or process it directly from 
+the literature and formulate the kind of problems.  
+Once the problem is formulated, you would go to 
+auto-formalization, where it's only a matter of  
+time before Lean, the Lean community, gets it. By 
+auto-formalization, I mean you take a math paper  
+in LaTeX and just hit return, translate it to a 
+Lean format. We're very far from that right now,  
+having conversations with Buzzard, not because 
+the technology is not there, but because there's  
+not enough Lean data to train a large language 
+model on. We only have millions of lines of Lean  
+so far available. Just millions. We need billions 
+in order to have, and it's millions of, you know,  
+these poor guys type in everything, right? So 
+conjecture formulation to this auto-formalization,  
+and then you go through and find pathways 
+through Mathly in this bottom-up approach,  
+where you would have a combination of LLMs, and 
+that would generate your proof. And then you will  
+feed to the human, where the human would actually 
+interpret what this is, and then go back to  
+writing the paper with AI and feed it back to the 
+literature. This loop, I think it's where we're  
+already heading toward. It's not an immediately 
+foreseeable future that all of this is going to  
+be automated, but what is remarkable is that this 
+is within reach. And I can't put a date on it,  
+maybe 10 years, maybe 5 to 10 years, because at 
+every single step of this, we are being helped  
+by AI. For example, the memorization, which is 
+taking available data and formulating it in this  
+way. And already last week, I'm meeting people 
+who are actually coming up with proof pathways,  
+even by ChatGPT, and then humanly verifying that. 
+So this is the brave new world of mathematics,  
+I mean, of theory, of new discovery. And we're 
+so lucky to be in this age where AI has advanced  
+enough where it could actually help us with 
+genuine new discoveries. Young, thank you so  
+much for bringing us to literally the frontier, 
+the bleeding edge of math and also the future.  
+It's a great pleasure talking to you. Thank you 
+for listening. I get very excited about this. So  
+I'm parking everything else so I could devote to 
+this new community. And it's a growing community  
+of mathematicians who believe in this. And I think 
+there was a recent, there's a recent Quanta paper,  
+Quanta report. I'm not involved in that one that 
+involved experts like Andrew Granville, who talked  
+about what is a beautiful proof and how AI can 
+help us with it. And that they are also amazed at  
+how fast this is going. Hmm. Interesting. Thank 
+you. Thank you very much. I've received several  
+messages, emails and comments from professors 
+saying that they recommend Theories of Everything  
+to their students. And that's fantastic. If 
+you're a professor or a lecturer and there's  
+a particular standout episode that your students 
+can benefit from, please do share. And as always,  
+feel free to contact me. New update, started 
+a Substack. Writings on there are currently  
+about language and ill-defined concepts as well as 
+some other mathematical details. Much more being  
+written there. This is content that isn't anywhere 
+else. It's not on Theories of Everything. It's not  
+on Patreon. Also full transcripts will be placed 
+there. At some point in the future. Several people  
+ask me, hey Curt, you've spoken to so many 
+people in the fields of theoretical physics,  
+philosophy and consciousness. What are your 
+thoughts? While I remain impartial in interviews,  
+this Substack is a way to peer into my present 
+deliberations on these topics. Also thank you to  
+our partner, The Economist. Firstly, thank you for 
+watching. Thank you for listening. If you haven't  
+subscribed or clicked that like button, now is 
+the time to do so. Why? Because each subscribe,  
+each like, helps YouTube push this content to 
+more people like yourself, plus it helps out Curt  
+directly, aka me. I also found out last year that 
+external links count plenty toward the algorithm,  
+which means that whenever you share, on 
+Twitter, say on Facebook, or even on Reddit,  
+etc, it shows YouTube, hey, people are talking 
+about this content outside of YouTube. Which in  
+turn, greatly aids the distribution on YouTube. 
+Thirdly, you should know this podcast is on  
+iTunes, it's on Spotify, it's on all of the audio 
+platforms. All you have to do is type in theories  
+of everything and you'll find it. Personally, I 
+gain from re-watching lectures and podcasts. I  
+also read in the comments that, hey, TOE listeners 
+also gain from replaying. So how about instead you  
+re-listen on those platforms like iTunes, Spotify, 
+Google Podcasts, whichever podcast catcher you  
+use. And finally, if you'd like to support more 
+conversations like this, more content like this,  
+then do consider visiting patreon.com slash 
+CURTJAIMUNGAL and donating with whatever you  
+like. There's also PayPal, there's also crypto, 
+there's also just joining on YouTube. Again,  
+keep in mind, it's support from the sponsors 
+and you that allow me to work on TOE full-time.  
+You also get early access to ad-free episodes, 
+whether it's audio or video. It's audio in  
+the case of Patreon, video in the case of 
+YouTube. For instance, this episode that  
+you're listening to right now was released a 
+few days earlier. Every dollar helps far more  
+than you think. Either way, your viewership 
+is generosity enough. Thank you so much.

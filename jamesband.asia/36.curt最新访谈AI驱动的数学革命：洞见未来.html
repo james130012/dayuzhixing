@@ -1,0 +1,1270 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CURT最新访谈 AI驱动的数学革命：物理逻辑视角下的新范式解读</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.2/p5.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
+    <style>
+        /* --- Global Styles & GitHub Inspired Theme --- */
+        :root {
+            --font-primary: 'Noto Sans SC', sans-serif;
+            --font-headings: 'ZCOOL KuaiLe', cursive;
+            --color-bg: #ffffff;
+            --color-bg-alt: #f6f8fa; /* GitHub-like light gray */
+            --color-text: #24292e; /* GitHub-like dark gray text */
+            --color-text-secondary: #586069;
+            --color-primary: #0366d6; /* GitHub blue */
+            --color-secondary: #2a9d8f; /* Teal for concepts */
+            --color-accent: #e76f51; /* Orange-red for emphasis */
+            --color-border: #e1e4e8; /* GitHub border color */
+            --border-radius: 6px;
+            --font-size-base: 20px; /* Approx 三号 for A3 readability */
+            --line-height-base: 1.8;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: var(--font-primary);
+            font-size: var(--font-size-base);
+            line-height: var(--line-height-base);
+            background-color: var(--color-bg-alt);
+            color: var(--color-text);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 1200px; /* Good for A3-like reading width */
+            margin: 30px auto;
+            padding: 30px 40px;
+            background-color: var(--color-bg);
+            border: 1px solid var(--color-border);
+            border-radius: var(--border-radius);
+            box-shadow: 0 8px 24px rgba(149, 157, 165, 0.2);
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            border-bottom: 2px solid var(--color-primary);
+            padding-bottom: 20px;
+        }
+
+        header h1 {
+            font-family: var(--font-headings);
+            font-size: 2.8em;
+            color: var(--color-primary);
+            margin: 0;
+        }
+
+        header p.subtitle {
+            font-size: 1.2em;
+            color: var(--color-text-secondary);
+            margin-top: 10px;
+        }
+
+        article section {
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 1px dashed var(--color-border);
+        }
+        article section:last-child {
+            border-bottom: none;
+        }
+
+        h2 {
+            font-family: var(--font-headings);
+            font-size: 2.2em;
+            color: var(--color-accent);
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+
+        h3 {
+            font-family: var(--font-headings);
+            font-size: 1.8em;
+            color: var(--color-secondary);
+            margin-top: 30px;
+            margin-bottom: 15px;
+        }
+
+        p {
+            margin-bottom: 1.5em;
+            text-align: justify;
+        }
+
+        strong, .highlight {
+            color: var(--color-accent);
+            font-weight: bold;
+        }
+
+        .concept {
+            font-weight: 500;
+            color: var(--color-secondary);
+            padding: 2px 6px;
+            background-color: #e9f5f4;
+            border-radius: 4px;
+            border: 1px solid #a3d9d1;
+        }
+
+        blockquote {
+            margin: 20px 0;
+            padding: 15px 20px;
+            background-color: var(--color-bg-alt);
+            border-left: 5px solid var(--color-primary);
+            font-style: italic;
+            color: var(--color-text-secondary);
+        }
+        blockquote p {
+            margin-bottom: 0.5em;
+        }
+
+        ul {
+            list-style-type: square;
+            padding-left: 25px;
+        }
+        ul li {
+            margin-bottom: 0.8em;
+        }
+
+        .formula-text {
+            display: block;
+            text-align: center;
+            font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace; /* Common coding fonts */
+            font-size: 1.1em;
+            padding: 15px;
+            margin: 20px auto;
+            background-color: #f0f3f6;
+            border: 1px solid var(--color-border);
+            border-radius: var(--border-radius);
+            color: #333;
+            max-width: 80%;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);
+            overflow-x: auto;
+        }
+
+        .animation-container {
+            width: 100%;
+            max-width: 650px; /* Increased max-width for better visuals */
+            height: 450px; /* Increased height */
+            margin: 25px auto;
+            border: 1px solid var(--color-border);
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            background-color: #fdfdff; /* Slightly off-white for canvas bg */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+        .animation-container canvas {
+            display: block;
+            max-width: 100%;
+            max-height: 100%;
+            border-radius: calc(var(--border-radius) - 1px);
+        }
+        
+        .controls {
+            text-align: center;
+            margin-top: 10px;
+            margin-bottom: 25px;
+            padding: 10px;
+            background-color: var(--color-bg-alt);
+            border-radius: var(--border-radius);
+        }
+        .controls button, .controls input[type="range"], .controls label, .controls select {
+            padding: 10px 18px;
+            font-size: 0.9em;
+            font-family: var(--font-primary);
+            background-color: var(--color-primary);
+            color: white;
+            border: none;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            margin: 8px 5px; /* Increased margin */
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            vertical-align: middle;
+        }
+        .controls button:hover {
+            background-color: #0056b3; /* Darker blue on hover */
+            transform: translateY(-1px);
+        }
+        .controls button:active {
+            transform: translateY(0px);
+            background-color: #004085;
+        }
+        .controls input[type="range"] {
+            cursor: grab;
+            padding: 0; /* Remove padding for range */
+            max-width: 150px; /* Limit range slider width */
+        }
+        .controls label {
+            background-color: transparent;
+            color: var(--color-text);
+            box-shadow: none;
+            padding: 10px 5px; /* Adjust label padding */
+        }
+         .controls select {
+            background-color: white;
+            color: var(--color-text);
+            border: 1px solid var(--color-border);
+        }
+
+
+        footer {
+            text-align: center;
+            margin-top: 50px;
+            padding: 25px;
+            background-color: var(--color-text); /* Dark footer */
+            color: var(--color-bg-alt);
+            width: 100%;
+            box-sizing: border-box;
+        }
+        footer p {
+            margin: 0;
+            font-size: 0.9em;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            body {
+                font-size: calc(var(--font-size-base) - 2px); /* Slightly smaller on mobile */
+            }
+            .container {
+                width: 95%;
+                padding: 20px;
+                margin-top: 15px;
+                margin-bottom: 15px;
+            }
+            header h1 { font-size: 2.2em; }
+            h2 { font-size: 1.9em; }
+            h3 { font-size: 1.6em; }
+            .animation-container {
+                height: 350px; /* Adjust height for mobile */
+            }
+            .formula-text {
+                font-size: 1em;
+                max-width: 95%;
+            }
+            .controls button, .controls input[type="range"], .controls label, .controls select {
+                padding: 8px 12px;
+                font-size: 0.85em;
+                margin: 5px;
+            }
+        }
+         @media (max-width: 480px) {
+            body {
+                font-size: calc(var(--font-size-base) - 4px);
+            }
+            header h1 { font-size: 1.8em; }
+            h2 { font-size: 1.6em; }
+            h3 { font-size: 1.4em; }
+            .animation-container {
+                height: 300px;
+            }
+             .controls {
+                display: flex;
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .controls button, .controls input[type="range"], .controls label, .controls select {
+                width: 100%;
+                box-sizing: border-box;
+                margin: 5px 0; /* Stack controls vertically */
+            }
+            .controls input[type="range"] {
+                max-width: 100%;
+            }
+        }
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>AI驱动的数学革命：洞见未来</h1>
+            <p class="subtitle">从物理逻辑视角剖析人工智能在纯粹数学与理论物理研究中的颠覆性力量</p>
+        </header>
+
+        <main>
+            <article>
+                <section id="intro">
+                    <h2>引言：数学世界的“范式转移”</h2>
+                    <p>“这到底是怎么回事？这种模式的存在太诡异了。它几乎是瞬间从零跃升到百分之百。我惊呆了，也兴奋至极。” 这句话精准地捕捉到了人工智能（AI）为数学研究带来的震撼。我们正处在一个由AI辅助的理论发现新时代的黎明，尤其是在纯粹数学和理论物理领域。正如杨-辉·赫教授所言，这不仅仅是工具的革新，更是一场深刻的<strong class="highlight">科学范式转移</strong>。每周都有可能涌现颠覆性的进展，从根本上改变我们探索宇宙奥秘的方式。大型科技公司如DeepMind、OpenAI的研究成果，甚至开始触及诺贝尔奖级别的发现，它们正在解决真实的前沿科研难题。</p>
+                    <p>本文将从“物理逻辑”的视角——即探究事物发展的内在规律、因果联系和结构演变——深入分析AI如何在数学领域掀起这场革命。我们将看到，AI不仅是计算器或助手，更逐渐成为数学家的<span class="concept">合作伙伴</span>，共同挑战人类智慧的边界。</p>
+                </section>
+
+                <section id="landscape-change">
+                    <h2>科研版图重塑：AI的多重角色</h2>
+                    <p>AI在数学研究中的应用并非单一模式，而是呈现出多元化、深层次的融合。我们可以将其归纳为几个主要方向：</p>
+                    <ul>
+                        <li><strong>自上而下（Top-Down）的探索：</strong> 这是基于直觉引导和模式识别的传统数学研究方式。伟大的数学家如高斯、牛顿，正是通过观察大量数据（无论是物理实验数据还是“柏拉图式”的数学对象数据）来发现规律，形成猜想。AI，特别是机器学习，极大地增强了这种能力。通过处理海量复杂数据集，AI能够发现人类难以察觉的<span class="concept">微妙模式</span>和关联。这正是“默观猜想”（Murmuration Conjecture）诞生的土壤。</li>
+                        <li><strong>元数学（Meta-Mathematics）的辅助：</strong> 以大型语言模型（LLMs）为代表的AI，正在成为数学家的“智能副驾驶”。正如陶哲轩等顶尖数学家所展示的，LLMs可以协助整理文献、启发思路、甚至草拟证明策略。它们能够快速总结特定领域的知识，甚至在你忘记某个定理或想了解一个陌生领域时，提供比传统搜索更高效的概览。</li>
+                        <li><strong>自下而上（Bottom-Up）的构建：</strong> 这主要涉及形式化证明和定理证明器（如Lean）。虽然这方面最初可能不直接涉及AI，但积累的大量形式化代码（数百万行级别）为AI的介入和学习提供了基础。未来，AI有望在验证证明、甚至自动生成部分证明步骤中发挥重要作用。</li>
+                    </ul>
+                    <p>这三种路径并非孤立，而是相互交织，共同推动着数学研究的边界。AI的介入，使得数学家能够从繁琐的计算和部分证明细节中解放出来，更专注于<strong class="highlight">提出问题、构建理论框架和进行创造性思考</strong>。</p>
+                    <div id="aiRolesAnimationContainer" class="animation-container">
+                        </div>
+                    <div class="controls">
+                        <button id="aiRolesPlayPause">播放/暂停</button>
+                        <label for="aiRolesSpeed">速度:</label>
+                        <input type="range" id="aiRolesSpeed" min="0.1" max="2" value="1" step="0.1">
+                    </div>
+                </section>
+
+                <section id="murmuration-conjecture">
+                    <h2>案例研究：惊艳数论界的“默观猜想”</h2>
+                    <p>“默观猜想” (Murmuration Conjecture) 是AI辅助数学发现的里程碑式案例。它不仅展示了AI在<span class="concept">模式识别</span>方面的强大能力，更重要的是，它揭示了AI能够引导人类科学家注意那些传统方法可能会忽略的现象，从而催生全新的研究方向。</p>
+                    <h3>背景：椭圆曲线与BSD猜想</h3>
+                    <p>椭圆曲线是数论中的核心研究对象，形如 y<sup>2</sup> = x<sup>3</sup> + ax + b 的方程。寻找这类方程的有理数解（即x, y均为有理数的点）是一个古老而深刻的问题。著名的BSD猜想（Birch and Swinnerton-Dyer Conjecture）是克雷数学研究所提出的七个千禧年大奖难题之一，它试图将椭圆曲线的代数性质（如其有理点群的“秩”，Rank）与其分析性质（其L函数的行为）联系起来。简而言之，BSD猜想（弱形式）指出：椭圆曲线E的L函数 L(E, s) 在 s=1 处的零点阶数等于E的有理点群的秩R。即：<span class="formula-text">ord<sub>s=1</sub> L(E, s) = R</span></p>
+                    <h3>AI的意外发现</h3>
+                    <p>最初，研究者尝试使用椭圆曲线的韦尔斯特拉斯方程的系数 (g2, g4) 作为输入，让神经网络预测其秩，结果并不理想。然而，当采纳数论专家的建议，改用椭圆曲线的<strong class="highlight">欧拉系数 (a<sub>p</sub>)</strong> 序列作为输入时，情况发生了戏剧性转变。神经网络对秩的预测准确率飙升至接近100%。</p>
+                    <p>真正的突破来自于对AI“黑箱”的探索。通过主成分分析（PCA），研究团队发现，不同秩的椭圆曲线在投影到低维空间后，其欧拉系数的平均行为呈现出一种令人惊讶的、类似鸟群飞舞（默观）的<span class="concept">振荡模式</span>。具体来说，偶数秩的曲线和奇数秩的曲线振荡方式截然相反。这个现象是如此出乎意料，以至于数论专家彼得·萨纳克（Peter Sarnak）在看到结果后惊呼：“这到底是怎么回事？这种模式的存在太诡异了！”</p>
+                    <div id="murmurationPatternAnimationContainer" class="animation-container">
+                        </div>
+                    <div class="controls">
+                        <button id="murmurationPlayPause">播放/暂停</button>
+                        <label for="murmurationRankSelect">选择秩:</label>
+                        <select id="murmurationRankSelect">
+                            <option value="0">Rank 0 (偶)</option>
+                            <option value="1">Rank 1 (奇)</option>
+                            <option value="all">显示全部</option>
+                        </select>
+                    </div>
+                    <h3>影响与启示</h3>
+                    <p>“默观猜想”的发现过程完美诠释了<strong class="highlight">AI引导下的人类直觉</strong>。AI并未直接“证明”任何东西，但它通过分析海量数据，揭示了一个深刻的、此前未被注意到的数学结构。这个发现不仅本身具有数学价值（它被证明与更广为人知的切比雪夫偏倚有关，并且是L函数世界中更普遍现象的一个例子），更重要的是，它激发了一个全新的研究领域。它通过了“N测试”（Novelty Test），即产生了新颖的、值得研究的数学问题。</p>
+                    <p>然而，这个过程也凸显了当前AI的局限性。它未能通过“A测试”（Automation Test），因为人类专家的知识（选择正确的输入特征）和洞察力（解释PCA结果并提出“默观”类比）在整个过程中至关重要。</p>
+                </section>
+
+                <section id="human-ai-symbiosis">
+                    <h2>人机共生：直觉与计算的协奏</h2>
+                    <p>AI在数学领域的崛起，并非要取代人类数学家，而是开启了一个<span class="concept">人机协作的新纪元</span>。数学家的直觉、抽象思维能力和提出深刻问题的能力，与AI强大的数据处理、模式识别和复杂计算能力相结合，将产生1+1远大于2的效果。</p>
+                    <blockquote>
+                        <p>“我们正进入一个可以委派枯燥工作，同时也能委派模式识别任务的时代。我们突然间变得像超人一样，可以与这些智能体互动，它们能帮助我们进行真正的研究，而不仅仅是解决初级问题。”</p>
+                    </blockquote>
+                    <p>这种共生关系体现在：</p>
+                    <ul>
+                        <li><strong>拓展认知边界：</strong> AI能处理的<strong class="highlight">数据规模和复杂性</strong>远超人力，使我们能够探索更大、更复杂的数学对象和结构。LMFDB（L-functions and Modular Forms Database）这样的数据库包含数百万条记录，为AI提供了丰富的“饲料”。</li>
+                        <li><strong>加速猜想形成：</strong> AI可以快速检验大量假设，筛选出有潜力的模式，从而加速从数据到猜想的过程。</li>
+                        <li><strong>辅助证明过程：</strong> 虽然AI目前还难以独立完成复杂定理的完整证明，但它可以协助验证证明步骤、查找相关文献、甚至在形式化系统中探索证明路径。</li>
+                    </ul>
+                    <p>“伯奇测试”（Birch Test）为评估AI在数学发现中的贡献提供了一个框架，它包含自动化（A）、可解释性（I）和新颖性（N）等标准。“默观猜想”在N方面表现出色，但在A和完全的I方面尚有提升空间。</p>
+                    <div id="dataGrowthAnimationContainer" class="animation-container">
+                        </div>
+                    <div class="controls">
+                        <button id="dataGrowthPlayPause">播放/暂停</button>
+                    </div>
+                </section>
+                
+                <section id="ai-exploration">
+                    <h2>探索未知领域：AI在参数空间中的导航</h2>
+                    <p>数学研究常常可以被视为在广阔的<span class="concept">参数空间或概念空间</span>中进行探索。AI，尤其是通过强化学习等技术训练的智能体，有潜力成为这种探索的强大工具。想象一个AI在复杂的高维数学结构中“漫游”，寻找有趣的区域、不寻常的现象或潜在的联系。这种能力可以帮助数学家发现新的研究方向，或者在已知理论的边缘地带找到突破口。</p>
+                    <p>例如，在寻找具有特定性质的数学对象（如特殊类型的图、代数簇或编码）时，AI可以通过智能搜索算法，比随机搜索或暴力枚举更有效地导航巨大的可能性空间。它可以学习哪些特征预示着“有趣”的结果，并优先探索这些方向。</p>
+                    <div id="aiExplorationAnimationContainer" class="animation-container">
+                        </div>
+                    <div class="controls">
+                        <button id="aiExplorationPlayPause">播放/暂停</button>
+                        <label for="aiExplorationSpeed">探索速度:</label>
+                        <input type="range" id="aiExplorationSpeed" min="1" max="10" value="3" step="1">
+                    </div>
+                </section>
+
+                <section id="future-vision">
+                    <h2>数学的未来图景：人机协作的智慧闭环</h2>
+                    <p>展望未来，AI与数学家的关系将更加紧密，形成一个<strong class="highlight">动态的智慧创造闭环</strong>：</p>
+                    <ol>
+                        <li><strong>文献与数据输入：</strong> 海量的数学文献和数据集（如arXiv、LMFDB）被AI系统消化吸收。</li>
+                        <li><strong>AI模式发现与猜想生成：</strong> AI利用其模式识别能力，从数据中提炼出潜在规律，辅助人类形成或直接生成新的数学猜想（自上而下）。</li>
+                        <li><strong>问题形式化：</strong> 数学家将模糊的直觉或AI生成的初步模式，精确化为严格的数学问题。未来AI或可辅助这一“自动形式化”过程，例如将LaTeX论文转换为Lean等形式化语言。</li>
+                        <li><strong>AI辅助证明探索：</strong> 结合LLMs的语境理解和定理证明器的逻辑推理能力，AI在庞大的数学知识库（如MathLib）中探索证明路径（自下而上）。</li>
+                        <li><strong>人类验证与洞察：</strong> AI生成的证明片段或策略，由人类数学家进行严格审查、理解和整合，并从中获得新的洞察。</li>
+                        <li><strong>成果产出与知识迭代：</strong> 经过验证的新定理和理论，以论文等形式回馈到知识库中，供下一轮AI学习和人类探索。</li>
+                    </ol>
+                    <p>诸如DeepMind的AlphaGeometry（已达到国际数学奥林匹克竞赛银牌水平）、AlphaProof，以及Epoch AI的“前沿数学项目”（Frontier Math Project，旨在解决研究生级别的研究问题），都预示着这一未来正在加速到来。DARPA的eXpMath项目也致力于通过AI加速数学证明。这不仅仅是效率的提升，更是<span class="concept">数学思维方式和发现机制的深刻变革</span>。</p>
+                    <div id="discoveryLoopAnimationContainer" class="animation-container">
+                        </div>
+                    <div class="controls">
+                        <button id="discoveryLoopPlayPause">播放/暂停</button>
+                    </div>
+                </section>
+                
+                <section id="timeline-evolution">
+                    <h2>演进时间轴：AI在数学中的角色变迁</h2>
+                    <p>AI在数学中的角色并非一蹴而就，而是经历了一个逐步演进的过程，并且未来还将继续深化：</p>
+                    <ul>
+                        <li><strong>早期（计算辅助）：</strong> 计算机主要作为强大的计算工具，处理繁琐的数值计算、符号运算（如Mathematica, SageMath），帮助数学家验证特定情况或进行大规模枚举。</li>
+                        <li><strong>中期（模式识别与数据挖掘）：</strong> 机器学习算法开始应用于大型数据集中寻找模式，如在组合学、图论或“默观猜想”中的应用。AI开始扮演“数据侦探”的角色。</li>
+                        <li><strong>当前（语言模型与初步推理）：</strong> 大型语言模型（LLMs）展现出理解和生成数学文本的能力，可以作为研究助手、文献综述工具，甚至辅助证明策略的构思。定理证明器（如Lean）结合AI技术，在形式化证明方面取得进展。</li>
+                        <li><strong>近未来（深度协作与猜想生成）：</strong> AI将更深度地融入研究流程，不仅辅助证明，还能更主动地参与猜想的生成和问题的提出。人机协作将成为常态，“AI数学家”的概念开始萌芽。</li>
+                        <li><strong>远未来（自主发现的潜力？）：</strong> AI是否能够达到独立进行重大数学发现的水平，甚至发展出全新的数学概念和理论，这是一个开放且引人深思的问题。这将挑战我们对“理解”、“创造力”和“智能”本身的定义。</li>
+                    </ul>
+                    <p>这个演进过程是指数级的，正如赫教授所观察到的，“这个领域每隔几个月就有飞速进展”。我们正处在这个加速变革的激动人心的时代。</p>
+                    <div id="aiMathTimelineAnimationContainer" class="animation-container">
+                        </div>
+                    <div class="controls">
+                        <button id="aiMathTimelinePlayPause">播放/暂停</button>
+                    </div>
+                </section>
+
+
+                <section id="conclusion">
+                    <h2>结语：迎接数学探索的“智能时代”</h2>
+                    <p>AI的浪潮正以前所未有的力量重塑数学研究的版图。从最初的计算助手，到如今能够发现复杂模式、辅助证明、甚至启发新猜想的<span class="concept">智能伙伴</span>，AI正在赋予数学家前所未有的能力。正如“默观猜想”所揭示的，AI能够以其独特的“视角”观察数学世界，发现那些深藏不露的规律，挑战人类的既有认知。</p>
+                    <p>这并非意味着人类智慧的旁落，恰恰相反，这是一个<strong class="highlight">人机智慧协同进化</strong>的黄金时代。数学家的直觉、创造力、对美的追求以及提出深刻问题的能力，在AI的加持下将得到极大释放和升华。未来的数学突破，很可能诞生于这种深度的人机对话与协作之中。</p>
+                    <p>我们正站在一个新时代的门槛上，一个充满无限可能与挑战的“智能数学”时代。拥抱变革，驾驭AI的力量，人类必将在探索宇宙数学真理的道路上，迈出更加坚实和深远的步伐。</p>
+                </section>
+            </article>
+        </main>
+        <footer>
+            <p>&copy; 2025 AI数学探索者. 本文内容基于公开访谈分析，旨在科普与交流，具体学术观点请参考原始研究与权威文献。</p>
+        </footer>
+    </div>
+
+    <script>
+        // --- P5.js Animation Sketches ---
+
+        // Utility function to get CSS variable values
+        function getCssVar(varName) {
+            return getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
+        }
+
+        // Animation 1: AI Roles in Math Research (Conceptual Flowchart)
+        let sketchAiRoles = function(p) {
+            let playButton, speedSlider;
+            let playing = true;
+            let nodes = [];
+            let edges = [];
+            let particleSystem;
+            let currentHighlight = 0;
+            let highlightTimer = 0;
+            let highlightDuration = 150; // frames
+            let colorText;
+
+            class Node {
+                constructor(label, x, y, w, h) {
+                    this.label = label;
+                    this.x = x;
+                    this.y = y;
+                    this.w = w;
+                    this.h = h;
+                    this.color = p.color(200, 220, 255);
+                    this.textColor = p.color(0); // Default to black if CSS var fails
+                }
+                display(isHighlighted) {
+                    p.stroke(isHighlighted ? p.color(255,0,0) : 0);
+                    p.strokeWeight(isHighlighted ? 3 : 1);
+                    p.fill(this.color);
+                    p.rect(this.x - this.w / 2, this.y - this.h / 2, this.w, this.h, 5);
+                    p.fill(this.textColor);
+                    p.noStroke();
+                    p.textAlign(p.CENTER, p.CENTER);
+                    p.textSize(13);
+                    p.text(this.label, this.x, this.y);
+                }
+            }
+
+            class Particle {
+                constructor(startX, startY, targetNodeIndex) {
+                    this.pos = p.createVector(startX, startY);
+                    this.vel = p.createVector();
+                    this.acc = p.createVector();
+                    this.targetNodeIndex = targetNodeIndex;
+                    this.maxSpeed = 2;
+                    this.maxForce = 0.1;
+                    this.color = p.color(0, 150, 255, 150);
+                    this.lifespan = 255;
+                }
+
+                update() {
+                    let targetNode = nodes[this.targetNodeIndex];
+                    let targetPos = p.createVector(targetNode.x, targetNode.y);
+                    
+                    let desired = p5.Vector.sub(targetPos, this.pos);
+                    let d = desired.mag();
+                    
+                    if (d < targetNode.w / 2) { // Reached target (approx)
+                        this.lifespan = 0; // Mark for removal
+                        // Spawn new particle from this node if it's part of a cycle
+                        let nextTargetIndex = (this.targetNodeIndex + 1) % nodes.length;
+                        if (edges.find(edge => edge.from === this.targetNodeIndex && edge.to === nextTargetIndex)) {
+                             particleSystem.addParticle(targetNode.x, targetNode.y, nextTargetIndex);
+                        }
+                    } else if (d < 100) { // Slow down when close
+                        desired.setMag(p.map(d, 0, 100, 0, this.maxSpeed));
+                    } else {
+                        desired.setMag(this.maxSpeed);
+                    }
+
+                    let steer = p5.Vector.sub(desired, this.vel);
+                    steer.limit(this.maxForce);
+                    this.acc.add(steer);
+
+                    this.vel.add(this.acc);
+                    this.vel.limit(this.maxSpeed * parseFloat(speedSlider.value()));
+                    this.pos.add(this.vel);
+                    this.acc.mult(0);
+                    this.lifespan -= 0.5;
+                }
+
+                display() {
+                    p.fill(this.color);
+                    p.noStroke();
+                    p.ellipse(this.pos.x, this.pos.y, 8, 8);
+                }
+
+                isDead() {
+                    return this.lifespan < 0;
+                }
+            }
+            
+            class ParticleSystem {
+                constructor() {
+                    this.particles = [];
+                }
+                addParticle(x,y,targetIdx) {
+                    this.particles.push(new Particle(x,y,targetIdx));
+                }
+                run() {
+                    for (let i = this.particles.length - 1; i >= 0; i--) {
+                        let particle = this.particles[i];
+                        particle.update();
+                        particle.display();
+                        if (particle.isDead()) {
+                            this.particles.splice(i, 1);
+                        }
+                    }
+                    // Add new particles periodically if system is empty
+                    if (this.particles.length < 5 && p.frameCount % 60 === 0) {
+                         let startNodeIndex = p.floor(p.random(nodes.length));
+                         let nextNodeIndex = (startNodeIndex + 1) % nodes.length;
+                         if (edges.find(edge => edge.from === startNodeIndex && edge.to === nextNodeIndex)) {
+                            this.addParticle(nodes[startNodeIndex].x, nodes[startNodeIndex].y, nextNodeIndex);
+                         }
+                    }
+                }
+            }
+
+
+            p.setup = function() {
+                let canvasContainer = p.select('#aiRolesAnimationContainer');
+                let canvas = p.createCanvas(canvasContainer.width, canvasContainer.height);
+                canvas.parent('aiRolesAnimationContainer');
+
+                colorText = getCssVar('--color-text');
+                
+                playButton = p.select('#aiRolesPlayPause');
+                speedSlider = p.select('#aiRolesSpeed');
+                playButton.mousePressed(() => { playing = !playing; if(playing) p.loop(); else p.noLoop(); });
+
+                let w = p.width;
+                let h = p.height;
+                nodes.push(new Node("数据输入\n(文献/数据库)", w * 0.5, h * 0.15, 120, 60));
+                nodes.push(new Node("AI模式识别\n& 猜想雏形", w * 0.8, h * 0.4, 120, 70));
+                nodes.push(new Node("人类直觉\n& 问题形式化", w * 0.5, h * 0.65, 120, 70));
+                nodes.push(new Node("AI辅助证明\n& 验证", w * 0.2, h * 0.4, 120, 70));
+                
+                nodes.forEach(node => node.textColor = p.color(colorText));
+
+
+                edges.push({ from: 0, to: 1 });
+                edges.push({ from: 1, to: 2 });
+                edges.push({ from: 2, to: 3 });
+                edges.push({ from: 3, to: 0 }); // Loop back
+
+                particleSystem = new ParticleSystem();
+                 for(let i=0; i<3; i++) { // Initial particles
+                    let startNodeIndex = p.floor(p.random(nodes.length));
+                    let nextNodeIndex = (startNodeIndex + 1) % nodes.length;
+                     if (edges.find(edge => edge.from === startNodeIndex && edge.to === nextNodeIndex)) {
+                        particleSystem.addParticle(nodes[startNodeIndex].x, nodes[startNodeIndex].y, nextNodeIndex);
+                     }
+                }
+                if (playing) p.loop(); else p.noLoop();
+                p.redraw();
+            };
+
+            p.draw = function() {
+                p.background(250, 253, 255);
+
+                // Draw edges
+                p.stroke(150, 150, 200);
+                p.strokeWeight(1.5);
+                for (let edge of edges) {
+                    let n1 = nodes[edge.from];
+                    let n2 = nodes[edge.to];
+                    p.line(n1.x, n1.y, n2.x, n2.y);
+                    // Arrowhead
+                    p.push();
+                    p.translate(n2.x, n2.y);
+                    let angle = p.atan2(n1.y - n2.y, n1.x - n2.x);
+                    p.rotate(angle - p.PI / 2);
+                    p.fill(150, 150, 200);
+                    let offset = n2.w/2 * 0.7; 
+                    if (n2.label.includes("数据输入")) offset = n2.h/2 * 0.7;
+                    else if (n2.label.includes("AI模式识别")) offset = n2.w/2 * 0.7;
+                    else if (n2.label.includes("人类直觉")) offset = n2.h/2 * 0.7;
+                    else if (n2.label.includes("AI辅助证明")) offset = n2.w/2 * 0.7;
+
+                    p.triangle(-5, offset, 5, offset, 0, offset - 10);
+                    p.pop();
+                }
+                
+                if (playing) {
+                    particleSystem.run();
+                }
+
+                if (playing) {
+                    highlightTimer++;
+                    if (highlightTimer > highlightDuration) {
+                        highlightTimer = 0;
+                        currentHighlight = (currentHighlight + 1) % nodes.length;
+                    }
+                }
+                
+                for (let i = 0; i < nodes.length; i++) {
+                    nodes[i].display(i === currentHighlight);
+                }
+
+                p.fill(colorText);
+                p.textAlign(p.CENTER, p.BOTTOM);
+                p.textSize(16);
+                p.text("AI辅助数学发现流程", p.width/2, p.height - 10);
+            };
+             p.windowResized = function() {
+                let canvasContainer = p.select('#aiRolesAnimationContainer');
+                p.resizeCanvas(canvasContainer.width, canvasContainer.height);
+                let w = p.width;
+                let h = p.height;
+                nodes[0].x = w * 0.5; nodes[0].y = h * 0.15;
+                nodes[1].x = w * 0.8; nodes[1].y = h * 0.4;
+                nodes[2].x = w * 0.5; nodes[2].y = h * 0.65;
+                nodes[3].x = w * 0.2; nodes[3].y = h * 0.4;
+                p.redraw();
+            };
+        };
+        new p5(sketchAiRoles);
+
+
+        // Animation 2: Murmuration Pattern Unveiling
+        let sketchMurmuration = function(p) {
+            let playButton, rankSelect;
+            let playing = true;
+            let points = [];
+            let numPoints = 200;
+            let time = 0;
+            let currentRankFilter = 'all'; 
+            let colorTextSecondary, colorText;
+
+            class DataPoint {
+                constructor(prime, ap_avg, rank) {
+                    this.prime = prime; 
+                    this.ap_avg_base = ap_avg; 
+                    this.rank = rank; 
+                    this.x = 0;
+                    this.y = 0;
+                    this.targetY = 0;
+                    this.color = (rank === 0) ? p.color(50, 150, 255, 180) : p.color(255, 100, 50, 180);
+                }
+
+                calculateTargetY(t) {
+                    let oscillationFactor = (this.rank === 0) ? p.cos(t + this.prime * 0.1) : -p.cos(t + this.prime * 0.1 + p.PI / 4);
+                    this.targetY = p.height / 2 + this.ap_avg_base * 30 + oscillationFactor * 40 * (1 + 0.3 * p.sin(this.prime * 0.05));
+                }
+
+                update(t) {
+                    this.calculateTargetY(t);
+                    this.x = p.map(this.prime, 0, numPoints, 50, p.width - 50); 
+                    this.y = p.lerp(this.y, this.targetY, 0.1); 
+                }
+
+                display() {
+                    if (currentRankFilter === 'all' || (currentRankFilter === '0' && this.rank === 0) || (currentRankFilter === '1' && this.rank === 1)) {
+                        p.fill(this.color);
+                        p.noStroke();
+                        p.ellipse(this.x, this.y, 8, 8);
+                    }
+                }
+            }
+
+            p.setup = function() {
+                let canvasContainer = p.select('#murmurationPatternAnimationContainer');
+                let canvas = p.createCanvas(canvasContainer.width, canvasContainer.height);
+                canvas.parent('murmurationPatternAnimationContainer');
+
+                colorTextSecondary = getCssVar('--color-text-secondary');
+                colorText = getCssVar('--color-text');
+                
+                playButton = p.select('#murmurationPlayPause');
+                rankSelect = p.select('#murmurationRankSelect');
+
+                playButton.mousePressed(() => { playing = !playing; if(playing) p.loop(); else p.noLoop(); });
+                rankSelect.changed(() => { 
+                    currentRankFilter = rankSelect.value();
+                    if (!playing) p.redraw();
+                });
+
+                for (let i = 0; i < numPoints; i++) {
+                    let rankType = (i % 7 < 3) ? 0 : 1; 
+                    if (i % 15 < 5) rankType = 0; 
+                    else if (i % 15 < 10) rankType = 1; 
+                    else rankType = (i%2); 
+                    
+                    let ap_avg = p.random(-1, 1) * (1 - i / (numPoints * 2)); 
+                    points.push(new DataPoint(i, ap_avg, rankType));
+                }
+                points.forEach(pt => pt.calculateTargetY(0)); 
+                points.forEach(pt => pt.y = pt.targetY); 
+
+                if (playing) p.loop(); else p.noLoop();
+                p.redraw();
+            };
+
+            p.draw = function() {
+                p.background(250, 253, 255);
+
+                p.stroke(200);
+                p.line(40, p.height / 2, p.width - 40, p.height / 2); 
+                p.line(40, 50, 40, p.height - 50); 
+                p.fill(colorTextSecondary);
+                p.noStroke();
+                p.text("素数 (p)", p.width / 2, p.height / 2 + 20);
+                p.push();
+                p.translate(20, p.height / 2);
+                p.rotate(-p.PI / 2);
+                p.text("平均欧拉系数 (a_p)", 0, 0);
+                p.pop();
+
+                if (playing) {
+                    time += 0.02;
+                }
+
+                for (let pt of points) {
+                    pt.update(time);
+                    pt.display();
+                }
+                
+                p.fill(50, 150, 255); p.rect(p.width - 130, 30, 10, 10); p.fill(colorText); p.text("偶数秩", p.width - 110, 37);
+                p.fill(255, 100, 50); p.rect(p.width - 130, 50, 10, 10); p.fill(colorText); p.text("奇数秩", p.width - 110, 57);
+
+                p.fill(colorText);
+                p.textAlign(p.CENTER, p.BOTTOM);
+                p.textSize(16);
+                p.text("默观现象：椭圆曲线欧拉系数的平均行为", p.width/2, p.height - 10);
+            };
+            p.windowResized = function() {
+                let canvasContainer = p.select('#murmurationPatternAnimationContainer');
+                p.resizeCanvas(canvasContainer.width, canvasContainer.height);
+                 points.forEach(pt => pt.calculateTargetY(time)); 
+                p.redraw();
+            };
+        };
+        new p5(sketchMurmuration);
+
+        // Animation 3: Data Growth & AI Capability (Timeline)
+        let sketchDataGrowth = function(p) {
+            let playButton;
+            let playing = true;
+            let year = 2000;
+            let maxYear = 2030;
+            let dataVolume = 10;
+            let aiCapability = 5;
+            let colorTextSecondary, colorText;
+
+            p.setup = function() {
+                let canvasContainer = p.select('#dataGrowthAnimationContainer');
+                let canvas = p.createCanvas(canvasContainer.width, canvasContainer.height);
+                canvas.parent('dataGrowthAnimationContainer');
+
+                colorTextSecondary = getCssVar('--color-text-secondary');
+                colorText = getCssVar('--color-text');
+                
+                playButton = p.select('#dataGrowthPlayPause');
+                playButton.mousePressed(() => { playing = !playing; if(playing) p.loop(); else p.noLoop(); });
+                if (playing) p.loop(); else p.noLoop();
+                p.redraw();
+            };
+
+            p.draw = function() {
+                p.background(250, 253, 255);
+                let margin = 50;
+
+                p.stroke(150);
+                p.line(margin, p.height - margin, p.width - margin, p.height - margin); 
+                p.line(margin, margin, margin, p.height - margin); 
+
+                p.fill(colorTextSecondary);
+                p.noStroke();
+                p.textAlign(p.CENTER, p.TOP);
+                p.text("年份", p.width / 2, p.height - margin + 10);
+                p.push();
+                p.translate(margin - 30, p.height / 2);
+                p.rotate(-p.PI / 2);
+                p.textAlign(p.CENTER, p.CENTER);
+                p.text("数据量 / AI能力", 0, 0);
+                p.pop();
+
+                p.strokeWeight(2);
+                let currentX = p.map(year, 2000, maxYear, margin, p.width - margin);
+
+                p.stroke(0, 150, 0, 200); 
+                p.fill(0, 150, 0, 100);
+                p.beginShape();
+                p.vertex(margin, p.height - margin - 10); 
+                for (let y = 2000; y <= year; y++) {
+                    let xPos = p.map(y, 2000, maxYear, margin, p.width - margin);
+                    let val = 10 * p.pow(1.35, y - 2000); 
+                    let yPos = p.map(val, 0, 10 * p.pow(1.35, maxYear - 2000), p.height - margin, margin);
+                    p.vertex(xPos, yPos);
+                }
+                p.vertex(currentX, p.height - margin - dataVolume); 
+                p.vertex(currentX, p.height - margin);
+                p.endShape(p.CLOSE);
+                p.ellipse(currentX, p.height - margin - dataVolume, 8, 8);
+
+
+                p.stroke(0, 0, 255, 200); 
+                p.fill(0, 0, 255, 100);
+                p.beginShape();
+                p.vertex(margin, p.height - margin - 5); 
+                 for (let y = 2000; y <= year; y++) {
+                    let xPos = p.map(y, 2000, maxYear, margin, p.width - margin);
+                    let val = 5 + 300 / (1 + p.exp(-0.3 * (y - 2015))); 
+                    if (y > 2010) val = 5 * p.pow(1.45, y-2010); 
+                    let yPos = p.map(val, 0, 5 * p.pow(1.45, maxYear-2010), p.height - margin, margin);
+                    p.vertex(xPos, yPos);
+                }
+                p.vertex(currentX, p.height - margin - aiCapability); 
+                p.vertex(currentX, p.height - margin);
+                p.endShape(p.CLOSE);
+                p.ellipse(currentX, p.height - margin - aiCapability, 8, 8);
+
+                p.fill(colorText);
+                p.noStroke();
+                p.textAlign(p.RIGHT, p.TOP);
+                p.textSize(20);
+                p.text(p.floor(year), p.width - margin, margin);
+
+                p.fill(0,150,0); p.ellipse(margin + 20, margin + 20, 10,10); p.fill(colorText); p.text("数学数据量", margin + 80, margin + 23);
+                p.fill(0,0,255); p.ellipse(margin + 20, margin + 45, 10,10); p.fill(colorText); p.text("AI处理能力", margin + 80, margin + 48);
+
+
+                if (playing) {
+                    year += 0.1; 
+                    if (year > maxYear) {
+                        year = 2000; 
+                        dataVolume = 10;
+                        aiCapability = 5;
+                    }
+                    dataVolume = 10 * p.pow(1.35, year - 2000);
+                    if (year > 2010) aiCapability = 5 * p.pow(1.45, year-2010);
+                    else aiCapability = 5 + 300 / (1 + p.exp(-0.3 * (year - 2015)));
+
+                    let maxYDisplay = 10 * p.pow(1.35, maxYear - 2000);
+                     if (year > 2010) maxYDisplay = 5 * p.pow(1.45, maxYear-2010);
+
+                    dataVolume = p.map(dataVolume, 0, maxYDisplay, 0, p.height - 2 * margin);
+                    aiCapability = p.map(aiCapability, 0, maxYDisplay, 0, p.height - 2 * margin);
+                }
+                p.fill(colorText);
+                p.textAlign(p.CENTER, p.BOTTOM);
+                p.textSize(16);
+                p.text("数学数据与AI能力增长趋势", p.width/2, p.height - 10);
+            };
+            p.windowResized = function() {
+                let canvasContainer = p.select('#dataGrowthAnimationContainer');
+                p.resizeCanvas(canvasContainer.width, canvasContainer.height);
+                p.redraw();
+            };
+        };
+        new p5(sketchDataGrowth);
+
+        // Animation 4: AI Exploring Parameter Space
+        let sketchAiExploration = function(p) {
+            let playButton, speedSlider;
+            let playing = true;
+            let explorer;
+            let grid = [];
+            let cols, rows;
+            let resolution = 20;
+            let noiseScale = 0.1;
+            let interestingRegions = [];
+            let colorText;
+
+            class Explorer {
+                constructor(x, y) {
+                    this.pos = p.createVector(x, y);
+                    this.vel = p.createVector(p.random(-1,1), p.random(-1,1)).normalize();
+                    this.history = [];
+                    this.foundColor = p.color(255, 255, 0, 200); 
+                }
+
+                update(speed) {
+                    let angle = p.noise(this.pos.x * 0.01, this.pos.y * 0.01, p.frameCount * 0.005) * p.TWO_PI * 2;
+                    let force = p5.Vector.fromAngle(angle);
+                    force.mult(0.1);
+                    this.vel.add(force);
+                    this.vel.limit(speed);
+                    
+                    this.pos.add(this.vel);
+
+                    if (this.pos.x < 0 || this.pos.x > p.width || this.pos.y < 0 || this.pos.y > p.height) {
+                        this.pos.x = p.constrain(this.pos.x, 0, p.width);
+                        this.pos.y = p.constrain(this.pos.y, 0, p.height);
+                        this.vel.rotate(p.PI + p.random(-0.5, 0.5)); 
+                    }
+                    
+                    this.history.push(this.pos.copy());
+                    if (this.history.length > 100) {
+                        this.history.splice(0, 1);
+                    }
+
+                    this.isInInterestingRegion = false;
+                    for (let region of interestingRegions) {
+                        if (p.dist(this.pos.x, this.pos.y, region.x, region.y) < region.r) {
+                            this.isInInterestingRegion = true;
+                            break;
+                        }
+                    }
+                }
+
+                display() {
+                    p.noFill();
+                    p.stroke(0, 150, 255, 100);
+                    p.strokeWeight(2);
+                    p.beginShape();
+                    for (let v of this.history) {
+                        p.vertex(v.x, v.y);
+                    }
+                    p.endShape();
+
+                    p.fill(this.isInInterestingRegion ? this.foundColor : p.color(255, 0, 0));
+                    p.stroke(0);
+                    p.strokeWeight(1);
+                    p.ellipse(this.pos.x, this.pos.y, 12, 12);
+                }
+            }
+            
+            function setupGrid() {
+                cols = p.floor(p.width / resolution);
+                rows = p.floor(p.height / resolution);
+                grid = [];
+                for (let i = 0; i < cols; i++) {
+                    grid[i] = [];
+                    for (let j = 0; j < rows; j++) {
+                        grid[i][j] = p.noise(i * noiseScale, j * noiseScale, p.frameCount * 0.01);
+                    }
+                }
+            }
+
+            p.setup = function() {
+                let canvasContainer = p.select('#aiExplorationAnimationContainer');
+                let canvas = p.createCanvas(canvasContainer.width, canvasContainer.height);
+                canvas.parent('aiExplorationAnimationContainer');
+
+                colorText = getCssVar('--color-text');
+                
+                playButton = p.select('#aiExplorationPlayPause');
+                speedSlider = p.select('#aiExplorationSpeed');
+                playButton.mousePressed(() => { playing = !playing; if(playing) p.loop(); else p.noLoop(); });
+                
+                explorer = new Explorer(p.width / 2, p.height / 2);
+                setupGrid();
+
+                interestingRegions.push({x: p.width * 0.2, y: p.height * 0.3, r: 40, value: 0.8});
+                interestingRegions.push({x: p.width * 0.7, y: p.height * 0.6, r: 50, value: 0.9});
+                interestingRegions.push({x: p.width * 0.5, y: p.height * 0.8, r: 30, value: 0.85});
+
+
+                if (playing) p.loop(); else p.noLoop();
+                p.redraw();
+            };
+
+            p.draw = function() {
+                p.background(250, 253, 255);
+                if (playing) {
+                     setupGrid(); 
+                }
+
+                for (let i = 0; i < cols; i++) {
+                    for (let j = 0; j < rows; j++) {
+                        let val = grid[i][j];
+                        p.noStroke();
+                        p.fill(p.map(val, 0, 1, 230, 180), p.map(val, 0, 1, 240, 200), 255, 150);
+                        p.rect(i * resolution, j * resolution, resolution, resolution);
+                    }
+                }
+
+                for (let region of interestingRegions) {
+                    p.noFill();
+                    p.stroke(255, 165, 0, 150); 
+                    p.strokeWeight(2);
+                    p.ellipse(region.x, region.y, region.r * 2, region.r * 2);
+                    p.fill(255, 165, 0, 50);
+                    p.ellipse(region.x, region.y, region.r * 2, region.r * 2);
+                }
+                
+                if (playing) {
+                    explorer.update(parseFloat(speedSlider.value()));
+                }
+                explorer.display();
+
+                p.fill(colorText);
+                p.textAlign(p.CENTER, p.BOTTOM);
+                p.textSize(16);
+                p.text("AI探索数学参数空间 (概念演示)", p.width/2, p.height - 10);
+            };
+             p.windowResized = function() {
+                let canvasContainer = p.select('#aiExplorationAnimationContainer');
+                p.resizeCanvas(canvasContainer.width, canvasContainer.height);
+                setupGrid(); 
+                explorer.pos.x = p.constrain(explorer.pos.x, 0, p.width);
+                explorer.pos.y = p.constrain(explorer.pos.y, 0, p.height);
+                p.redraw();
+            };
+        };
+        new p5(sketchAiExploration);
+
+
+        // Animation 5: AI-Assisted Discovery Loop (Detailed)
+        let sketchDiscoveryLoop = function(p) {
+            let playButton;
+            let playing = true;
+            let angle = 0;
+            let stages = [
+                {label: "1. 数据与文献\n(海量输入)", color: p.color(100,150,255)},
+                {label: "2. AI模式发现\n(初步猜想)", color: p.color(100,200,200)},
+                {label: "3. 人类形式化\n(精确问题)", color: p.color(150,220,150)},
+                {label: "4. AI辅助证明\n(逻辑探索)", color: p.color(220,200,100)},
+                {label: "5. 人类验证洞察\n(理解整合)", color: p.color(255,150,150)},
+                {label: "6. 成果与迭代\n(知识增长)", color: p.color(200,150,255)}
+            ];
+            let currentStage = 0;
+            let progress = 0; 
+            let particlePos;
+            let particleTarget;
+            let colorText;
+
+            p.setup = function() {
+                let canvasContainer = p.select('#discoveryLoopAnimationContainer');
+                let canvas = p.createCanvas(canvasContainer.width, canvasContainer.height);
+                canvas.parent('discoveryLoopAnimationContainer');
+
+                colorText = getCssVar('--color-text');
+                
+                playButton = p.select('#discoveryLoopPlayPause');
+                playButton.mousePressed(() => { playing = !playing; if(playing) p.loop(); else p.noLoop(); });
+                
+                particlePos = p.createVector(0,0); 
+                particleTarget = p.createVector(0,0);
+
+                if (playing) p.loop(); else p.noLoop();
+                p.redraw();
+            };
+
+            p.draw = function() {
+                p.background(250, 253, 255);
+                p.translate(p.width / 2, p.height / 2);
+                
+                let radius = p.min(p.width, p.height) * 0.35;
+                let stageAngleStep = p.TWO_PI / stages.length;
+
+                p.stroke(200);
+                p.strokeWeight(1);
+                for (let i = 0; i < stages.length; i++) {
+                    let x1 = radius * p.cos(i * stageAngleStep - p.PI/2);
+                    let y1 = radius * p.sin(i * stageAngleStep - p.PI/2);
+                    let x2 = radius * p.cos((i + 1) % stages.length * stageAngleStep - p.PI/2);
+                    let y2 = radius * p.sin((i + 1) % stages.length * stageAngleStep - p.PI/2);
+                    p.line(x1, y1, x2, y2);
+                }
+
+                for (let i = 0; i < stages.length; i++) {
+                    let x = radius * p.cos(i * stageAngleStep - p.PI/2);
+                    let y = radius * p.sin(i * stageAngleStep - p.PI/2);
+                    
+                    p.fill(stages[i].color);
+                    p.noStroke();
+                    if (i === currentStage) {
+                        p.stroke(255,0,0);
+                        p.strokeWeight(3);
+                    }
+                    p.ellipse(x, y, 80, 50);
+                    p.fill(0); // Text color for stages, assuming black is fine
+                    p.noStroke();
+                    p.textAlign(p.CENTER, p.CENTER);
+                    p.textSize(11);
+                    p.text(stages[i].label, x, y);
+                }
+
+                let startNodeX = radius * p.cos(currentStage * stageAngleStep - p.PI/2);
+                let startNodeY = radius * p.sin(currentStage * stageAngleStep - p.PI/2);
+                let endNodeIndex = (currentStage + 1) % stages.length;
+                let endNodeX = radius * p.cos(endNodeIndex * stageAngleStep - p.PI/2);
+                let endNodeY = radius * p.sin(endNodeIndex * stageAngleStep - p.PI/2);
+
+                particlePos.x = p.lerp(startNodeX, endNodeX, progress);
+                particlePos.y = p.lerp(startNodeY, endNodeY, progress);
+
+                p.fill(50, 50, 50, 200);
+                p.ellipse(particlePos.x, particlePos.y, 15, 15);
+
+
+                if (playing) {
+                    progress += 0.01;
+                    if (progress >= 1) {
+                        progress = 0;
+                        currentStage = (currentStage + 1) % stages.length;
+                    }
+                }
+                p.resetMatrix(); 
+                p.fill(colorText);
+                p.textAlign(p.CENTER, p.BOTTOM);
+                p.textSize(16);
+                p.text("人机协作的智慧创造闭环", p.width/2, p.height - 10);
+            };
+            p.windowResized = function() {
+                let canvasContainer = p.select('#discoveryLoopAnimationContainer');
+                p.resizeCanvas(canvasContainer.width, canvasContainer.height);
+                p.redraw();
+            };
+        };
+        new p5(sketchDiscoveryLoop);
+
+        // Animation 6: Timeline of AI in Math
+        let sketchAiMathTimeline = function(p) {
+            let playButton;
+            let playing = true;
+            let currentTime = 0; 
+            let events = [
+                { time: 0.1, label: "计算辅助\n(1950s-1990s)", detail: "符号计算, 数值模拟", yPos: 0.25 },
+                { time: 0.35, label: "模式识别\n(2000s-2010s)", detail: "机器学习, 数据挖掘", yPos: 0.5 },
+                { time: 0.6, label: "语言模型崛起\n(2018s-)", detail: "LLMs, 初步推理", yPos: 0.75 },
+                { time: 0.85, label: "深度协作时代\n(未来)", detail: "AI猜想生成, 人机共创", yPos: 0.5 }
+            ];
+            let currentEventIndex = -1;
+            let colorTextSecondary, colorPrimary, colorText, colorAccent, colorBorder, colorBg;
+
+
+            p.setup = function() {
+                let canvasContainer = p.select('#aiMathTimelineAnimationContainer');
+                let canvas = p.createCanvas(canvasContainer.width, canvasContainer.height);
+                canvas.parent('aiMathTimelineAnimationContainer');
+
+                colorTextSecondary = getCssVar('--color-text-secondary');
+                colorPrimary = getCssVar('--color-primary');
+                colorText = getCssVar('--color-text');
+                colorAccent = getCssVar('--color-accent');
+                colorBorder = getCssVar('--color-border');
+                colorBg = getCssVar('--color-bg');
+                
+                playButton = p.select('#aiMathTimelinePlayPause');
+                playButton.mousePressed(() => { playing = !playing; if(playing) p.loop(); else p.noLoop(); });
+                
+                if (playing) p.loop(); else p.noLoop();
+                p.redraw();
+            };
+
+            p.draw = function() {
+                p.background(250, 253, 255);
+                let margin = 60;
+                let timelineY = p.height * 0.5;
+
+                p.stroke(colorTextSecondary);
+                p.strokeWeight(2);
+                p.line(margin, timelineY, p.width - margin, timelineY);
+
+                p.fill(colorTextSecondary);
+                p.noStroke();
+                p.triangle(p.width - margin, timelineY - 5, 
+                           p.width - margin, timelineY + 5, 
+                           p.width - margin + 10, timelineY);
+
+                let progressX = p.map(currentTime, 0, 1, margin, p.width - margin);
+                p.fill(colorPrimary);
+                p.ellipse(progressX, timelineY, 15, 15);
+                p.stroke(colorPrimary);
+                p.line(progressX, timelineY, progressX, p.height * 0.2);
+                p.fill(colorText);
+                p.noStroke();
+                p.textAlign(p.CENTER, p.BOTTOM);
+                p.text("现在", progressX, p.height * 0.2 - 5);
+
+
+                currentEventIndex = -1;
+                for (let i = 0; i < events.length; i++) {
+                    let event = events[i];
+                    let eventX = p.map(event.time, 0, 1, margin, p.width - margin);
+                    
+                    let isActive = currentTime >= event.time;
+                    if (isActive && (currentEventIndex === -1 || event.time > events[currentEventIndex].time)) {
+                         if (currentTime < (events[i+1] ? events[i+1].time : 1.1) ) { 
+                            currentEventIndex = i;
+                         }
+                    }
+
+                    p.strokeWeight(1);
+                    p.stroke(isActive ? colorAccent : colorTextSecondary);
+                    p.fill(isActive ? colorAccent : colorTextSecondary);
+                    p.ellipse(eventX, timelineY, 10, 10);
+
+                    let boxY = timelineY + (i % 2 === 0 ? -80 : 50); 
+                    let boxW = 130;
+                    let boxH = 60;
+                    
+                    p.strokeWeight(1);
+                    p.stroke(colorBorder);
+                    p.fill(i === currentEventIndex ? p.color(255,250,220) : p.color(colorBg) ); 
+                    p.rect(eventX - boxW/2, boxY - boxH/2, boxW, boxH, 5);
+                    
+                    p.fill(colorText);
+                    p.noStroke();
+                    p.textAlign(p.CENTER, p.CENTER);
+                    p.textSize(12);
+                    p.textStyle(p.BOLD);
+                    p.text(event.label, eventX, boxY - 10);
+                    p.textStyle(p.NORMAL);
+                    p.textSize(10);
+                    p.text(event.detail, eventX, boxY + 15);
+
+                    p.stroke(colorTextSecondary);
+                    p.line(eventX, timelineY, eventX, boxY - (boxY > timelineY ? boxH/2 : -boxH/2) );
+                }
+
+
+                if (playing) {
+                    currentTime += 0.002;
+                    if (currentTime > 1.05) { 
+                        currentTime = 0;
+                    }
+                }
+                p.fill(colorText);
+                p.textAlign(p.CENTER, p.BOTTOM);
+                p.textSize(16);
+                p.text("AI在数学中的角色演进时间轴", p.width/2, p.height - 10);
+            };
+             p.windowResized = function() {
+                let canvasContainer = p.select('#aiMathTimelineAnimationContainer');
+                p.resizeCanvas(canvasContainer.width, canvasContainer.height);
+                p.redraw();
+            };
+        };
+        new p5(sketchAiMathTimeline);
+
+        // Ensure canvases are redrawn once on load if not looping initially
+        document.addEventListener('DOMContentLoaded', () => {
+            if (window.p5 && p5.instance) {
+                // The redraws are handled by individual sketch logic (loop/noLoop and redraw calls)
+            }
+        });
+
+    </script>
+</body>
+</html>

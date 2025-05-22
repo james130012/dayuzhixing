@@ -1,0 +1,1210 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panda模型：混沌动力学通用表示的预训练预测模型深度解读</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.2/p5.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
+    <style>
+        /* 基本重置和页面设置 */
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Noto Sans SC', sans-serif; /* 清晰的正文 */
+            font-size: 18px; /* 模拟“三号”字体大小，提供良好可读性 */
+            line-height: 1.8;
+            background-color: #f0f2f5; /* 更接近GitHub的背景色 */
+            color: #24292e; /* GitHub文字颜色 */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 1200px; /* 限制最大宽度 */
+            margin: 30px auto;
+            p37.Panda模型：混沌动力学通用表示的预训练预测模型adding: 40px;
+            background-color: #ffffff; /* 白色内容背景 */
+            border: 1px solid #d1d5da; /* GitHub边框颜色 */
+            border-radius: 8px; /* GitHub圆角 */
+            box-shadow: 0 8px 24px rgba(149, 157, 165, 0.2); /* GitHub风格阴影 */
+        }
+
+        header {
+            border-bottom: 1px solid #e1e4e8; /* GitHub分隔线 */
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+
+        h1, h2, h3, h4 {
+            font-family: 'ZCOOL KuaiLe', cursive; /* 轻松活泼的标题字体 */
+            color: #0366d6; /* GitHub链接蓝色 */
+            margin-bottom: 0.75em;
+            text-align: left; /* 标题左对齐 */
+        }
+        h1 {
+            font-size: 2.8em; /* 大标题 */
+            color: #24292e; /* GitHub深色标题 */
+            text-align: center;
+            margin-top: 0;
+        }
+        h2 {
+            font-size: 2.2em;
+            color: #0366d6; 
+            margin-top: 1.8em;
+            border-bottom: 1px solid #eaecef;
+            padding-bottom: 0.3em;
+        }
+        h3 {
+            font-size: 1.8em;
+            color: #24292e;
+            margin-top: 1.5em;
+        }
+        h4 {
+            font-size: 1.4em;
+            color: #586069; /* GitHub次级文字颜色 */
+            margin-top: 1.2em;
+        }
+
+        p {
+            margin-bottom: 1.2em;
+            text-align: justify; 
+        }
+
+        strong, .highlight {
+            color: #d73a49; /* GitHub红色系强调 */
+            font-weight: 600; /* GitHub通常用 semi-bold */
+        }
+        .concept {
+            font-weight: 500;
+            color: #0366d6; 
+            padding: 3px 6px;
+            background-color: #f1f8ff; /* GitHub蓝色背景高亮 */
+            border-radius: 4px;
+            border: 1px solid #c8e1ff;
+        }
+
+        .formula {
+            display: block;
+            text-align: left; /* 公式左对齐 */
+            font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace; /* GitHub代码字体 */
+            font-size: 1.1em;
+            padding: 15px;
+            margin: 20px 0; /* 上下边距，左右无 */
+            background-color: #f6f8fa; /* GitHub代码块背景 */
+            border: 1px solid #eaecef;
+            border-radius: 6px;
+            color: #24292e;
+            overflow-x: auto; /* 公式过长时可滚动 */
+        }
+
+        ul, ol {
+            padding-left: 25px;
+            margin-bottom: 1.2em;
+        }
+        li {
+            margin-bottom: 0.5em;
+        }
+
+        .animation-container {
+            width: 100%;
+            max-width: 650px; 
+            height: 450px; /* 增加高度以适应更复杂的动画 */
+            margin: 25px auto;
+            border: 1px solid #d1d5da; 
+            border-radius: 6px;
+            overflow: hidden; 
+            background-color: #f6f8fa;
+            display: flex; 
+            justify-content: center;
+            align-items: center;
+            box-shadow: inset 0 1px 0 rgba(27,31,35,.075);
+        }
+        .animation-container canvas {
+            display: block; 
+            max-width: 100%;
+            max-height: 100%;
+            border-radius: 5px; 
+        }
+        
+        .controls {
+            text-align: center;
+            margin-top: 10px;
+            margin-bottom: 30px;
+            padding: 10px;
+            background-color: #f6f8fa;
+            border: 1px solid #d1d5da;
+            border-radius: 6px;
+        }
+        .controls button, .controls input[type="range"], .controls label, .controls select {
+            padding: 8px 15px;
+            font-size: 0.95em;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji"; /* GitHub UI 字体 */
+            background-color: #2ea44f; /* GitHub绿色按钮 */
+            color: white;
+            border: 1px solid rgba(27,31,35,.2);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.2s cubic-bezier(.3,0,.5,1);
+            margin: 5px;
+            box-shadow: 0 1px 0 rgba(27,31,35,.04), inset 0 1px 0 hsla(0,0%,100%,.25);
+        }
+        .controls button:hover {
+            background-color: #2c974b; 
+        }
+        .controls button:active {
+            background-color: #298e46;
+            box-shadow: inset 0 1px 0 rgba(27,31,35,.15);
+        }
+        .controls input[type="range"] {
+            vertical-align: middle;
+            cursor: grab;
+            background-color: transparent; /* Range slider track is usually styled differently */
+            box-shadow: none;
+            border: none;
+        }
+        .controls label {
+            background-color: transparent;
+            color: #24292e;
+            box-shadow: none;
+            border: none;
+            padding-left: 2px;
+            padding-right: 2px;
+        }
+         .controls select {
+            background-color: #fff;
+            color: #24292e;
+            border: 1px solid #d1d5da;
+        }
+
+
+        footer {
+            text-align: center;
+            margin-top: 50px;
+            padding: 25px;
+            background-color: #f6f8fa; 
+            color: #586069; 
+            width: 100%;
+            border-top: 1px solid #e1e4e8;
+        }
+        footer p {
+            margin: 0;
+            font-size: 0.9em;
+        }
+
+        /* Figure and Caption */
+        figure {
+            margin: 20px auto;
+            text-align: center;
+        }
+        figcaption {
+            font-size: 0.9em;
+            color: #586069;
+            margin-top: 8px;
+            font-style: italic;
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            body {
+                font-size: 16px; 
+            }
+            .container {
+                width: 95%;
+                padding: 20px;
+                margin: 15px auto;
+            }
+            h1 {
+                font-size: 2.2em;
+            }
+            h2 {
+                font-size: 1.8em;
+            }
+            h3 {
+                font-size: 1.5em;
+            }
+            h4 {
+                font-size: 1.2em;
+            }
+            .animation-container {
+                height: 350px; 
+            }
+            .formula {
+                font-size: 1em;
+                padding: 10px;
+            }
+            .controls button, .controls input[type="range"], .controls label, .controls select {
+                padding: 7px 12px;
+                font-size: 0.9em;
+                width: calc(100% - 20px); /* Full width buttons on mobile for some controls */
+                margin-left: 10px;
+                margin-right: 10px;
+            }
+            .controls label { /* Specific for labels to not take full width */
+                 width: auto;
+            }
+            .controls input[type="range"] {
+                 width: calc(100% - 20px); /* Full width sliders */
+            }
+        }
+         @media (max-width: 480px) {
+            .animation-container {
+                height: 300px;
+            }
+         }
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Panda模型：混沌动力学通用表示的预训练预测模型深度解读</h1>
+        </header>
+
+        <main>
+            <article>
+                <section id="intro">
+                    <h2>引言：驾驭混沌，预见未来</h2>
+                    <p>在科学与工程的广阔天地中，<strong class="highlight">混沌系统（Chaotic Systems）</strong>无处不在，从变幻莫测的天气模式，到神经元活动的复杂放电，再到金融市场的跌宕起伏，它们的身影随处可见。这些系统的一个核心特征是对初始条件的<span class="concept">极端敏感性</span>——微小的扰动便可能导致最终状态的巨大差异，这便是著名的“蝴蝶效应”。这种特性使得对混沌系统的长期精准预测成为一项极具挑战性的科学难题。</p>
+                    <p>传统的预测方法往往依赖于对特定系统构建专门的数学模型，或者基于大量历史数据进行学习。然而，当面对全新的、未曾见过的混沌系统时，这些方法往往捉襟见肘。近年来，随着机器学习，特别是<span class="concept">深度学习</span>的飞速发展，预训练大模型（Foundation Models）在自然语言处理、计算机视觉等领域取得了巨大成功。这不禁引人深思：我们能否借鉴这一思路，构建一个能够理解和预测<strong class="highlight">多种混沌系统通用规律</strong>的“混沌预训练模型”？</p>
+                    <p>论文《Panda: A pretrained forecast model for universal representation of chaotic dynamics》正是对这一问题的积极探索。研究者们提出了一种名为 <strong class="highlight">Panda (Patched Attention for Nonlinear DynAmics)</strong> 的新型预训练模型。Panda 的独特之处在于，它并非在真实的、混杂的现实世界数据上训练，而是在一个<strong class="highlight">大规模、多样化且完全由算法生成的合成混沌系统数据集</strong>上进行学习。令人惊讶的是，仅通过学习这些模拟数据，Panda 展现出了强大的<span class="concept">“涌现能力” (Emergent Properties)</span>：它能够对训练中从未见过的真实世界混沌系统进行<span class="concept">零样本预测 (Zero-shot Forecasting)</span>，甚至能够处理比训练数据维度更高的偏微分方程 (PDE) 系统。这一成果不仅为混沌预测开辟了新途径，也为我们利用预训练模型探索抽象数学领域（如非线性动力学）的潜力提供了有力证据。</p>
+                    <p>本文将从物理逻辑的视角，深入解读 Panda 模型的核心思想、技术创新及其揭示的深刻洞见，并辅以交互式动画，帮助读者更直观地理解混沌的魅力与 Panda 的智慧。</p>
+                </section>
+
+                <section id="challenge-of-chaos">
+                    <h2>混沌的挑战与机遇</h2>
+                    <p>非线性动力系统，尤其是混沌系统，对科学机器学习 (SciML) 的能力提出了根本性的挑战。任何近似模型中的微小误差都会随着时间的推移呈指数级增长，这使得长期预测变得异常困难。想象一下，我们试图预测一个 Lorenz吸引子（一个经典的混沌系统）的轨迹，即使我们的初始位置只偏离了百万分之一，几轮迭代之后，预测轨迹就可能与真实轨迹大相径庭。</p>
+                    <p>尽管如此，近期的研究在混沌预测方面取得了令人鼓舞的进展，甚至能够在一定程度上超越经典的非线性系统可预测性时间尺度。这些方法通常是针对<span class="concept">单个动力系统</span>，利用其历史观测数据训练局部预测模型，然后预测该系统未来的状态。这属于一种“域内泛化” (In-domain Generalization) 任务，因为未来的时间点仍然遵循相同的底层微分方程和不变分布。</p>
+                    <p>然而，科学机器学习的一个前沿问题是<span class="concept">“域外泛化” (Out-of-domain Generalization)</span>：一个训练好的模型能否有效地预测新的动力学机制，甚至是完全未见过的动力系统？例如，一个在大量可穿戴传感器数据上训练的数字孪生模型，能否成功预测一个新用户的运动或心脏数据？这需要一个<strong class="highlight">全局预测模型</strong>，它能够结合在大量背景知识上的训练和局部适应能力，以便对未见的时间点和系统进行有意义的预测。Panda 正是朝着这个“全局”和“通用”的目标迈出的重要一步。</p>
+                </section>
+
+                <section id="panda-dataset">
+                    <h2>核心贡献一：算法创生的混沌万花筒——Panda的训练基石</h2>
+                    <p>Panda 模型的强大泛化能力，首先归功于其独特且规模庞大的训练数据集。研究者们并非简单收集已知的混沌系统，而是开创性地设计了一套<strong class="highlight">基于进化算法的混沌系统发现框架</strong>，从而生成了一个包含 <span class="concept">2 x 10^4 个全新的混沌常微分方程 (ODE)</span> 的数据集。这个过程堪称一场算法导演的“混沌创生史诗”。</p>
+                    <h4>1. 创始种群 (Founding Population)</h4>
+                    <p>旅程始于一个“创始种群”——研究者们收集了约 <span class="concept">100 多个</span>已发表的、人工精心策划的低维混沌系统，例如著名的 Lorenz 系统、Rossler 系统、双摆等。这些系统的参数和初始条件都经过仔细调整，以确保它们处于混沌状态。</p>
+                    <h4>2. 变异 (Mutation) 与重组 (Recombination)</h4>
+                    <p>接下来，进化算法登场：</p>
+                    <ul>
+                        <li><strong class="highlight">参数扰动 (Parameter Jitter - 变异):</strong> 随机选取创始种群中的系统，对其方程中的参数施加微小的随机扰动（高斯噪声）。这就像给混沌系统的“基因”带来一些细微变化。公式可以表示为：theta_new ~ N(theta_old, sigma)。</li>
+                        <li><strong class="highlight">随机斜积 (Random Skew Products - 重组):</strong> 从变异后的系统中随机选取两对（比如系统 A: dx/dt = f(x) 和系统 B: dy/dt = g(y)），通过“斜积”的方式将它们组合成一个新的、更高维的系统。例如，新系统可能是 dz/dt = k1*f(z_subset1) + k2*g(z_subset2)。这种组合方式能够在一定条件下保持或催生混沌特性。</li>
+                    </ul>
+                    <h4>3. 选择 (Selection for Chaoticity)</h4>
+                    <p>新产生的候选系统并非个个都是“合格”的混沌系统。因此，需要一个严格的“筛选”过程：</p>
+                    <ul>
+                        <li><strong>排除平凡动态:</strong> 首先剔除那些会收敛到稳定点或发散到无穷大的系统。</li>
+                        <li><strong>0-1混沌测试:</strong> 应用 0-1 测试来区分周期性/准周期性动态与真正的混沌动态。</li>
+                        <li><strong>吸引子特性测试:</strong> 进一步通过近乎重现测试排除极限环，通过功率谱分析排除只有少数尖峰的轨迹，并使用数据驱动的方法估计最大李雅普诺夫指数，确保系统具有持续的、复杂的混沌行为。</li>
+                    </ul>
+                    <h4>4. 数据增强 (Augmentations)</h4>
+                    <p>在发现了一系列混沌ODE及其轨迹后，还应用了数据增强技术来增加时间序列的数量，这些增强方法旨在保持观测到的时间序列源于一个紧密的非线性动力系统的特性：</p>
+                    <ul>
+                        <li><strong>随机时延嵌入:</strong> 对每个通道的轨迹应用随机的时间延迟，x_i(t) -> x_i(t - tau_i)。根据Takens嵌入定理，这保留了动力学特性。</li>
+                        <li><strong>凸组合:</strong> 将多通道轨迹进行随机的线性组合。</li>
+                        <li><strong>仿射变换:</strong> 对轨迹数据进行随机的仿射变换 X_new = A*X + b。</li>
+                    </ul>
+                    <p>通过这个精巧的进化过程，Panda 的研究者们构建了一个前所未有的、多样性极高的混沌系统数据库。这为模型学习混沌的普适规律奠定了坚实的基础。</p>
+                    <div id="datasetGenerationAnimationContainer" class="animation-container">
+                        </div>
+                    <div class="controls">
+                        <button id="datasetPlayButton">开始/重置生成过程</button>
+                        <label for="datasetSpeedSlider">动画速度:</label>
+                        <input type="range" id="datasetSpeedSlider" min="1" max="10" value="5" step="1">
+                    </div>
+                    <figcaption>图1: Panda混沌数据集生成过程示意。通过变异、重组和选择，从少量已知混沌系统演化出大量新颖的混沌系统。</figcaption>
+                </section>
+
+                <section id="panda-architecture">
+                    <h2>核心贡献二：洞察动力学的巧思——Panda的模型架构</h2>
+                    <p>拥有了独特的数据集后，Panda 的另一个核心创新在于其<strong class="highlight">为动力系统量身定制的模型架构</strong>。它基于 PatchTST（一种先进的时间序列 Transformer 模型），并融入了多项源于动力系统理论的深刻见解。</p>
+                    <p>传统的时间序列模型通常是自回归的，容易“模仿”上下文中的模式，导致在域外任务上出现过度自信的预测。Panda 则选择了一种<span class="concept">编码器-解码器（Encoder-Decoder）架构（原文为Encoder-only，但描述中包含预测头，更接近Encoder-Decoder概念或一个带预测头的Encoder）</span>、非自回归的固定视域预测器，旨在最大化短期逐点预测的准确性——这在科学机器学习中被称为“预测天气”（相对于“预测气候”的长期统计特性）。</p>
+                    
+                    <h4>1. 分块处理 (Patching)</h4>
+                    <p>给定一个 C 通道、长度为 T 的轨迹 T_input，Panda 首先将其分割成 P 个“补丁 (Patches)”，每个补丁长度为 L。这意味着原始的连续时间序列被转换成了一系列更短的片段。例如，一个轨迹 T_input (维度 C x T) 会被转换为 T_patched (维度 C x (T/L) x L)。这种分块处理借鉴了计算机视觉中处理图像的方法，也与动力系统中的<span class="concept">Takens嵌入定理</span>有内在联系，该定理指出，通过对低维观测值进行时延嵌入（某种意义上也是一种“分块”和重组），可以重构出高维真实吸引子的拓扑特性。</p>
+
+                    <h4>2. 动力学嵌入 (Dynamics Embedding)</h4>
+                    <p>每个多变量时间序列补丁随后被提升到一个高维嵌入空间 (d_model)。这一步是Panda架构的关键，它不仅仅是简单地线性投影，而是融合了多种特征提取方式：</p>
+                    <ul>
+                        <li><strong>原始补丁数据:</strong> 直接使用补丁本身的信息。</li>
+                        <li><strong class="highlight">随机多项式特征 (Random Polynomial Features):</strong> 对补丁内的数据点进行多项式组合，例如 P_c,i * P_c,j。这有助于捕捉变量间的非线性相互作用，其思想植根于<span class="concept">Koopman算子理论</span>和扩展动态模态分解 (eDMD)，这些理论表明可以用一组基函数（如多项式）的线性组合来逼近非线性动力学。</li>
+                        <li><strong class="highlight">随机傅里叶特征 (Random Fourier Features):</strong> 将补丁数据通过随机频率的正弦和余弦函数进行变换，如 sin(W*P + b) 和 cos(W*P + b)。这有助于模型捕捉时间序列中的周期性和频率成分。</li>
+                    </ul>
+                    <p>这些特征拼接在一起，形成每个补丁的最终嵌入表示 E(Patch) = [Patch_raw, PolyFeatures(Patch), FourierFeatures(Patch)]。这种嵌入方式使得模型能够从不同层面理解补丁内的动力学信息。</p>
+
+                    <h4>3. 时间注意力 (Temporal Attention)</h4>
+                    <p>信息在时间维度上通过自注意力机制进行混合。模型将通道维度视为批处理维度，对 (T/L) 个单变量补丁（每个维度为 d_model）序列执行自注意力操作。这里使用了 NoPE (No Positional Encoding) 或 RoPE (Rotary Position Embedding) 等位置编码方法，帮助模型理解补丁间的时序关系。</p>
+
+                    <h4>4. 通道注意力 (Channel Attention)</h4>
+                    <p>这是Panda区别于许多单变量时间序列模型的<strong class="highlight">关键创新</strong>。混沌系统中，不同变量（通道）之间往往存在强烈的<span class="concept">耦合关系</span>。例如，在Lorenz系统中，x, y, z三个变量相互影响、共同演化。传统的单变量模型只关注每个通道自身的时间演化，忽略了这种跨通道的动态依赖。Panda通过在每个时间注意力层之后交错插入<strong class="highlight">通道注意力层</strong>来解决这个问题。通道注意力层简单地转置输入序列，将补丁（时间）维度视为批处理维度，然后对不同通道的表示执行自注意力操作。这使得模型能够显式地学习和利用不同物理量之间的瞬时依赖关系。</p>
+                    <p>ChannelAttention(T_patched_embedded) = SelfAttention(T_patched_embedded_transposed)</p>
+
+                    <h4>5. 前馈网络与预测头</h4>
+                    <p>经过多层交错的时间和通道注意力模块后，得到的表示会通过前馈神经网络 (FFN) 进行进一步处理。最后，一个预测头将处理后的补丁序列信息（例如通过对序列维度进行平均或最大池化）聚合成一个表示，并通过一个线性层映射到未来 H 个时间步的预测值。</p>
+
+                    <div id="architectureAnimationContainer" class="animation-container">
+                        </div>
+                    <div class="controls">
+                        <button id="archPlayButton">播放/暂停动画</button>
+                        <label for="archSpeedSlider">动画速度:</label>
+                        <input type="range" id="archSpeedSlider" min="1" max="10" value="3" step="1">
+                    </div>
+                    <figcaption>图2: Panda模型架构示意图。展示了时间序列如何经过分块、动力学嵌入、时间注意力与通道注意力交错处理，最终生成预测。</figcaption>
+                </section>
+
+                <section id="panda-results">
+                    <h2>核心贡献三与四：惊人的涌现能力与深刻的理论洞见</h2>
+                    <p>Panda 模型在经过精心设计的合成数据集上训练后，展现出了一系列令人瞩目的成果，不仅验证了其架构的有效性，也揭示了关于学习复杂动力学的一些基本规律。</p>
+
+                    <h3>1. 对未见真实混沌系统的零样本预测 (Zero-Shot Forecasting)</h3>
+                    <p>Panda 最令人印象深刻的成果之一是其<strong class="highlight">强大的零样本预测能力</strong>。在训练过程中，Panda 从未接触过任何来自真实物理实验的数据。然而，当将其应用于预测诸如<span class="concept">实验双摆</span>的运动轨迹、<span class="concept">秀丽隐杆线虫 (C. elegans)</span> 的运动模式（通过其身体姿态的主成分，称为Eigenworms）、以及包含28个随机连接的<span class="concept">电子振荡器网络</span>的电压记录等真实世界的混沌系统时，Panda 的表现优于或媲美其他先进的零样本时间序列预测模型（如 Chronos），甚至包括在 Panda 的合成数据集上进行了微调 (SFT) 的 Chronos 模型。</p>
+                    <p>特别是在电子振荡器网络数据集中，研究者发现，随着网络中振荡器之间<strong class="highlight">耦合强度的增加</strong>，Panda 相对于其他模型的<span class="concept">性能优势也随之增大</span>，尤其是在较长的预测视域上。这有力地证明了 Panda 架构中<strong class="highlight">通道注意力机制</strong>的重要性，它使得模型能够有效捕捉真实动力系统中普遍存在的非线性耦合效应。</p>
+                    <div id="zeroShotForecastAnimationContainer" class="animation-container">
+                        </div>
+                    <div class="controls">
+                        <button id="forecastPlayButton">开始预测</button>
+                        <label for="systemSelect">选择系统:</label>
+                        <select id="systemSelect">
+                            <option value="lorenz">模拟Lorenz系统</option>
+                            <option value="real_world_like">类真实世界系统</option>
+                        </select>
+                        <label for="noiseLevelSlider">噪声水平:</label>
+                        <input type="range" id="noiseLevelSlider" min="0" max="20" value="5" step="1">
+                    </div>
+                    <figcaption>图3: Panda零样本预测能力示意。动画展示Panda对一个未曾见过的混沌系统（或带噪声的已知系统）进行预测的过程。</figcaption>
+
+                    <h3>2. 意外惊喜：对偏微分方程 (PDE) 的零样本预测</h3>
+                    <p>更令人惊讶的是，尽管 Panda <strong class="highlight">仅在低维常微分方程 (ODE) 数据集上进行训练</strong>，它却自发地获得了预测高维<span class="concept">偏微分方程 (PDE)</span> 的能力，同样是以零样本的方式！PDE 通常用于描述在连续空间域上变化的动力系统，例如流体运动、热量传播或化学反应扩散。从概念上讲，PDE 可以被视为在无限维空间中演化的耦合ODE系统。</p>
+                    <p>研究者们将训练好的 Panda 模型应用于预测两个经典的混沌 PDE 系统：描述不稳定流体绕过圆柱体流动的<span class="concept">冯·卡门涡街 (von Kármán Vortex Street, VKVS)</span> 和模拟火焰锋面传播的<span class="concept">仓本-西瓦辛斯基方程 (Kuramoto-Sivashinsky, KS)</span>。结果显示，Panda 在这些任务上的表现再次超越了基线模型。它不仅能给出定性上合理的预测，还能捕捉到一些关键的非线性现象，如KS方程中火焰锋面的合并，或VKVS中涡旋的脱落和演化。这一发现极具启发性，表明 Panda 可能学习到了一些比特定ODE更普适的、关于<strong class="highlight">时空动力学模式的基本规律</strong>。</p>
+                    <div id="pdeForecastAnimationContainer" class="animation-container">
+                        </div>
+                    <div class="controls">
+                        <button id="pdePlayButton">播放/暂停 PDE 演化</button>
+                        <label for="pdeSpeedSlider">演化速度:</label>
+                        <input type="range" id="pdeSpeedSlider" min="1" max="10" value="2" step="1">
+                    </div>
+                    <figcaption>图4: Panda零样本预测偏微分方程 (KS方程) 示意。动画展示KS方程的真实演化与Panda的预测对比。</figcaption>
+                    
+                    <h3>3. 动力学多样性的力量：神经缩放定律 (Neural Scaling Law)</h3>
+                    <p>为了探究训练数据的“质”与“量”对模型性能的影响，研究者们进行了一项精巧的实验。他们创建了8个独立的预训练数据集子集，这些子集<strong class="highlight">总时间点数保持不变</strong>，但<span class="concept">唯一动力系统的数量</span>和<span class="concept">每个系统的初始条件采样数</span>此消彼长。例如，一个极端是每个系统只采样一个轨迹，但包含大量（约2x10^4个）不同的系统；另一个极端是只用少量（约156个）系统，但每个系统采样大量（128个）不同初始条件的轨迹。</p>
+                    <p>结果清晰地显示：Panda 在未见系统上的零样本预测性能，与训练数据中<strong class="highlight">唯一动力系统的数量（即动力学多样性）呈现出明显的幂律关系 (Power Law)</strong>。具体来说，sMAPE（对称平均绝对百分比误差）随着 N_sys (系统数量) 的增加而降低，其关系可以拟合为 E[sMAPE] = A + B * (N_sys)^(-alpha)，其中 alpha 约等于 0.4195。这意味着，<strong class="highlight">见识更多不同类型的混沌“面貌”，比反复观察同一种混沌的不同“表情”更重要</strong>。</p>
+                    <p>这一定律与传统的关注总数据量的神经缩放定律不同，它强调了<span class="concept">数据多样性</span>在学习复杂动力学普适规律中的核心作用。从非线性动力学理论来看，这也很符合直觉：虽然同一吸引子上的额外轨迹能提供关于该吸引子测度的更多信息（Pesin定理的结果），但到一定程度后，它们在揭示新的拓扑结构（如缠绕方式、空洞等）方面提供的增益会递减。而接触全新的动力系统，则更有可能带来关于动力学行为本质的新知识。</p>
+                    <div id="scalingLawAnimationContainer" class="animation-container">
+                        </div>
+                    <div class="controls">
+                        <button id="scalingPlayButton">开始/重置动画</button>
+                        <label for="lpredSelect">预测长度 (L_pred):</label>
+                        <select id="lpredSelect">
+                            <option value="64">64</option>
+                            <option value="128" selected>128</option>
+                            <option value="256">256</option>
+                            <option value="512">512</option>
+                        </select>
+                    </div>
+                    <figcaption>图5: Panda神经缩放定律示意。动画展示随着训练数据中独特动力系统数量的增加，预测误差如何降低。</figcaption>
+
+                    <h3>4. 可解释性探索：Panda的内部表征与非线性共振</h3>
+                    <p>为了理解 Panda 是如何有效预测非线性动力学的，研究者们分析了其内部的<span class="concept">注意力图 (Attention Maps)</span>。注意力图揭示了模型在处理信息时，不同部分之间的相互关注程度。</p>
+                    <p>分析发现，Panda 的注意力图质量主要集中在<strong class="highlight">远离对角线</strong>的区域，这表明模型有效地利用了上下文信息，而不仅仅是执行类似数值积分器的局部规则（局部规则会导致注意力集中在对角线附近）。一些注意力层展现出复杂的结构，有的形成了<span class="concept">“重现图” (Recurrence Maps)</span>——这是非线性动力学中用于编码吸引子大规模几何结构的经典工具。其他层则显示出条带状和循环结构，与傅里叶级数等全局积分变换的特征一致。</p>
+                    <p>更有趣的是，当向模型输入由两个纯频率正弦波（sin(f1*t) 和 sin(f2*t)）组成的多通道信号时，Panda 的时间注意力图的平均行熵（一种衡量注意力分布复杂性的指标）随输入频率 (f1, f2) 的变化呈现出复杂的、多尺度的<strong class="highlight">非线性共振模式</strong>。这种模式类似于物理系统中（如受迫摆或受踢转子）观察到的现象，即系统对特定输入频率组合表现出非线性的增益响应。这些共振图案的晶格结构，也让人联想到用于表征湍流中非加性相互作用（如三波耦合）的<span class="concept">双谱 (Bispectra)</span>。相比之下，如果去掉通道注意力模块（即单变量版本的Panda），则观察不到这种复杂的离轴响应。这再次凸显了通道注意力在捕捉和耦合多通道输入中的关键作用。</p>
+                </section>
+
+                <section id="conclusion">
+                    <h2>结论与展望：迈向混沌理解的通用模型</h2>
+                    <p>Panda 模型及其研究成果，无疑为我们理解和预测复杂混沌系统带来了新的曙光。它有力地证明了<strong class="highlight">预训练模型在探索动力系统这一数学对象普适性质方面的可行性</strong>。Panda 学习到的不仅仅是数据中的统计模式，更是某种程度上<span class="concept">动力学演化的“语法规则”</span>。</p>
+                    <p>其核心贡献可以总结为：</p>
+                    <ul>
+                        <li><strong>创新的数据集生成方法：</strong> 通过进化算法发现大量新颖的混沌系统，为模型学习提供了前所未有的多样性。</li>
+                        <li><strong>动力学启发的模型架构：</strong> 结合分块处理、多特征动力学嵌入以及关键的通道注意力机制，使模型能够有效处理多变量耦合动力学。</li>
+                        <li><strong>强大的零样本泛化能力：</strong> 无需针对特定系统进行微调，即可对未见真实ODE甚至PDE进行有效预测，展现了学习通用动力学规律的潜力。</li>
+                        <li><strong>揭示神经缩放定律：</strong> 强调了动力学多样性在提升模型性能方面的关键作用，为未来构建更强大的动力学基础模型指明了方向。</li>
+                        <li><strong>初步的内部机制探索：</strong> 通过分析注意力图和非线性共振现象，为理解模型如何表征复杂动态提供了线索。</li>
+                    </ul>
+                    <p>当然，Panda 的研究也存在一些局限性。目前主要聚焦于低维动力系统。虽然低维混沌是高维复杂系统（如天气、神经活动）的基础模块，但将 Panda 的思想推广到直接处理高维、稀疏耦合的系统，将是未来一个重要的研究方向。例如，可以探索使通道注意力机制变得稀疏，以适应高维系统中常见的局部相互作用特性。此外，论文中提到，尽管遮蔽语言模型 (MLM) 预训练有助于某些方面，但它可能会降低自回归推广（rollout）的性能。探索更适合混沌预测任务的预训练目标，也是一个值得研究的问题。</p>
+                    <p>总而言之，Panda 不仅是一个强大的预测工具，更是一个<strong class="highlight">探索非线性动力学奥秘的计算显微镜</strong>。它为我们打开了一扇窗，让我们得以一窥机器学习模型理解和驾驭宇宙中最迷人、最难以捉摸现象之一——混沌——的巨大潜力。未来的研究有望在此基础上，构建出更加通用、更加智能的动力学基础模型，服务于从基础科学发现到实际工程应用的广泛领域。</p>
+                </section>
+            </article>
+        </main>
+        <footer>
+            <p>&copy; 2025 Panda模型深度解读. 内容基于公开论文，仅供学习交流。</p>
+        </footer>
+    </div>
+
+    <script>
+        // --- Animation 1: Panda Dataset Generation ---
+        let sketchDatasetGeneration = function(p) {
+            let systems = [];
+            let maxSystems = 20;
+            let evolutionStep = 0; // 0: initial, 1: mutate, 2: recombine, 3: select
+            let stepDuration = 150; // frames per step
+            let currentStepFrame = 0;
+            let playing = false;
+            let playButton, speedSlider;
+            let canvasContainer; // Define canvasContainer at sketch level
+
+            class System {
+                constructor(x, y, type = 'initial', size = 20, color = p.color(100, 100, 255, 150)) {
+                    this.x = x;
+                    this.y = y;
+                    this.type = type; // 'initial', 'mutated', 'recombined', 'selected'
+                    this.size = size;
+                    this.baseColor = color;
+                    this.displayColor = color;
+                    this.targetX = x;
+                    this.targetY = y;
+                    this.vx = 0;
+                    this.vy = 0;
+                    this.id = p.random(10000);
+                    this.jitter = 0;
+                }
+
+                update() {
+                    this.x = p.lerp(this.x, this.targetX, 0.1);
+                    this.y = p.lerp(this.y, this.targetY, 0.1);
+
+                    if (this.type === 'mutated') {
+                        this.jitter = p.sin(p.frameCount * 0.1 + this.id) * 2;
+                    } else {
+                        this.jitter = 0;
+                    }
+                }
+
+                display() {
+                    p.push();
+                    p.translate(this.x + this.jitter, this.y + this.jitter);
+                    p.noStroke();
+                    p.fill(this.displayColor);
+                    
+                    if (this.type === 'initial' || this.type === 'selected') {
+                        p.ellipse(0, 0, this.size, this.size * 1.2);
+                        p.ellipse(0,0, this.size*0.7, this.size*0.9)
+                    } else if (this.type === 'mutated') {
+                        p.rectMode(p.CENTER);
+                        p.rect(0,0, this.size, this.size, 5);
+                    } else if (this.type === 'recombined') {
+                        p.beginShape();
+                        for(let i=0; i < 5; i++){
+                            let angle = p.map(i, 0, 5, 0, p.TWO_PI);
+                            let r = this.size * (i % 2 === 0 ? 0.5 : 1);
+                            p.vertex(r * p.cos(angle), r * p.sin(angle));
+                        }
+                        p.endShape(p.CLOSE);
+                    }
+                    p.pop();
+                }
+            }
+
+            p.setup = function() {
+                canvasContainer = p.select('#datasetGenerationAnimationContainer'); // Assign to sketch-level variable
+                let canvas = p.createCanvas(canvasContainer.width, canvasContainer.height);
+                canvas.parent('datasetGenerationAnimationContainer');
+                p.textAlign(p.CENTER, p.CENTER);
+                
+                playButton = p.select('#datasetPlayButton');
+                speedSlider = p.select('#datasetSpeedSlider');
+                playButton.mousePressed(() => {
+                    if (!playing) {
+                        playing = true;
+                        evolutionStep = 0;
+                        currentStepFrame = 0;
+                        initializeSystems();
+                        p.loop();
+                    } else {
+                        playing = false;
+                        p.noLoop();
+                    }
+                });
+                initializeSystems();
+                p.noLoop(); // Start paused
+                p.redraw();
+            };
+            
+            function initializeSystems() {
+                systems = [];
+                let initialCount = 5;
+                for (let i = 0; i < initialCount; i++) {
+                    systems.push(new System(p.width * 0.15, p.height * (0.2 + i * 0.15), 'initial', 25, p.color(p.random(100,200), p.random(100,200), 255, 200)));
+                }
+            }
+
+            p.draw = function() {
+                p.background(246, 248, 250); 
+                let currentSpeed = speedSlider.value();
+
+                p.fill(50);
+                p.textSize(16);
+                let labels = ["初始种群", "变异", "重组", "选择", "新颖混沌系统"];
+                for(let i=0; i<labels.length; i++){
+                    p.text(labels[i], p.width * (0.15 + i*0.2), p.height * 0.1);
+                }
+                p.stroke(200);
+                p.line(p.width * 0.25, p.height*0.15, p.width*0.25, p.height*0.85);
+                p.line(p.width * 0.45, p.height*0.15, p.width*0.45, p.height*0.85);
+                p.line(p.width * 0.65, p.height*0.15, p.width*0.65, p.height*0.85);
+
+                if (playing) {
+                    currentStepFrame++;
+                    if (currentStepFrame >= stepDuration / currentSpeed) {
+                        currentStepFrame = 0;
+                        evolutionStep = (evolutionStep + 1);
+                        performEvolutionStep();
+                        if(evolutionStep > 3) { 
+                           playing = false; 
+                           p.noLoop();
+                           playButton.html('开始生成过程');
+                           return;
+                        }
+                         playButton.html('运行中... (阶段 '+(evolutionStep+1)+')');
+                    }
+                }
+                
+                systems.forEach(s => {
+                    s.update();
+                    s.display();
+                });
+            };
+
+            function performEvolutionStep() {
+                if (evolutionStep === 1) { 
+                    systems.forEach(s => {
+                        if (s.type === 'initial') {
+                            s.type = 'mutated';
+                            s.targetX = p.width * 0.35;
+                            s.displayColor = p.color(255, p.random(100,200), p.random(50,150), 200);
+                        }
+                    });
+                } else if (evolutionStep === 2) { 
+                    let mutatedSystems = systems.filter(s => s.type === 'mutated');
+                    let newRecombined = [];
+                    for (let i = 0; i < mutatedSystems.length -1; i+=2) {
+                         if(systems.length + newRecombined.length < maxSystems){
+                            let rX = p.width * 0.55;
+                            let rY = p.height * (0.3 + newRecombined.length * 0.1);
+                            newRecombined.push(new System(rX, rY, 'recombined', 30, p.color(p.random(50,150), 255, p.random(100,200),200)));
+                         }
+                    }
+                    systems = systems.concat(newRecombined);
+                    mutatedSystems.forEach(s => s.targetX = p.width * 0.55); 
+                } else if (evolutionStep === 3) { 
+                    let candidates = systems.filter(s => s.type === 'recombined' || s.type === 'mutated');
+                    let selectedCount = 0;
+                    candidates.forEach(s => {
+                        if (p.random() > 0.4 && selectedCount < 5) { 
+                            s.type = 'selected';
+                            s.targetX = p.width * 0.75 + p.random(-20,20);
+                            s.targetY = p.height * (0.25 + selectedCount * 0.12) + p.random(-10,10);
+                            s.displayColor = p.color(p.random(100,200),255,p.random(100,200), 220);
+                            s.size = 28;
+                            selectedCount++;
+                        } else {
+                            s.targetY = p.height * 1.2; 
+                            s.displayColor = p.color(150,50);
+                        }
+                    });
+                    
+                    setTimeout(() => {
+                        systems = systems.filter(s => s.targetY < p.height * 1.1);
+                    }, 2000 / (speedSlider.value() || 5) ); // Ensure speedSlider.value() is not 0
+                }
+            }
+             p.windowResized = function() {
+                // canvasContainer is already defined at sketch level and assigned in setup
+                if (canvasContainer) {
+                    p.resizeCanvas(canvasContainer.width, canvasContainer.height);
+                }
+                initializeSystems(); 
+                if (!playing) p.redraw();
+            };
+        };
+        new p5(sketchDatasetGeneration);
+
+        // --- Animation 2: Panda Architecture ---
+        let sketchArchitecture = function(p) {
+            let timeSeries = [];
+            let patches = [];
+            let embeddings = [];
+            let attentionOutput = [];
+            let stage = 0; 
+            let stageCounter = 0;
+            let maxStageCounter = 100;
+            let playing = true;
+            let playButton, speedSlider;
+            let currentSpeed; // Sketch-level variable for currentSpeed
+            let canvasContainer; 
+
+            p.setup = function() {
+                canvasContainer = p.select('#architectureAnimationContainer');
+                let canvas = p.createCanvas(canvasContainer.width, canvasContainer.height);
+                canvas.parent('architectureAnimationContainer');
+                playButton = p.select('#archPlayButton');
+                speedSlider = p.select('#archSpeedSlider');
+                currentSpeed = speedSlider.value(); // Initialize currentSpeed
+
+                playButton.mousePressed(() => {
+                    playing = !playing;
+                    if (playing) { p.loop(); playButton.html('暂停动画');}
+                    else { p.noLoop(); playButton.html('播放动画'); }
+                });
+                speedSlider.input(() => { // Update currentSpeed when slider changes
+                    currentSpeed = speedSlider.value();
+                });
+                
+                generateTimeSeries();
+                if (playing) p.loop(); else p.noLoop();
+                p.redraw();
+            };
+
+            function generateTimeSeries() {
+                timeSeries = [];
+                for (let i = 0; i < 3; i++) { 
+                    let channel = [];
+                    for (let j = 0; j < 200; j++) { 
+                        channel.push(p.sin(j * 0.1 + i * p.PI/3) * p.height/10 + p.random(-5,5));
+                    }
+                    timeSeries.push(channel);
+                }
+                patches = []; embeddings = []; attentionOutput = []; stage = 0; stageCounter = 0;
+            }
+            
+            p.draw = function() {
+                p.background(246, 248, 250);
+                // currentSpeed is now a sketch-level variable, updated by slider event
+                maxStageCounter = 200 / (currentSpeed || 3); // Ensure currentSpeed is not 0, fallback to 3
+
+                if (playing) stageCounter++;
+                if (stageCounter > maxStageCounter) {
+                    stage = (stage + 1) % 5;
+                    stageCounter = 0;
+                    if (stage === 0) generateTimeSeries(); 
+                    if (stage === 1) createPatches();
+                    if (stage === 2) createEmbeddings();
+                    if (stage === 3) createAttentionOutput();
+                }
+                
+                drawTimeSeries(p.width * 0.1, p.height * 0.3, p.width * 0.8, p.height * 0.15);
+                if (stage >= 1) drawPatches(p.width * 0.1, p.height * 0.5, p.width*0.8, p.height*0.1);
+                if (stage >= 2) drawEmbeddings(p.width * 0.1, p.height * 0.65, p.width*0.8, p.height*0.1);
+                if (stage >= 3) drawAttention(p.width * 0.1, p.height * 0.8, p.width*0.8, p.height*0.1);
+                if (stage >= 4) drawOutput(p.width * 0.5, p.height * 0.9, p.width*0.4, p.height*0.05);
+
+                p.fill(50); p.noStroke(); p.textSize(14); p.textAlign(p.LEFT);
+                p.text("输入时间序列 (多通道)", p.width*0.1, p.height*0.28 -5);
+                if(stage >=1) p.text("1. 分块 (Patching)", p.width*0.1, p.height*0.5 -5);
+                if(stage >=2) p.text("2. 动力学嵌入 (Embedding: Raw + Poly + Fourier)", p.width*0.1, p.height*0.65 -5);
+                if(stage >=3) p.text("3. 时间/通道注意力", p.width*0.1, p.height*0.8 -5);
+                if(stage >=4) p.text("4. 预测输出", p.width*0.5 - 50, p.height*0.9 -5);
+            };
+
+            function drawTimeSeries(x, y, w, h) {
+                p.strokeWeight(1.5);
+                for (let i = 0; i < timeSeries.length; i++) {
+                    p.stroke(p.color(100 + i * 50, 100, 200 - i * 50));
+                    p.noFill();
+                    p.beginShape();
+                    for (let j = 0; j < timeSeries[i].length; j++) {
+                        let val = timeSeries[i][j];
+                        let tx = x + p.map(j, 0, timeSeries[i].length, 0, w);
+                        let ty = y + h/2 + val;
+                        p.vertex(tx, ty);
+                    }
+                    p.endShape();
+                }
+            }
+
+            function createPatches() {
+                patches = [];
+                let patchLength = 20;
+                let numPatches = Math.floor(timeSeries[0].length / patchLength);
+                for (let i = 0; i < numPatches; i++) {
+                    let patchGroup = [];
+                    for (let ch = 0; ch < timeSeries.length; ch++) {
+                        patchGroup.push(timeSeries[ch].slice(i*patchLength, (i+1)*patchLength));
+                    }
+                    patches.push(patchGroup);
+                }
+            }
+
+            function drawPatches(x_start, y_start, total_w, h_patch_area) {
+                 if (!patches.length) return;
+                 let patchDisplayWidth = total_w / patches.length * 0.8;
+                 let spacing = total_w / patches.length * 0.2;
+                 p.strokeWeight(1);
+                 for (let i = 0; i < patches.length; i++) {
+                     let current_x = x_start + i * (patchDisplayWidth + spacing);
+                     for (let ch = 0; ch < patches[i].length; ch++) {
+                         p.stroke(p.color(100 + ch * 50, 100, 200 - ch * 50, 150));
+                         p.noFill();
+                         p.beginShape();
+                         for (let j = 0; j < patches[i][ch].length; j++) {
+                             let val = patches[i][ch][j] / 2; 
+                             let tx = current_x + p.map(j, 0, patches[i][ch].length, 0, patchDisplayWidth);
+                             let ty = y_start + (ch * h_patch_area/4) + h_patch_area/8 + val;
+                             p.vertex(tx, ty);
+                         }
+                         p.endShape();
+                     }
+                     p.noFill(); p.stroke(150);
+                     p.rect(current_x, y_start, patchDisplayWidth, h_patch_area*0.7);
+                 }
+            }
+            
+            function createEmbeddings() {
+                embeddings = [];
+                for(let i=0; i < patches.length; i++) {
+                    embeddings.push({
+                        color1: p.color(p.random(255),p.random(255),p.random(255),180), 
+                        color2: p.color(p.random(255),p.random(255),p.random(255),180), 
+                        color3: p.color(p.random(255),p.random(255),p.random(255),180)  
+                    });
+                }
+            }
+
+            function drawEmbeddings(x_start, y_start, total_w, h_embed_area) {
+                if (!embeddings.length) return;
+                let embedWidth = total_w / embeddings.length * 0.8;
+                let spacing = total_w / embeddings.length * 0.2;
+                let featureHeight = h_embed_area / 3;
+                p.noStroke();
+                for (let i = 0; i < embeddings.length; i++) {
+                    let current_x = x_start + i * (embedWidth + spacing);
+                    p.fill(embeddings[i].color1);
+                    p.rect(current_x, y_start, embedWidth, featureHeight);
+                    p.fill(embeddings[i].color2);
+                    p.rect(current_x, y_start + featureHeight, embedWidth, featureHeight);
+                    p.fill(embeddings[i].color3);
+                    p.rect(current_x, y_start + 2*featureHeight, embedWidth, featureHeight);
+                    
+                    p.noFill(); p.stroke(150);
+                    p.rect(current_x, y_start, embedWidth, h_embed_area);
+                }
+            }
+
+            function createAttentionOutput() {
+                attentionOutput = [];
+                 for(let i=0; i < embeddings.length; i++) {
+                    attentionOutput.push(p.color(p.random(100,200), p.random(100,200), p.random(100,200), 220));
+                }
+            }
+            
+            function drawAttention(x_start, y_start, total_w, h_attn_area) {
+                if (!attentionOutput.length) return;
+                let blockWidth = total_w / attentionOutput.length * 0.8;
+                let spacing = total_w / attentionOutput.length * 0.2;
+                let effectiveSpeed = currentSpeed || 3; // Use sketch-level currentSpeed, fallback
+                p.noStroke();
+                 for (let i = 0; i < attentionOutput.length; i++) {
+                    let current_x = x_start + i * (blockWidth + spacing);
+                    p.fill(attentionOutput[i]);
+                    p.rect(current_x, y_start, blockWidth, h_attn_area);
+                 }
+                 if (attentionOutput.length > 1 && p.frameCount % (10 / effectiveSpeed) < (5 / effectiveSpeed)) {
+                     p.stroke(0, 150, 255, 80); p.strokeWeight(1);
+                     let i1 = p.floor(p.random(attentionOutput.length));
+                     let i2 = p.floor(p.random(attentionOutput.length));
+                     let x1 = x_start + i1 * (blockWidth + spacing) + blockWidth/2;
+                     let x2 = x_start + i2 * (blockWidth + spacing) + blockWidth/2;
+                     p.line(x1, y_start + h_attn_area/2, x2, y_start + h_attn_area/2);
+                 }
+            }
+            
+            function drawOutput(x,y,w,h){
+                p.fill(50,200,50,200); p.noStroke();
+                p.rect(x,y,w,h,5);
+                p.fill(255); p.textAlign(p.CENTER, p.CENTER); p.textSize(12);
+                p.text("预测结果", x+w/2, y+h/2);
+            }
+             p.windowResized = function() {
+                if (canvasContainer) {
+                     p.resizeCanvas(canvasContainer.width, canvasContainer.height);
+                }
+                generateTimeSeries();
+                if (!playing) p.redraw();
+            };
+        };
+        new p5(sketchArchitecture);
+
+        // --- Animation 3: Zero-Shot Forecasting ---
+        let sketchZeroShotForecast = function(p) {
+            let groundTruth = [];
+            let prediction = [];
+            let contextLength = 80;
+            let forecastLength = 120;
+            let totalLength = contextLength + forecastLength;
+            let noiseLevel = 5;
+            let systemType = 'lorenz'; 
+            let time = 0;
+            let predicting = false;
+            let forecastProgress = 0;
+            let playButton, systemSelect, noiseSlider;
+            let canvasContainer;
+
+            p.setup = function() {
+                canvasContainer = p.select('#zeroShotForecastAnimationContainer');
+                let canvas = p.createCanvas(canvasContainer.width, canvasContainer.height);
+                canvas.parent('zeroShotForecastAnimationContainer');
+
+                playButton = p.select('#forecastPlayButton');
+                systemSelect = p.select('#systemSelect');
+                noiseSlider = p.select('#noiseLevelSlider');
+
+                playButton.mousePressed(() => {
+                    predicting = true;
+                    forecastProgress = 0;
+                    generateData(); // Regenerate data on new prediction start for freshness
+                    p.loop(); // Ensure loop is running for animation
+                });
+                systemSelect.changed(() => {
+                    systemType = systemSelect.value();
+                    generateData();
+                    predicting = false; forecastProgress = 0;
+                    p.redraw();
+                });
+                noiseSlider.input(() => {
+                    noiseLevel = parseFloat(noiseSlider.value()); // Ensure it's a number
+                    if (!predicting) {
+                         generateData();
+                         p.redraw();
+                    }
+                });
+                
+                generateData();
+                p.noLoop(); 
+                p.redraw();
+            };
+
+            function generateData() {
+                groundTruth = [];
+                prediction = []; // Clear previous prediction
+                let dt = 0.02;
+                let x=0.1, y=0, z=0; 
+                if (systemType === 'lorenz') {
+                    let sigma=10, rho=28, beta=8/3;
+                     for (let i = 0; i < totalLength; i++) {
+                        let dx = sigma * (y - x) * dt;
+                        let dy = (x * (rho - z) - y) * dt;
+                        let dz = (x * y - beta * z) * dt;
+                        x += dx; y += dy; z += dz;
+                        groundTruth.push(y * 5 + p.random(-noiseLevel, noiseLevel)); 
+                    }
+                } else { 
+                    let a=0.2, b=0.2, c=5.7;
+                    x=1.2; y=1.1; z=0.5;
+                     for (let i = 0; i < totalLength; i++) {
+                        let dx = (-y -z)*dt;
+                        let dy = (x + a*y)*dt;
+                        let dz = (b + z*(x-c))*dt;
+                        x += dx; y += dy; z += dz;
+                        groundTruth.push(x * 15 + p.random(-noiseLevel, noiseLevel)); 
+                    }
+                }
+            }
+
+            p.draw = function() {
+                p.background(246, 248, 250);
+                let plotX = p.width * 0.1;
+                let plotY = p.height * 0.5;
+                let plotW = p.width * 0.8;
+                let plotH = p.height * 0.6;
+
+                p.stroke(200);
+                p.line(plotX, plotY, plotX + plotW, plotY); 
+                p.line(plotX, plotY - plotH/2, plotX, plotY + plotH/2); 
+
+                p.stroke(0, 0, 255); 
+                p.strokeWeight(2);
+                p.noFill();
+                p.beginShape();
+                for (let i = 0; i < contextLength; i++) {
+                    let val = groundTruth[i];
+                    let tx = plotX + p.map(i, 0, totalLength -1, 0, plotW);
+                    let ty = plotY - p.constrain(val, -plotH/2, plotH/2);
+                    p.vertex(tx, ty);
+                }
+                p.endShape();
+
+                p.stroke(0, 0, 255, 80); 
+                p.beginShape();
+                for (let i = contextLength; i < totalLength; i++) {
+                    let val = groundTruth[i];
+                    let tx = plotX + p.map(i, 0, totalLength -1, 0, plotW);
+                    let ty = plotY - p.constrain(val, -plotH/2, plotH/2);
+                    p.vertex(tx, ty);
+                }
+                p.endShape();
+
+                if (predicting) {
+                    if (forecastProgress < forecastLength) {
+                        forecastProgress++;
+                        let predVal = groundTruth[contextLength + forecastProgress -1] + p.random(-noiseLevel*1.5, noiseLevel*1.5) * (forecastProgress/forecastLength);
+                        prediction.push(predVal);
+                        // p.loop() is already called when button is pressed
+                    } else {
+                        predicting = false; 
+                        p.noLoop(); 
+                    }
+                }
+                
+                if (prediction.length > 0) {
+                    p.stroke(255, 0, 0); 
+                    p.strokeWeight(2);
+                    p.noFill();
+                    p.beginShape();
+                    for (let i = 0; i < prediction.length; i++) {
+                        let val = prediction[i];
+                        let tx = plotX + p.map(contextLength + i, 0, totalLength -1, 0, plotW);
+                        let ty = plotY - p.constrain(val, -plotH/2, plotH/2);
+                        p.vertex(tx, ty);
+                    }
+                    p.endShape();
+                }
+                
+                p.fill(50); p.noStroke(); p.textSize(14);
+                p.textAlign(p.LEFT);
+                p.text("蓝色: 输入观测 (上下文)", plotX, p.height*0.15);
+                p.text("红色: Panda零样本预测", plotX, p.height*0.2);
+                p.text("浅蓝色: 真实未来轨迹 (用于对比)", plotX, p.height*0.25);
+                p.textAlign(p.CENTER);
+                p.text(`噪声水平: ${noiseLevel.toFixed(0)}`, p.width/2, p.height*0.9);
+
+                let separatorX = plotX + p.map(contextLength, 0, totalLength -1, 0, plotW);
+                p.stroke(150, 150, 150, 100); p.strokeWeight(1);
+                p.line(separatorX, plotY - plotH/2, separatorX, plotY + plotH/2);
+                p.fill(150); p.noStroke(); p.textSize(12);
+                p.text("预测开始点", separatorX, plotY + plotH/2 + 15);
+            };
+
+             p.windowResized = function() {
+                if (canvasContainer) {
+                    p.resizeCanvas(canvasContainer.width, canvasContainer.height);
+                }
+                generateData();
+                if (!predicting) p.redraw(); else p.loop();
+            };
+        };
+        new p5(sketchZeroShotForecast);
+
+        // --- Animation 4: PDE Forecasting (Kuramoto-Sivashinsky) ---
+        let sketchPDEForecast = function(p) {
+            let N = 64; 
+            let L = 100; 
+            let dx = L / N;
+            let u_truth = [];
+            let u_panda = [];
+            let time = 0;
+            let dt = 0.1; 
+            let playing = true;
+            let playButton, speedSlider;
+            let canvasContainer;
+
+            p.setup = function() {
+                canvasContainer = p.select('#pdeForecastAnimationContainer');
+                let canvas = p.createCanvas(canvasContainer.width, canvasContainer.height);
+                canvas.parent('pdeForecastAnimationContainer');
+                
+                playButton = p.select('#pdePlayButton');
+                speedSlider = p.select('#pdeSpeedSlider');
+                playButton.mousePressed(() => {
+                    playing = !playing;
+                    if(playing) p.loop(); else p.noLoop();
+                });
+
+                for (let i = 0; i < N; i++) {
+                    u_truth[i] = p.cos(2 * p.PI * i / N) + 0.5 * p.cos(4 * p.PI * i / N) + p.random(-0.1,0.1);
+                    u_panda[i] = u_truth[i] + p.random(-0.1, 0.1); 
+                }
+                if (playing) p.loop(); else p.noLoop();
+                p.redraw();
+            };
+            
+            function ks_update(u_arr, current_speed_val) { // Pass speed slider value
+                let u_new = [...u_arr];
+                let nu = 0.5 + current_speed_val * 0.1; 
+                let D2 = 1.0; 
+                let D4 = 1.0; 
+                
+                for (let i = 0; i < N; i++) {
+                    let u_im1 = u_arr[(i - 1 + N) % N];
+                    let u_ip1 = u_arr[(i + 1) % N];
+                    let u_im2 = u_arr[(i - 2 + N) % N];
+                    let u_ip2 = u_arr[(i + 2) % N];
+                    
+                    let ux = (u_ip1 - u_im1) / (2 * dx);
+                    let uxx = (u_ip1 - 2 * u_arr[i] + u_im1) / (dx * dx);
+                    let uxxxx = (u_ip2 - 4*u_ip1 + 6*u_arr[i] - 4*u_im1 + u_im2) / (dx*dx*dx*dx);
+                    
+                    u_new[i] = u_arr[i] + dt * (-nu * u_arr[i] * ux - D2 * uxx - D4 * uxxxx);
+                    u_new[i] = p.constrain(u_new[i], -2, 2); 
+                }
+                return u_new;
+            }
+            
+            p.draw = function() {
+                p.background(246, 248, 250);
+                let plotH = p.height * 0.35;
+                let plotW = p.width * 0.8;
+                let x_offset = p.width * 0.1;
+                let currentSpeedVal = parseFloat(speedSlider.value());
+
+
+                if (playing) {
+                    u_truth = ks_update(u_truth, currentSpeedVal);
+                    u_panda = ks_update(u_panda.map(val => val + p.random(-0.005,0.005) * (11-currentSpeedVal)*0.1 ), currentSpeedVal); 
+                    time += dt;
+                }
+
+                p.stroke(0, 0, 255); p.strokeWeight(2); p.noFill();
+                p.beginShape();
+                for (let i = 0; i < N; i++) {
+                    p.vertex(x_offset + (i / N) * plotW, p.height * 0.3 - u_truth[i] * plotH * 0.3);
+                }
+                p.endShape();
+
+                p.stroke(255, 0, 0); p.strokeWeight(2); p.noFill();
+                p.beginShape();
+                for (let i = 0; i < N; i++) {
+                    p.vertex(x_offset + (i / N) * plotW, p.height * 0.7 - u_panda[i] * plotH * 0.3);
+                }
+                p.endShape();
+
+                p.fill(50); p.noStroke(); p.textSize(14);
+                p.textAlign(p.LEFT);
+                p.text("真实PDE演化 (KS方程)", x_offset, p.height * 0.1);
+                p.text("Panda预测PDE演化", x_offset, p.height * 0.5);
+                p.textAlign(p.CENTER);
+                p.text(`时间: ${time.toFixed(1)}`, p.width/2, p.height * 0.9);
+            };
+             p.windowResized = function() {
+                if (canvasContainer) {
+                     p.resizeCanvas(canvasContainer.width, canvasContainer.height);
+                }
+                if (!playing) p.redraw();
+            };
+        };
+        new p5(sketchPDEForecast);
+
+        // --- Animation 5: Neural Scaling Law ---
+        let sketchScalingLaw = function(p) {
+            let numSystemsData = [156, 312, 625, 1250, 2500, 5000, 10000, 20000]; 
+            let A = 28; 
+            let B_map = {64: 200, 128: 150, 256: 120, 512: 100}; 
+            let alpha = 0.4195;
+            let points = [];
+            let currentPointIndex = 0;
+            let lpred = 128;
+            let B = B_map[lpred];
+            let playButton, lpredSelect;
+            let playing = false;
+            let canvasContainer;
+
+            p.setup = function() {
+                canvasContainer = p.select('#scalingLawAnimationContainer');
+                let canvas = p.createCanvas(canvasContainer.width, canvasContainer.height);
+                canvas.parent('scalingLawAnimationContainer');
+                
+                playButton = p.select('#scalingPlayButton');
+                lpredSelect = p.select('#lpredSelect');
+
+                playButton.mousePressed(() => {
+                    playing = true;
+                    currentPointIndex = 0;
+                    points = [];
+                    p.loop();
+                });
+                lpredSelect.changed(() => {
+                    lpred = parseInt(lpredSelect.value());
+                    B = B_map[lpred] || 150; 
+                    currentPointIndex = 0;
+                    points = [];
+                    playing = false; p.noLoop(); 
+                    p.redraw(); 
+                });
+                
+                p.noLoop(); 
+                p.redraw();
+            };
+
+            p.draw = function() {
+                p.background(246, 248, 250);
+                let padding = 60;
+                let plotX = padding;
+                let plotY = p.height - padding;
+                let plotW = p.width - 2 * padding;
+                let plotH = p.height - 2 * padding;
+
+                p.stroke(50); p.strokeWeight(1);
+                p.line(plotX, plotY, plotX + plotW, plotY); 
+                p.line(plotX, plotY, plotX, plotY - plotH); 
+
+                p.fill(50); p.noStroke(); p.textSize(12);
+                p.textAlign(p.CENTER, p.TOP);
+                p.text("独特动力系统数量 (N_sys, 对数尺度)", plotX + plotW / 2, plotY + 10);
+                p.textAlign(p.CENTER, p.CENTER);
+                p.push();
+                p.translate(plotX - 35, plotY - plotH / 2);
+                p.rotate(-p.HALF_PI);
+                p.text("sMAPE (预测误差)", 0, 0);
+                p.pop();
+
+                p.stroke(0,100,255, 150); p.strokeWeight(2); p.noFill();
+                p.beginShape();
+                for (let i = 0; i <= 100; i++) {
+                    let ratio = i / 100;
+                    let N_sys_val = numSystemsData[0] * p.pow(numSystemsData[numSystemsData.length-1]/numSystemsData[0] , ratio);
+                    let smape_val = A + B * p.pow(N_sys_val, -alpha);
+                    
+                    let x = plotX + p.map(p.log(N_sys_val), p.log(numSystemsData[0]), p.log(numSystemsData[numSystemsData.length-1]), 0, plotW);
+                    let y = plotY - p.map(smape_val, A, A + B * p.pow(numSystemsData[0], -alpha) * 0.8 , 0, plotH); 
+                    p.vertex(x, y);
+                }
+                p.endShape();
+
+                numSystemsData.forEach(ns => {
+                    let x = plotX + p.map(p.log(ns), p.log(numSystemsData[0]), p.log(numSystemsData[numSystemsData.length-1]), 0, plotW);
+                    p.line(x, plotY, x, plotY + 5);
+                    p.text(ns, x, plotY + 20);
+                });
+                
+                for(let val = Math.floor(A/5)*5; val < A + B * p.pow(numSystemsData[0], -alpha) *0.8; val+=5){
+                     if (val < A) continue;
+                     let y = plotY - p.map(val, A, A + B * p.pow(numSystemsData[0], -alpha) * 0.8 , 0, plotH);
+                     p.line(plotX, y, plotX-5, y);
+                     p.textAlign(p.RIGHT, p.CENTER);
+                     p.text(val.toFixed(0), plotX-8, y);
+                }
+
+                if (playing && currentPointIndex < numSystemsData.length) {
+                    if (p.frameCount % 30 == 0) { 
+                        let N_sys_val = numSystemsData[currentPointIndex];
+                        let smape_val = A + B * p.pow(N_sys_val, -alpha) + p.random(-1,1); 
+                        points.push({ N_sys: N_sys_val, smape: smape_val });
+                        currentPointIndex++;
+                    }
+                } else if (playing && currentPointIndex >= numSystemsData.length) {
+                    playing = false;
+                    p.noLoop();
+                }
+
+                p.fill(255,0,0); p.noStroke();
+                points.forEach(pt => {
+                    let x = plotX + p.map(p.log(pt.N_sys), p.log(numSystemsData[0]), p.log(numSystemsData[numSystemsData.length-1]), 0, plotW);
+                    let y = plotY - p.map(pt.smape, A, A + B * p.pow(numSystemsData[0], -alpha) * 0.8, 0, plotH);
+                    p.ellipse(x, y, 8, 8);
+                });
+                
+                p.fill(50); p.noStroke(); p.textAlign(p.LEFT);
+                p.text(`L_pred = ${lpred}`, plotX + 10, plotY - plotH - 10);
+            };
+             p.windowResized = function() {
+                if (canvasContainer) {
+                    p.resizeCanvas(canvasContainer.width, canvasContainer.height);
+                }
+                if (!playing) p.redraw();
+            };
+        };
+        new p5(sketchScalingLaw);
+
+    </script>
+</body>
+</html>

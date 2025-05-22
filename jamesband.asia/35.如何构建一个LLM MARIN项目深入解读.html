@@ -1,0 +1,1099 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Marin 项目深度解读</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
+    <style>
+        /* General Styles */
+        body {
+            font-family: 'Nunito', 'Helvetica Neue', Helvetica, Arial, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+            line-height: 1.8;
+            margin: 0;
+            padding: 0;
+            background-color: #f8f9fa; /* Light gray background */
+            color: #343a40; /* Darker text for better readability */
+            font-size: 12pt; /* Default for screen, will be overridden for print */
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 25px;
+            background-color: #ffffff; /* White content background */
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            border-radius: 12px;
+        }
+
+        /* Header */
+        header {
+            text-align: center;
+            padding: 40px 20px;
+            background: linear-gradient(135deg, #4A90E2 0%, #50E3C2 100%); /* Lively gradient */
+            color: white;
+            border-radius: 12px 12px 0 0;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 2.8em;
+            font-weight: 700; /* Bolder */
+            letter-spacing: 1px;
+        }
+
+        header p {
+            margin-top: 8px;
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        /* Navigation */
+        nav {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            background-color: #e9ecef; /* Slightly darker gray for nav */
+            padding: 12px 0;
+            margin-bottom: 25px;
+            border-bottom: 3px solid #4A90E2;
+        }
+
+        nav a {
+            margin: 5px 15px;
+            text-decoration: none;
+            color: #0056b3; /* Stronger blue for links */
+            font-weight: 600;
+            padding: 8px 12px;
+            border-radius: 6px;
+            transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
+        }
+
+        nav a:hover {
+            background-color: #4A90E2;
+            color: white;
+        }
+
+        /* Section Titles */
+        h2 {
+            color: #D9534F; /* Lively red/orange */
+            border-bottom: 3px solid #50E3C2; /* Complementary accent color */
+            padding-bottom: 12px;
+            margin-top: 35px;
+            margin-bottom: 20px;
+            font-size: 2em;
+            font-weight: 600;
+        }
+
+        h3 {
+            color: #5CB85C; /* Lively green */
+            margin-top: 30px;
+            margin-bottom: 15px;
+            font-size: 1.6em;
+            font-weight: 600;
+        }
+
+        /* Text and Lists */
+        p, li {
+            text-align: justify;
+            margin-bottom: 1em;
+            font-size: 1.05em; /* Slightly larger for readability */
+        }
+
+        ul, ol {
+            padding-left: 25px;
+        }
+
+        /* Highlights and Code */
+        strong, .highlight {
+            color: #E67E22; /* Orange for emphasis */
+            font-weight: bold;
+        }
+
+        code {
+            background-color: #e9ecef;
+            padding: 3px 6px;
+            border-radius: 4px;
+            font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace;
+            font-size: 0.95em;
+        }
+
+        .formula {
+            display: block;
+            text-align: center;
+            padding: 12px;
+            margin: 20px auto;
+            background-color: #eef7ff; /* Light blue for formulas */
+            border: 1px solid #cce0ff;
+            border-left: 5px solid #4A90E2;
+            font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace;
+            font-size: 1.15em;
+            border-radius: 6px;
+            width: fit-content;
+            max-width: 90%;
+            box-sizing: border-box;
+        }
+
+        /* Animation Containers */
+        .animation-container {
+            margin: 35px auto;
+            padding: 20px;
+            border: 1px solid #dee2e6; /* Lighter border */
+            border-radius: 10px;
+            background-color: #fdfdfd;
+            text-align: center;
+            overflow: hidden;
+        }
+
+        .animation-container h4 {
+            margin-top: 0;
+            margin-bottom: 15px;
+            color: #0056b3; /* Darker blue for animation titles */
+            font-size: 1.3em;
+            font-weight: 600;
+        }
+
+        canvas {
+            display: block;
+            margin: 10px auto;
+            max-width: 100%;
+            border-radius: 6px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        
+        /* Specific canvas container styles */
+        #dataPipelineCanvasContainer,
+        #distributedTrainingCanvasContainer,
+        #executorWorkflowCanvasContainer,
+        #markdownConversionCanvasContainer,
+        #modelTrainingLoopCanvasContainer {
+            width: 100%;
+            height: 380px; /* Adjusted default height */
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        /* Force specific height for actionCoverageCanvas if it exists */
+        #actionCoverageCanvas {
+             height: 350px !important; /* Example fixed height */
+        }
+
+
+        /* Buttons */
+        button {
+            background-color: #50E3C2; /* Accent color for buttons */
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 1em;
+            font-weight: 500;
+            margin: 12px 5px;
+            cursor: pointer;
+            border-radius: 6px;
+            transition: background-color 0.2s ease-in-out, transform 0.1s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        button:hover {
+            background-color: #48CFAE; /* Darker shade on hover */
+            transform: translateY(-1px);
+        }
+        button:active {
+            transform: translateY(0px);
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 25px;
+            margin-top: 35px;
+            background-color: #343a40; /* Dark footer */
+            color: #adb5bd; /* Lighter text for footer */
+            font-size: 0.95em;
+            border-radius: 0 0 12px 12px;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            body {
+                font-size: 11pt;
+            }
+            header h1 {
+                font-size: 2.2em;
+            }
+            header p {
+                font-size: 1em;
+            }
+            h2 {
+                font-size: 1.6em;
+            }
+            h3 {
+                font-size: 1.3em;
+            }
+            nav a {
+                margin: 5px 8px;
+                padding: 6px 10px;
+            }
+            button {
+                padding: 10px 18px;
+                font-size: 0.95em;
+            }
+            .container {
+                margin: 10px;
+                padding: 15px;
+            }
+            #dataPipelineCanvasContainer,
+            #distributedTrainingCanvasContainer,
+            #executorWorkflowCanvasContainer,
+            #markdownConversionCanvasContainer,
+            #modelTrainingLoopCanvasContainer {
+                height: 300px; /* Smaller height for mobile */
+            }
+        }
+
+        /* A3 paper size, 16pt font, normal margins for printing */
+        @media print {
+            @page {
+                size: A3;
+                margin: 2.5cm; /* Ordinary page margin */
+            }
+            body {
+                font-size: 16pt; /* 三号 font size (approx 16pt) */
+                line-height: 1.6;
+                background-color: #fff !important; /* White background for print */
+                color: #000 !important; /* Black text for print */
+                width: auto; /* Allow content to flow naturally */
+                box-shadow: none;
+            }
+            .container {
+                width: 100%;
+                max-width: none;
+                margin: 0;
+                padding: 0;
+                box-shadow: none;
+                border-radius: 0;
+            }
+            header {
+                background: none !important; /* No background color for print */
+                color: #000 !important;
+                border-bottom: 2px solid #000;
+                padding: 20px 0;
+            }
+            header h1, header p {
+                color: #000 !important;
+            }
+            nav {
+                display: none; /* Hide navigation in print */
+            }
+            h2, h3 {
+                color: #000 !important;
+                border-color: #000 !important;
+            }
+            strong, .highlight {
+                color: #000 !important; /* Black for print */
+                font-weight: bold; /* Ensure boldness is kept */
+            }
+            code {
+                background-color: #f0f0f0 !important; /* Light gray for code blocks */
+                border: 1px solid #ccc;
+            }
+            .formula {
+                background-color: #f0f0f0 !important;
+                border: 1px solid #ccc;
+                border-left: 3px solid #000 !important;
+            }
+            .animation-container {
+                page-break-inside: avoid; /* Try to keep animations on one page */
+                border: 1px solid #ccc !important;
+                background-color: #fff !important;
+            }
+            canvas {
+                border: 1px solid #999; /* Add border to canvas for print visibility */
+            }
+            button {
+                display: none; /* Hide buttons in print */
+            }
+            footer {
+                background: none !important;
+                color: #000 !important;
+                padding: 10px 0;
+                border-top: 1px solid #000;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Marin 项目深度解读：物理与逻辑的航海图</h1>
+            <p>一个开源的基础模型研发框架，带你探索AI的星辰大海</p>
+        </header>
+
+        <nav>
+            <a href="#introduction">项目概览</a>
+            <a href="#physical-view">物理结构</a>
+            <a href="#logical-view">逻辑流程</a>
+            <a href="#animations-section">核心动画演示</a>
+            <a href="#conclusion">总结与展望</a>
+        </nav>
+
+        <section id="introduction">
+            <h2><span class="highlight">🚀</span> 项目概览：Marin 为何启航？</h2>
+            <p>Marin，正如其名，寓意着在广阔的AI研究领域中航行探索。它不仅仅是一个代码仓库，更是一个<strong class="highlight">以可复现性为核心的开源基础模型研发框架</strong>。想象一下，从原始数据的茫茫大海，到训练出强大的语言模型（如Llama、DeepSeek、Qwen等），Marin为你提供了坚固的船只和清晰的航海图。它的使命是让整个研究过程——无论是成功的乘风破浪，还是宝贵的经验教训——都能够被记录、分享和复现。</p>
+            <p>此项目的核心价值在于其<strong class="highlight">对研究开发全生命周期的覆盖</strong>：从海量数据的搜集与精炼（数据爬取、清洗、转换、去重、分类），到高效的词元化（Tokenization），再到可扩展的模型训练（支持TPU集群和多节点GPU），以及最终严谨的模型评估。Marin不仅仅是工具的堆砌，它通过精心设计的<strong class="highlight">“执行器（Executor）”</strong>和<strong class="highlight">“实验（Experiment）”</strong>概念，将这些复杂的步骤串联起来，形成了一套标准化的、可配置的工作流。</p>
+            <p>根据项目文档和代码结构，Marin致力于解决当前大模型研发中的几个痛点：</p>
+            <ul>
+                <li><strong>可复现性难题：</strong> 确保实验结果的一致性和可验证性，记录从数据到模型的每一步。</li>
+                <li><strong>数据处理的复杂性：</strong> 提供从原始网页、学术论文、代码库等多种来源获取、处理和“Markdown化”数据的能力，并通过“Datashop”促进高质量数据集的构建与共享。</li>
+                <li><strong>训练与评估的标准化：</strong> 提供统一的接口和配置方式来运行训练任务和多维度评估模型性能。</li>
+                <li><strong>资源管理的灵活性：</strong> 支持在不同硬件（CPU、GPU、TPU）和集群环境（如使用Ray进行分布式计算）中高效执行任务。</li>
+            </ul>
+            <p>简而言之，Marin希望成为研究者们探索基础模型前沿的得力助手，让“炼丹”过程更加科学、透明和高效。接下来，我们将从物理结构和逻辑流程两个维度，深入剖析Marin的内在机制。</p>
+        </section>
+
+        <section id="physical-view">
+            <h2><span class="highlight">🏗️</span> 物理结构：Marin 的“船体”是如何构建的？</h2>
+            <p>从物理层面看，Marin项目像一艘精心设计的模块化科考船，各个舱室（目录）功能明确，协同工作。其代码库主要由以下几个核心部分组成：</p>
+            <ul>
+                <li><code>marin/</code>: 这是项目的核心引擎室，包含了实现框架主要功能的Python模块。
+                    <ul>
+                        <li><code>core/</code>: 定义了基础数据结构（如对话格式<code>Conversation</code>）、运行时环境和核心数据处理逻辑。</li>
+                        <li><code>processing/</code>: 数据处理中枢，包括<strong class="highlight">分类器训练与应用</strong>（如BERT、FastText进行质量分类、主题分类等）、<strong class="highlight">词元化</strong>（<code>tokenize.py</code>，将文本转换为模型可理解的数字序列）、以及针对特定数据源（如OpenWebMath、PubMed、Wikipedia）的专用处理脚本。</li>
+                        <li><code>markdown/</code>: <strong class="highlight">HTML到Markdown转换的核心</strong>（<code>markdown.py</code>），致力于从复杂的网页结构中提取干净、结构化的文本内容，这是Marin数据预处理的一大特色。Snapshot测试（<code>tests/snapshots/</code>）也大量验证了这部分功能的鲁棒性。</li>
+                        <li><code>crawl/</code>: 负责从网络上“捕捞”原始数据，支持从链接列表获取内容，并包含对特定数据集（如FineWeb-Edu, OpenWebMath）的爬取逻辑。</li>
+                        <li><code>training/</code>: 模型训练的心脏地带，定义了训练流程（<code>training.py</code>）、训练配置，并可能集成了像Levanter这样的JAX训练库（从评估脚本中可见端倪）。</li>
+                        <li><code>evaluation/</code>: 模型的“试金石”，集成了多种评估框架（如LM Eval Harness, AlpacaEval, HELM）和评估任务配置，用于全面衡量模型性能。</li>
+                        <li><code>execution/</code>: <strong class="highlight">实验执行器（<code>executor.py</code>）所在地</strong>，负责解析实验配置，管理任务依赖，并在不同后端（本地、Ray集群）调度执行。</li>
+                        <li><code>datashop/</code>: 体现了Marin对数据共享和协作的重视，提供了处理和组织数据集的工具和流程。</li>
+                        <li><code>operations/</code>: 包含了一系列用于数据下载（<code>download/</code>）、原始数据到JSON转换（<code>raw2json/</code>）、数据格式转换（<code>transform/</code>）和数据验证（<code>validate/</code>）的操作脚本，是数据准备流水线的具体实现。</li>
+                        <li><code>utilities/</code>: 提供各种实用工具函数，如GCS云存储交互、Hugging Face Hub操作、WandB日志记录等。</li>
+                    </ul>
+                </li>
+                <li><code>experiments/</code>: 这里是“实验甲板”，存放了大量的实验配置文件和运行脚本。每个子目录通常代表一个或一系列相关的实验（例如<code>expXXX_*.py</code>），定义了模型架构、数据集、训练参数等。<code>hello_world.py</code>和<code>train_tiny_model_gpu.py</code>是很好的入门示例。</li>
+                <li><code>docs/</code>: 项目的“航海日志”和“操作手册”，使用MkDocs构建，详细介绍了项目理念、使用教程、核心概念解释（如LM Pipeline, Executor, Datashop）和模型报告。</li>
+                <li><code>infra/</code>: 基础设施配置，主要是Ray集群的YAML配置文件，针对不同云区域（如GCP的us-central1, eu-west4等）和硬件（TPU, GPU）进行了优化，体现了项目对<strong class="highlight">大规模分布式计算</strong>的支持。</li>
+                <li><code>.github/</code>: 包含GitHub特定的配置文件，如Issue模板和<strong class="highlight">GitHub Actions工作流（<code>workflows/</code>）</strong>，用于自动化测试、文档构建、代码规范检查等，保证了项目的工程质量。</li>
+                <li><code>tests/</code>: 单元测试、集成测试和快照测试（Snapshot Tests），确保代码的正确性和稳定性，特别是<code>markdown/</code>和各种数据处理模块的测试覆盖较为全面。</li>
+                <li><code>data_browser/</code>: 一个基于React和Flask的Web应用，用于<strong class="highlight">浏览和可视化实验数据</strong>，提供了直观的数据洞察界面。其<code>Dockerfile</code>和<code>docker-compose.yml</code>表明它可以通过容器化部署。</li>
+            </ul>
+            <p>在技术选型上，Marin以Python为主要开发语言，深度整合了<strong class="highlight">Ray</strong>用于分布式任务执行，利用JAX进行高性能计算（尤其是在TPU上）。数据存储广泛依赖Google Cloud Storage (GCS)。版本控制、协作和CI/CD则完全依托GitHub平台。这种物理结构的划分，使得项目既能保持核心库的稳定与通用，又能灵活支持各种定制化的实验研究。</p>
+        </section>
+
+        <section id="logical-view">
+            <h2><span class="highlight">🗺️</span> 逻辑流程：Marin 如何引领模型研发的航程？</h2>
+            <p>Marin的逻辑核心是一套<strong class="highlight">端到端、可配置、可复现的基础模型研发流水线</strong>。这条流水线从原始数据的收集开始，一直延伸到模型的评估和部署，每一个环节都经过精心设计，并通过“实验”这一概念进行组织和驱动。</p>
+
+            <h3>1. 核心理念：实验驱动与可复现性</h3>
+            <p>Marin的一切都围绕着<strong class="highlight">“实验（Experiment）”</strong>展开。一个实验通常定义在<code>experiments/</code>目录下的一个Python脚本中，它描述了一个完整的模型研发流程，包括数据处理、模型训练和评估等步骤。这些步骤像Makefile中的目标一样，具有依赖关系，由Marin的<strong class="highlight">执行器（Executor）</strong>按拓扑顺序执行。这种设计确保了：</p>
+            <ul>
+                <li><strong>清晰性：</strong> 每个实验的流程和配置都一目了然。</li>
+                <li><strong>模块化：</strong> 可以复用和组合不同的处理步骤。</li>
+                <li><strong>可复现性：</strong> 通过版本控制代码、数据和配置，以及记录所有中间产物和日志（如使用WandB），Marin力求达到字节级别的可复现性。</li>
+            </ul>
+
+            <h3>2. 数据处理的“马六甲海峡”：从原始到精炼</h3>
+            <p>数据是驱动大模型的燃料，Marin在数据处理上投入了巨大精力：</p>
+            <ul>
+                <li><strong>数据获取（Data Acquisition）：</strong> 通过<code>marin/crawl/</code>和<code>operations/download/</code>模块，支持从多种来源获取数据，包括公开数据集（如The Pile, C4, Dolma）、网页爬取、ArXiv论文、Wikipedia、StackExchange问答等。</li>
+                <li><strong>数据转换与清洗（Transformation & Cleaning）：</strong> 这是Marin的亮点之一。<code>marin/markdown/</code>模块专注于将原始HTML内容（尤其是来自网页和ArXiv）转换为<strong class="highlight">结构化的Markdown格式</strong>，去除无关元素，保留核心文本和结构信息。<code>operations/transform/</code>下有大量针对特定数据源的转换脚本。清洗过程还包括去重（如使用MinHash）、过滤低质量内容（通过FastText或BERT分类器）、去除有害信息等。</li>
+                <li><strong>数据标注与分类（Annotation & Classification）：</strong> <code>marin/processing/classification/</code>模块训练和使用分类器（如基于BERT或FastText）对数据进行质量评估、主题分类、代码/文本区分等，为后续的数据筛选和混合提供依据。</li>
+                <li><strong>词元化（Tokenization）：</strong> 使用<code>marin/processing/tokenize/</code>将清洗后的文本数据转换为模型训练所需的词元序列。支持多种分词器，并强调与Llama等主流模型兼容。</li>
+                <li><strong>数据集构建与管理（Datashop）：</strong> <code>marin/datashop/</code>和相关文档提出了“Datashop”概念，旨在提供一个系统化的方法来创建、版本化、混合和共享高质量的训练数据集。这包括定义数据集的Schema、处理流程和元数据。</li>
+            </ul>
+            <p class="formula">数据质量提升公式 (概念性): 高质量数据 = (原始数据 + 精细清洗 + 智能过滤 + 结构化转换) * 有效去重</p>
+
+            <h3>3. 模型训练的“引擎核心”：可扩展与高效</h3>
+            <p>Marin的训练模块（主要在<code>marin/training/</code>和<code>experiments/</code>中的脚本）支持训练各种规模的语言模型：</p>
+            <ul>
+                <li><strong>模型架构：</strong> 支持多种Transformer变体，如Llama架构（在<code>experiments/llama.py</code>和模型报告中明确提及）、BERT、混合专家模型（MoE）等。模型配置灵活，允许研究人员调整层数、隐藏层维度、注意力头等参数。</li>
+                <li><strong>训练框架：</strong> 主要基于Python，并深度整合了<strong class="highlight">JAX</strong>（尤其针对TPU优化）和<strong class="highlight">Ray</strong>（用于分布式训练）。这使得Marin能够高效利用大规模计算集群。</li>
+                <li><strong>优化器与学习率策略：</strong> 支持AdamW等常见优化器，并可配置复杂的学习率调度策略（如warmup、decay）。相关配置见于各类实验脚本，如<code>experiments/exp725_adamwsweep.py</code>。</li>
+                <li><strong>检查点与容错：</strong> 训练过程中会定期保存模型检查点到GCS等存储系统，确保长时间训练任务的稳定性和可恢复性。</li>
+                <li><strong>混合精度训练：</strong> 为了提升训练效率和减少显存占用，通常采用bfloat16等混合精度进行计算。</li>
+            </ul>
+            <p class="formula">模型训练核心循环 (简化): For each batch: Predictions = Model(Input_Data); Loss = CalculateLoss(Predictions, Targets); Gradients = BackwardPass(Loss); Optimizer.apply_gradients(Gradients)</p>
+
+            <h3>4. 实验执行与资源管理的“指挥中心”</h3>
+            <p><code>marin/execution/executor.py</code>是整个工作流的调度核心：</p>
+            <ul>
+                <li><strong>配置驱动：</strong> 执行器读取实验配置文件（通常是Python脚本，通过dataclass定义配置），确定需要执行的步骤及其依赖。</li>
+                <li><strong>步骤执行：</strong> 按照拓扑顺序执行数据下载、预处理、训练、评估等各个步骤。每个步骤都是一个可独立运行的单元。</li>
+                <li><strong>资源调度：</strong> 通过<code>marin/resources.py</code>和<code>infra/</code>中的集群配置文件，执行器可以请求和管理计算资源，支持本地执行、单节点GPU/TPU以及大规模Ray集群（GCP TPU Pods）。</li>
+                <li><strong>日志与监控：</strong> 深度集成WandB (Weights & Biases) 进行实验跟踪、日志记录和可视化。</li>
+            </ul>
+
+            <h3>5. 模型评估的“质检环节”</h3>
+            <p>训练完成后，模型需要经过严格的评估（<code>marin/evaluation/</code>）：</p>
+            <ul>
+                <li><strong>多基准支持：</strong> 集成了多种行业标准评估套件，如LM Evaluation Harness、HELM、AlpacaEval等，覆盖语言理解、生成、推理、代码、数学等多个方面。</li>
+                <li><strong>可配置评估任务：</strong> 用户可以方便地配置要运行的评估任务和数据集。</li>
+                <li><strong>结果汇总与分析：</strong> 评估结果会被记录，并可以通过工具（如<code>marin/evaluation/visualize.py</code>或Data Browser）进行分析和比较。</li>
+            </ul>
+
+            <h3>6. 社区与生态：“众人拾柴火焰高”</h3>
+            <ul>
+                <li><strong>开源与贡献：</strong> 项目通过GitHub开放源代码，并提供了详细的贡献指南（<code>CONTRIBUTING.md</code>）和Issue模板，鼓励社区参与。</li>
+                <li><strong>文档与教程：</strong> 完善的文档（<code>docs/</code>）降低了上手门槛，包括安装、快速开始、核心概念解释和高级教程。</li>
+                <li><strong>数据浏览器（Data Browser）：</strong> <code>data_browser/</code>提供了一个Web界面，方便用户查看和分析实验数据和结果，增强了透明度和易用性。</li>
+                <li><strong>Marin Speedrun：</strong> 一项有趣的竞赛活动，旨在激励社区探索更高效的模型训练方法，体现了项目的研究导向和社区互动性。</li>
+            </ul>
+            <p>通过这一系列逻辑流程，Marin构建了一个从数据到模型、再到评估的完整闭环，同时强调了过程的透明化、标准化和可复现性，为基础模型的研究和开发提供了强大的支撑平台。</p>
+        </section>
+
+        <section id="animations-section">
+            <h2><span class="highlight">🎬</span> 核心动画演示：让 Marin 的逻辑动起来！</h2>
+            <p>为了更直观地理解Marin项目的核心工作流程和架构，我们准备了以下交互式动画。点击播放按钮，观察数据和任务如何在Marin框架中流转和处理。</p>
+
+            <div class="animation-container">
+                <h4>动画1: Marin 数据处理流水线 (概念流程)</h4>
+                <div id="dataPipelineCanvasContainer"></div>
+                <button onclick="dataPipelineSketch.resetAnimation()">重置</button>
+                <button onclick="dataPipelineSketch.togglePlay()">播放/暂停</button>
+            </div>
+
+            <div class="animation-container">
+                <h4>动画2: Marin 分布式训练架构 (概念图)</h4>
+                <div id="distributedTrainingCanvasContainer"></div>
+                <button onclick="distributedTrainingSketch.resetAnimation()">重置</button>
+                <button onclick="distributedTrainingSketch.togglePlay()">播放/暂停</button>
+            </div>
+
+            <div class="animation-container">
+                <h4>动画3: Marin 执行器 (Executor) 工作流</h4>
+                <div id="executorWorkflowCanvasContainer"></div>
+                <button onclick="executorWorkflowSketch.resetAnimation()">重置</button>
+                <button onclick="executorWorkflowSketch.togglePlay()">播放/暂停</button>
+            </div>
+            
+            <div class="animation-container">
+                <h4>动画4: HTML 到 Markdown 转换 (简化演示)</h4>
+                <div id="markdownConversionCanvasContainer"></div>
+                <button onclick="markdownConversionSketch.triggerConversion()">转换</button>
+            </div>
+
+            <div class="animation-container">
+                <h4>动画5: 模型训练循环 (概念动画)</h4>
+                <div id="modelTrainingLoopCanvasContainer"></div>
+                <button onclick="modelTrainingLoopSketch.resetAnimation()">重置</button>
+                <button onclick="modelTrainingLoopSketch.togglePlay()">播放/暂停</button>
+            </div>
+        </section>
+
+        <section id="conclusion">
+            <h2><span class="highlight">🏁</span> 总结与展望：Marin 的航程将驶向何方？</h2>
+            <p>Marin项目不仅仅是一个工具集，它更像是一个<strong class="highlight">精心构建的生态系统</strong>，旨在推动基础模型研究的边界。从其物理结构来看，模块化的设计、对先进基础设施（如TPU、Ray集群）的支持，以及完善的测试和CI/CD流程，都体现了其工程上的严谨性。从逻辑流程来看，对数据全生命周期的精细管理、以可复现性为核心的实验机制、以及全面的模型评估框架，则彰显了其科研上的远见。</p>
+            <p><strong>核心优势：</strong></p>
+            <ul>
+                <li><strong class="highlight">端到端的可复现性：</strong> 这是Marin最突出的特点，确保了研究的可靠性和透明度。</li>
+                <li><strong>强大的数据处理能力：</strong> 特别是其HTML到Markdown的转换和“Datashop”概念，为高质量数据获取和管理提供了有力支持。</li>
+                <li><strong>可扩展的训练与评估：</strong> 能够适应从小型实验到大规模模型训练的各种需求。</li>
+                <li><strong>开放的社区生态：</strong> 鼓励协作和知识共享，有助于加速创新。</li>
+            </ul>
+            <p><strong>未来展望：</strong></p>
+            <p>随着大模型技术的飞速发展，Marin这样的框架将扮演越来越重要的角色。未来，Marin可能会在以下几个方面继续深化和拓展：</p>
+            <ul>
+                <li><strong>更多模态的支持：</strong> 当前主要聚焦文本，未来可能扩展到图像、音频等多模态数据的处理和建模。</li>
+                <li><strong>更智能的数据管线：</strong> 引入更多自动化和AI驱动的数据筛选、增强和合成技术。</li>
+                <li><strong>更先进的模型架构与训练技术：</strong> 持续跟进并集成最新的模型设计（如更高效的注意力机制、稀疏模型等）和训练方法（如新的优化算法、更高效的并行策略）。</li>
+                <li><strong>更便捷的部署与推理：</strong> 提供更完善的模型导出、压缩和部署工具链，方便研究成果的实际应用。</li>
+                <li><strong>更活跃的社区与生态建设：</strong> 通过举办更多类似“Speedrun”的活动，吸引更多开发者和研究者加入，共同构建更丰富的数据集、模型库和工具。</li>
+            </ul>
+            <p>总而言之，Marin项目为基础模型的研究和开发提供了一个坚实且充满活力的平台。它不仅仅是在“造船”，更是在培养能够驾驭这些“船只”的“水手”，共同探索人工智能这片广阔的未知水域。对于任何希望深入研究基础模型、并重视过程透明度和结果可复现性的团队或个人而言，Marin无疑是一个值得关注和投入的宝贵资源。</p>
+        </section>
+
+        <footer>
+            <p>Marin 项目分析报告 | 生成时间: <span id="generationTime"></span></p>
+        </footer>
+    </div>
+
+    <script>
+        // --- Animation 1: Data Processing Pipeline ---
+        let dataPipelineSketch; // Will hold the p5 instance
+        const dataPipelineAnimation = (p) => {
+            let nodes = [];
+            let edges = [];
+            let progress = 0;
+            let maxProgress = 600;
+            let playing = false;
+            let nodeSize = 60;
+            let colors;
+
+            p.setup = () => {
+                const container = document.getElementById('dataPipelineCanvasContainer');
+                let canvas = p.createCanvas(container.offsetWidth, container.offsetHeight);
+                canvas.parent('dataPipelineCanvasContainer');
+                p.textAlign(p.CENTER, p.CENTER);
+                p.textSize(10);
+                colors = {
+                    bg: p.color(250, 250, 250),
+                    node: p.color(74, 144, 226, 200), // Blueish
+                    nodeText: p.color(255),
+                    processedNode: p.color(80, 227, 194, 220), // Greenish
+                    edge: p.color(150),
+                    activeEdge: p.color(230, 126, 34) // Orange
+                };
+                initializeElements();
+                p.noLoop(); // Start paused
+                p.redraw();
+            };
+            
+            p.windowResized = () => {
+                const container = document.getElementById('dataPipelineCanvasContainer');
+                p.resizeCanvas(container.offsetWidth, container.offsetHeight);
+                initializeElements(); // Re-initialize to adjust positions for responsiveness
+                p.redraw();
+            };
+
+            function initializeElements() {
+                // Adjust node positions based on current canvas size
+                nodes = [
+                    { id: 0, label: "原始数据\n(Web, ArXiv)", x: p.width * 0.15, y: p.height * 0.3, active: false },
+                    { id: 1, label: "爬取/下载", x: p.width * 0.15, y: p.height * 0.7, active: false },
+                    { id: 2, label: "HTML->MD\n清洗过滤", x: p.width * 0.4, y: p.height * 0.5, active: false },
+                    { id: 3, label: "词元化", x: p.width * 0.65, y: p.height * 0.3, active: false },
+                    { id: 4, label: "Marin数据集", x: p.width * 0.65, y: p.height * 0.7, active: false },
+                    { id: 5, label: "最终模型\n可使用数据", x: p.width * 0.9, y: p.height * 0.5, active: false }
+                ];
+                edges = [ // Edges remain the same logically
+                    { from: 0, to: 1, stage: 0 }, { from: 1, to: 2, stage: 100 },
+                    { from: 2, to: 3, stage: 200 }, { from: 2, to: 4, stage: 200 }, 
+                    { from: 3, to: 5, stage: 300 }, { from: 4, to: 5, stage: 400 }
+                ];
+                 nodeSize = p.min(p.width * 0.1, p.height * 0.15, 60); // Responsive node size
+                 p.textSize(p.max(8, nodeSize / 6)); // Responsive text size
+            }
+
+            p.draw = () => {
+                p.background(colors.bg);
+                if (playing) {
+                    progress += 2;
+                    if (progress > maxProgress) progress = 0;
+                }
+
+                p.strokeWeight(2);
+                for (let edge of edges) {
+                    let n1 = nodes.find(n => n.id === edge.from);
+                    let n2 = nodes.find(n => n.id === edge.to);
+                    if (progress > edge.stage && progress < edge.stage + 100) {
+                        p.stroke(colors.activeEdge);
+                    } else {
+                        p.stroke(colors.edge);
+                    }
+                    p.line(n1.x, n1.y, n2.x, n2.y);
+                }
+
+                for (let node of nodes) {
+                    let isActive = (progress > (edges.find(e => e.to === node.id)?.stage || -1) || (node.id === 0 && progress >=0));
+                    p.fill(isActive ? colors.processedNode : colors.node);
+                    p.noStroke();
+                    p.ellipse(node.x, node.y, nodeSize, nodeSize);
+                    p.fill(colors.nodeText);
+                    p.text(node.label, node.x, node.y);
+                }
+            };
+
+            p.resetAnimation = () => { // Attached to p (p5 instance)
+                progress = 0;
+                playing = false;
+                p.noLoop();
+                p.redraw();
+            };
+            p.togglePlay = () => { // Attached to p (p5 instance)
+                playing = !playing;
+                if (playing) p.loop(); else p.noLoop();
+            };
+        };
+
+        // --- Animation 2: Distributed Training Architecture ---
+        let distributedTrainingSketch; // Will hold the p5 instance
+        const distributedTrainingAnimation = (p) => {
+            let elements = {};
+            let connections = [];
+            let time = 0;
+            let playing = false;
+            let colors;
+
+            p.setup = () => {
+                const container = document.getElementById('distributedTrainingCanvasContainer');
+                let canvas = p.createCanvas(container.offsetWidth, container.offsetHeight);
+                canvas.parent('distributedTrainingCanvasContainer');
+                colors = {
+                    bg: p.color(250, 250, 250),
+                    executor: p.color(217, 83, 79, 200), 
+                    rayHead: p.color(240, 173, 78, 200), 
+                    rayWorker: p.color(92, 184, 92, 200), 
+                    data: p.color(74, 144, 226, 200), 
+                    text: p.color(50),
+                    arrow: p.color(100)
+                };
+                initializeElements();
+                p.noLoop();
+                p.redraw();
+            };
+            
+            p.windowResized = () => {
+                const container = document.getElementById('distributedTrainingCanvasContainer');
+                p.resizeCanvas(container.offsetWidth, container.offsetHeight);
+                initializeElements(); 
+                p.redraw();
+            };
+
+            function initializeElements() {
+                let w = p.width;
+                let h = p.height;
+                let elW = p.max(80, w * 0.18); // Responsive width
+                let elH = p.max(35, h * 0.08); // Responsive height
+                let workerH = p.max(40, h*0.1);
+
+                elements = {
+                    config: { label: "实验配置", x: w * 0.1, y: h * 0.15, w: elW, h: elH, type: 'executor' },
+                    executor: { label: "Marin执行器", x: w * 0.1, y: h * 0.45, w: elW, h: elH, type: 'executor' },
+                    rayHead: { label: "Ray Head", x: w * 0.5, y: h * 0.15, w: elW, h: elH, type: 'rayHead' },
+                    worker1: { label: "Worker\n(TPU/GPU)", x: w * 0.35, y: h * 0.65, w: elW * 1.1, h: workerH, type: 'rayWorker' },
+                    worker2: { label: "Worker\n(TPU/GPU)", x: w * 0.65, y: h * 0.65, w: elW * 1.1, h: workerH, type: 'rayWorker' },
+                    dataStore: { label: "数据存储\n(GCS)", x: w * 0.85, y: h * 0.25, w: elW*1.1, h: workerH, type: 'data' },
+                    checkpoints: { label: "模型检查点", x: w * 0.85, y: h * 0.65, w: elW, h: elH, type: 'data' }
+                };
+                connections = [
+                    { from: 'config', to: 'executor', type: 'control' },
+                    { from: 'executor', to: 'rayHead', type: 'control' },
+                    { from: 'rayHead', to: 'worker1', type: 'task' },
+                    { from: 'rayHead', to: 'worker2', type: 'task' },
+                    { from: 'dataStore', to: 'worker1', type: 'data_flow' },
+                    { from: 'dataStore', to: 'worker2', type: 'data_flow' },
+                    { from: 'worker1', to: 'checkpoints', type: 'data_flow' },
+                    { from: 'worker2', to: 'checkpoints', type: 'data_flow' },
+                    { from: 'worker1', to: 'rayHead', type: 'gradient_sync', dashed: true }, 
+                    { from: 'worker2', to: 'rayHead', type: 'gradient_sync', dashed: true }
+                ];
+                 p.textSize(p.max(8, elW / 10));
+            }
+
+            p.draw = () => {
+                p.background(colors.bg);
+                p.textAlign(p.CENTER, p.CENTER);
+                
+                for (let conn of connections) {
+                    let e1 = elements[conn.from];
+                    let e2 = elements[conn.to];
+                    p.stroke(colors.arrow);
+                    p.strokeWeight(1.5);
+                    if (conn.dashed) p.drawingContext.setLineDash([5, 5]);
+                    else p.drawingContext.setLineDash([]);
+                    drawArrow(e1.x + e1.w / 2, e1.y + e1.h / 2, e2.x + e2.w / 2, e2.y + e2.h / 2, p);
+
+                    if (playing && time % 150 > 50 && time % 150 < 100) {
+                        if ((conn.type === 'task' && (time/150) % connections.length < connections.indexOf(conn) + 1) ||
+                            (conn.type === 'data_flow' && (time/200) % connections.length < connections.indexOf(conn) + 1)) {
+                            let packetX = p.lerp(e1.x + e1.w/2, e2.x + e2.w/2, (time % 50) / 50);
+                            let packetY = p.lerp(e1.y + e1.h/2, e2.y + e2.h/2, (time % 50) / 50);
+                            p.fill(conn.type === 'task' ? colors.rayHead : colors.data);
+                            p.noStroke();
+                            p.ellipse(packetX, packetY, 8, 8);
+                        }
+                    }
+                }
+                p.drawingContext.setLineDash([]); 
+
+                for (let key in elements) {
+                    let el = elements[key];
+                    p.fill(colors[el.type]);
+                    p.noStroke();
+                    p.rect(el.x, el.y, el.w, el.h, 5); 
+                    p.fill(colors.text);
+                    p.text(el.label, el.x + el.w / 2, el.y + el.h / 2);
+                }
+                if (playing) time++;
+            };
+            
+            function drawArrow(x1, y1, x2, y2, pg) {
+                pg.line(x1, y1, x2, y2);
+                let angle = pg.atan2(y2 - y1, x2 - x1);
+                pg.push();
+                pg.translate(x2, y2);
+                pg.rotate(angle);
+                pg.fill(colors.arrow);
+                pg.triangle(0, 0, -8, -4, -8, 4);
+                pg.pop();
+            }
+
+            p.resetAnimation = () => { time = 0; playing = false; p.noLoop(); p.redraw(); };
+            p.togglePlay = () => { playing = !playing; if(playing) p.loop(); else p.noLoop(); };
+        };
+        
+        // --- Animation 3: Executor Workflow ---
+        let executorWorkflowSketch; // Will hold the p5 instance
+        const executorWorkflowAnimation = (p) => {
+            let stages = [];
+            let currentStage = -1;
+            let playing = false;
+            let colors;
+            let stageHeight, stageWidth, spacing;
+
+            p.setup = () => {
+                const container = document.getElementById('executorWorkflowCanvasContainer');
+                let canvas = p.createCanvas(container.offsetWidth, container.offsetHeight);
+                canvas.parent('executorWorkflowCanvasContainer');
+                colors = {
+                    bg: p.color(250, 250, 250),
+                    stageDefault: p.color(100, 180, 220, 180),
+                    stageActive: p.color(80, 227, 194, 220),
+                    stageDone: p.color(150, 150, 150, 180),
+                    text: p.color(20),
+                    arrow: p.color(80)
+                };
+                initializeStages();
+                p.noLoop();
+                p.redraw();
+            };
+
+            p.windowResized = () => {
+                const container = document.getElementById('executorWorkflowCanvasContainer');
+                p.resizeCanvas(container.offsetWidth, container.offsetHeight);
+                initializeStages();
+                p.redraw();
+            };
+            
+            function initializeStages() {
+                stages = [
+                    "加载实验配置", "初始化Ray集群", "检查依赖", "分配资源", 
+                    "执行步骤\n(下载/处理/训练/评估)", "记录日志 (W&B)", "存储产物 (GCS)"
+                ];
+                stageHeight = p.height * 0.11; // Adjusted for more stages
+                stageWidth = p.width * 0.85; // Adjusted for better fit
+                spacing = p.height * 0.025; // Adjusted spacing
+                currentStage = -1; 
+                 p.textSize(p.max(8, stageHeight / 4)); // Responsive text
+            }
+
+            p.draw = () => {
+                p.background(colors.bg);
+                p.textAlign(p.CENTER, p.CENTER);
+                
+                if (playing && p.frameCount % 30 === 0) { 
+                    currentStage = (currentStage + 1);
+                    if (currentStage >= stages.length) { // Stop at the end
+                        playing = false;
+                        p.noLoop();
+                    }
+                }
+                
+                let totalHeight = stages.length * stageHeight + (stages.length - 1) * spacing;
+                let startY = (p.height - totalHeight) / 2 + stageHeight / 2;
+
+
+                for (let i = 0; i < stages.length; i++) {
+                    let x = p.width / 2;
+                    let y = startY + i * (stageHeight + spacing);
+                    
+                    if (i < currentStage) p.fill(colors.stageDone);
+                    else if (i === currentStage) p.fill(colors.stageActive);
+                    else p.fill(colors.stageDefault);
+                    
+                    p.noStroke();
+                    p.rectMode(p.CENTER);
+                    p.rect(x, y, stageWidth, stageHeight, 8);
+                    p.fill(colors.text);
+                    p.text(stages[i], x, y);
+
+                    if (i < stages.length - 1) {
+                        p.stroke(colors.arrow);
+                        p.strokeWeight(2);
+                        drawArrow(x, y + stageHeight / 2 + 2, x, y + stageHeight / 2 + spacing -2, p, 5);
+                    }
+                }
+            };
+            
+            function drawArrow(x1, y1, x2, y2, pg, arrowSize) {
+                pg.line(x1, y1, x2, y2);
+                let angle = pg.atan2(y2 - y1, x2 - x1);
+                pg.push();
+                pg.translate(x2, y2);
+                pg.rotate(angle);
+                pg.fill(colors.arrow);
+                pg.triangle(0, 0, -arrowSize, -arrowSize/2, -arrowSize, arrowSize/2);
+                pg.pop();
+            }
+
+            p.resetAnimation = () => { currentStage = -1; playing = false; p.noLoop(); p.redraw(); };
+            p.togglePlay = () => { 
+                playing = !playing; 
+                if (playing) {
+                    if(currentStage >= stages.length -1 ) currentStage = -1; 
+                    p.loop(); 
+                } else {
+                    p.noLoop();
+                }
+            };
+        };
+
+        // --- Animation 4: HTML to Markdown Conversion ---
+        let markdownConversionSketch; // Will hold the p5 instance
+        const markdownConversionAnimation = (p) => {
+            let htmlText = "<h1>标题</h1>\n<p>一些<b>加粗</b>文本和<i>斜体</i>文字。</p>\n<ul><li>列表项1</li><li>列表项2</li></ul>";
+            let mdText = "# 标题\n\n一些**加粗**文本和*斜体*文字。\n\n- 列表项1\n- 列表项2";
+            let displayText = "";
+            let converting = false;
+            let conversionProgress = 0;
+            let colors;
+
+            p.setup = () => {
+                const container = document.getElementById('markdownConversionCanvasContainer');
+                let canvas = p.createCanvas(container.offsetWidth, container.offsetHeight);
+                canvas.parent('markdownConversionCanvasContainer');
+                colors = {
+                    bg: p.color(250, 250, 250),
+                    text: p.color(50),
+                    boxBg: p.color(230, 230, 230, 220),
+                    arrow: p.color(74, 144, 226)
+                };
+                displayText = htmlText;
+                p.textAlign(p.LEFT, p.TOP);
+                p.noLoop();
+                p.redraw();
+            };
+
+            p.windowResized = () => {
+                const container = document.getElementById('markdownConversionCanvasContainer');
+                p.resizeCanvas(container.offsetWidth, container.offsetHeight);
+                p.redraw();
+            };
+
+            p.draw = () => {
+                p.background(colors.bg);
+                let boxWidth = p.width * 0.42; // Adjusted width
+                let boxHeight = p.height * 0.75; // Adjusted height
+                let boxY = p.height * 0.125;
+                let padding = p.width * 0.02; // Responsive padding
+                p.textSize(p.max(10, p.width * 0.025)); // Responsive text size
+
+
+                // HTML Box
+                p.fill(colors.boxBg);
+                p.noStroke();
+                p.rect(p.width * 0.05, boxY, boxWidth, boxHeight, 8);
+                p.fill(colors.text);
+                p.text("HTML 输入:", p.width * 0.05 + padding, boxY + padding * 0.5);
+                p.text(displayText, p.width * 0.05 + padding, boxY + padding * 2.5, boxWidth - 2 * padding, boxHeight - 3 * padding);
+
+                // Markdown Box
+                p.fill(colors.boxBg);
+                p.rect(p.width * 0.53, boxY, boxWidth, boxHeight, 8); // Adjusted X position
+                p.fill(colors.text);
+                p.text("Markdown 输出:", p.width * 0.53 + padding, boxY + padding * 0.5);
+                p.text(displayText === mdText ? mdText : (converting && conversionProgress >= 0.95 ? mdText : ""), p.width * 0.53 + padding, boxY + padding * 2.5, boxWidth - 2 * padding, boxHeight - 3 * padding);
+
+                // Arrow
+                let arrowStartX = p.width * 0.05 + boxWidth + p.width*0.01;
+                let arrowEndX = p.width * 0.53 - p.width*0.01;
+                let arrowY = p.height / 2;
+                
+                p.stroke(colors.arrow);
+                p.strokeWeight(3);
+                p.line(arrowStartX, arrowY, arrowEndX, arrowY);
+                p.fill(colors.arrow);
+                p.triangle(arrowEndX, arrowY, arrowEndX - 10, arrowY - 5, arrowEndX - 10, arrowY + 5);
+
+                if (converting) {
+                    conversionProgress += 0.02; // Speed of conversion
+                    let interpX = p.lerp(arrowStartX, arrowEndX, conversionProgress);
+                    p.fill(230, 126, 34); 
+                    p.noStroke();
+                    p.ellipse(interpX, arrowY, 15, 15);
+                    p.fill(colors.text);
+                    p.textAlign(p.CENTER, p.CENTER);
+                    p.text("转换中...", p.width * 0.5, arrowY - 25);
+                    p.textAlign(p.LEFT, p.TOP); // Reset alignment
+
+                    if (conversionProgress >= 1) {
+                        converting = false;
+                        conversionProgress = 0;
+                        displayText = mdText;
+                        p.noLoop(); 
+                    }
+                    p.redraw(); 
+                }
+            };
+
+            p.triggerConversion = () => { // Attached to p (p5 instance)
+                if (!converting) {
+                    displayText = htmlText; 
+                    converting = true;
+                    conversionProgress = 0;
+                    p.loop();
+                }
+            };
+        };
+        
+        // --- Animation 5: Model Training Loop ---
+        let modelTrainingLoopSketch; // Will hold the p5 instance
+        const modelTrainingLoopAnimation = (p) => {
+            let elements = {};
+            let dataPacket = { x: 0, y: 0, active: false, progress: 0 };
+            let lossValue = 1.0;
+            let iteration = 0;
+            let playing = false;
+            let colors;
+            let phase = 0; 
+
+            p.setup = () => {
+                const container = document.getElementById('modelTrainingLoopCanvasContainer');
+                let canvas = p.createCanvas(container.offsetWidth, container.offsetHeight);
+                canvas.parent('modelTrainingLoopCanvasContainer');
+                colors = {
+                    bg: p.color(250, 250, 250),
+                    data: p.color(52, 152, 219),
+                    model: p.color(46, 204, 113),
+                    loss: p.color(231, 76, 60),
+                    optimizer: p.color(241, 196, 15),
+                    text: p.color(50),
+                    packet: p.color(230,126,34)
+                };
+                initializeElements();
+                p.textAlign(p.CENTER, p.CENTER);
+                p.noLoop();
+                p.redraw();
+            };
+
+            p.windowResized = () => {
+                const container = document.getElementById('modelTrainingLoopCanvasContainer');
+                p.resizeCanvas(container.offsetWidth, container.offsetHeight);
+                initializeElements();
+                p.redraw();
+            };
+
+            function initializeElements() {
+                let w = p.width;
+                let h = p.height;
+                let elSize = p.min(w * 0.22, h * 0.22); 
+                p.textSize(p.max(8, elSize / 7));
+
+                elements = {
+                    data: { label: "输入数据\n批次", x: w * 0.2, y: h * 0.3, size: elSize, color: colors.data },
+                    model: { label: "模型\n(Transformer)", x: w * 0.5, y: h * 0.5, size: elSize * 1.1, color: colors.model },
+                    loss: { label: "损失函数", x: w * 0.8, y: h * 0.3, size: elSize, color: colors.loss },
+                    optimizer: { label: "优化器\n(AdamW)", x: w * 0.5, y: h * 0.75, size: elSize, color: colors.optimizer }
+                };
+                resetPacket();
+            }
+            
+            function resetPacket() {
+                dataPacket.x = elements.data.x;
+                dataPacket.y = elements.data.y;
+                dataPacket.active = false;
+                dataPacket.progress = 0;
+            }
+
+
+            p.draw = () => {
+                p.background(colors.bg);
+
+                for (let key in elements) {
+                    let el = elements[key];
+                    p.fill(el.color);
+                    p.noStroke();
+                    p.ellipse(el.x, el.y, el.size, el.size);
+                    p.fill(colors.text);
+                    p.text(el.label, el.x, el.y);
+                }
+
+                p.stroke(150);
+                p.strokeWeight(2);
+                drawArrow(elements.data.x, elements.data.y, elements.model.x, elements.model.y, p, 10);
+                drawArrow(elements.model.x, elements.model.y, elements.loss.x, elements.loss.y, p, 10);
+                drawArrow(elements.loss.x, elements.loss.y, elements.optimizer.x, elements.optimizer.y, p, 10);
+                drawArrow(elements.optimizer.x, elements.optimizer.y, elements.model.x, elements.model.y, p, 10);
+
+
+                if (playing) {
+                    dataPacket.progress += 0.03;
+                    if (dataPacket.progress >= 1) {
+                        dataPacket.progress = 0;
+                        phase = (phase + 1) % 4;
+                        if (phase === 0) { 
+                            iteration++;
+                            lossValue = p.max(0.05, lossValue * (0.92 - p.random(0.03))); 
+                        }
+                    }
+                    
+                    let startEl, endEl;
+                    switch(phase) {
+                        case 0: startEl = elements.data; endEl = elements.model; break; 
+                        case 1: startEl = elements.model; endEl = elements.loss; break; 
+                        case 2: startEl = elements.loss; endEl = elements.optimizer; break; 
+                        case 3: startEl = elements.optimizer; endEl = elements.model; break; 
+                    }
+                    dataPacket.x = p.lerp(startEl.x, endEl.x, dataPacket.progress);
+                    dataPacket.y = p.lerp(startEl.y, endEl.y, dataPacket.progress);
+                    dataPacket.active = true;
+                }
+                
+                if(dataPacket.active){
+                    p.fill(colors.packet);
+                    p.noStroke();
+                    p.ellipse(dataPacket.x, dataPacket.y, p.max(10, elSize/10) , p.max(10, elSize/10));
+                }
+
+                p.fill(colors.text);
+                p.textSize(p.max(10, p.width * 0.03));
+                p.textAlign(p.RIGHT, p.TOP);
+                p.text(`迭代: ${iteration}`, p.width - 20, 20);
+                p.text(`损失: ${lossValue.toFixed(3)}`, p.width - 20, 20 + p.max(12, p.width * 0.035));
+                p.textAlign(p.CENTER, p.CENTER); 
+                p.textSize(p.max(8, elements.data.size / 7)); // Reset default text size
+            };
+            
+            function drawArrow(x1, y1, x2, y2, pg, arrowSize) {
+                pg.line(x1, y1, x2, y2);
+                let angle = pg.atan2(y2 - y1, x2 - x1);
+                pg.push();
+                pg.translate(x2, y2);
+                pg.rotate(angle);
+                pg.fill(colors.arrow);
+                pg.triangle(0, 0, -arrowSize, -arrowSize/2, -arrowSize, arrowSize/2);
+                pg.pop();
+            }
+
+            p.resetAnimation = () => { // Attached to p (p5 instance)
+                iteration = 0; lossValue = 1.0; phase = 0; 
+                resetPacket();
+                playing = false; p.noLoop(); p.redraw();
+            };
+            p.togglePlay = () => { // Attached to p (p5 instance)
+                playing = !playing;
+                if(playing) {
+                    if (!dataPacket.active && phase === 0 && dataPacket.progress === 0) { // Start packet if fresh start
+                         dataPacket.active = true;
+                    }
+                     p.loop();
+                } else {
+                     p.noLoop();
+                }
+            };
+        };
+
+        // Initialize P5 sketches
+        document.addEventListener('DOMContentLoaded', () => {
+            dataPipelineSketch = new p5(dataPipelineAnimation, 'dataPipelineCanvasContainer');
+            distributedTrainingSketch = new p5(distributedTrainingAnimation, 'distributedTrainingCanvasContainer');
+            executorWorkflowSketch = new p5(executorWorkflowAnimation, 'executorWorkflowCanvasContainer');
+            markdownConversionSketch = new p5(markdownConversionAnimation, 'markdownConversionCanvasContainer');
+            modelTrainingLoopSketch = new p5(modelTrainingLoopAnimation, 'modelTrainingLoopCanvasContainer');
+            
+            document.getElementById('generationTime').textContent = new Date().toLocaleString('zh-CN');
+
+            window.addEventListener('resize', () => {
+                if (dataPipelineSketch && typeof dataPipelineSketch.windowResized === 'function') dataPipelineSketch.windowResized();
+                if (distributedTrainingSketch && typeof distributedTrainingSketch.windowResized === 'function') distributedTrainingSketch.windowResized();
+                if (executorWorkflowSketch && typeof executorWorkflowSketch.windowResized === 'function') executorWorkflowSketch.windowResized();
+                if (markdownConversionSketch && typeof markdownConversionSketch.windowResized === 'function') markdownConversionSketch.windowResized();
+                if (modelTrainingLoopSketch && typeof modelTrainingLoopSketch.windowResized === 'function') modelTrainingLoopSketch.windowResized();
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,1037 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>普林斯顿、清华、北大、字节跳动MMaDA：扩散模型的新生</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.2/p5.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
+    <style>
+        /* 基本重置和页面设置 */
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Noto Sans SC', sans-serif; /* 清晰的正文 */
+            font-size: 18px; /* 模拟“三号”字体大小，提供良好可读性 */
+            line-height: 1.8;
+            background-color: #f8f9fa; /* 淡雅背景色 */
+            color: #343a40; /* 深灰文字，对比清晰 */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        /* 容器样式 */
+        .container {
+            position: relative; 
+            z-index: 1; 
+            width: 90%;
+            max-width: 1200px; 
+            margin: 20px auto;
+            padding: 30px;
+            background-color: #ffffff; 
+            border-radius: 12px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+        }
+
+        #swanAnimationContainer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 0; 
+            pointer-events: none; 
+        }
+
+        /* 标题样式 */
+        h1, h2, h3 {
+            font-family: 'ZCOOL KuaiLe', cursive; /* 轻松活泼的标题字体 */
+            color: #007bff; /* 蓝色标题 */
+            margin-bottom: 0.75em;
+            text-align: center;
+        }
+        h1 {
+            font-size: 2.8em; 
+            color: #2a9d8f; 
+            border-bottom: 3px solid #2a9d8f;
+            padding-bottom: 10px;
+            margin-top: 0;
+        }
+        h2 {
+            font-size: 2.2em;
+            color: #e76f51; 
+            margin-top: 1.5em;
+        }
+        h3 {
+            font-size: 1.8em;
+            color: #f4a261; 
+        }
+
+        /* 段落和文本样式 */
+        p {
+            margin-bottom: 1.2em;
+            text-align: justify; 
+        }
+
+        /* 强调文字 */
+        strong, .highlight {
+            color: #d62828; 
+            font-weight: bold;
+        }
+        .concept {
+            font-weight: 500;
+            color: #2a9d8f; 
+            padding: 2px 4px;
+            background-color: #e9f5f4;
+            border-radius: 4px;
+        }
+
+        /* 公式文本样式 */
+        .formula {
+            display: block;
+            text-align: center;
+            font-family: 'Courier New', Courier, monospace; 
+            font-size: 1.1em; /* 调整使普通文本公式更易读 */
+            padding: 12px;
+            margin: 18px auto;
+            background-color: #e9ecef; 
+            border-radius: 8px;
+            color: #495057;
+            max-width: 90%; /* 增加宽度以容纳更长的文本公式 */
+            box-shadow: inset 0 0 5px rgba(0,0,0,0.1);
+            word-wrap: break-word; /* 确保长公式换行 */
+        }
+
+        /* 动画容器 */
+        .animation-container {
+            width: 100%;
+            max-width: 600px; 
+            height: 350px; /* 统一高度 */
+            margin: 20px auto;
+            border: 2px solid #007bff; 
+            border-radius: 8px;
+            overflow: hidden; 
+            background-color: #f0f8ff; 
+            display: flex; 
+            justify-content: center;
+            align-items: center;
+            position: relative; /* For absolute positioning of text inside */
+        }
+        .animation-container canvas {
+            display: block; 
+            max-width: 100%;
+            max-height: 100%;
+            border-radius: 6px; 
+        }
+        
+        /* 交互按钮样式 */
+        .controls {
+            text-align: center;
+            margin-top: 10px; /* Reduce margin slightly */
+            margin-bottom: 20px;
+        }
+        .controls button, .controls input[type="range"], .controls label {
+            padding: 8px 15px; /* Slightly smaller padding */
+            font-size: 0.95em; /* Slightly smaller font */
+            font-family: 'Noto Sans SC', sans-serif;
+            background-color: #007bff; 
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            margin: 5px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .controls button:hover {
+            background-color: #0056b3; 
+            transform: translateY(-2px);
+        }
+        .controls button:active {
+            transform: translateY(1px);
+        }
+        .controls input[type="range"] {
+            vertical-align: middle;
+            cursor: grab;
+            max-width: 120px; /* Limit slider width */
+        }
+        .controls label {
+            background-color: transparent;
+            color: #343a40;
+            box-shadow: none;
+            margin-left: 5px;
+            margin-right: 5px;
+        }
+        .controls .description { /* For descriptive text near controls */
+            font-size: 0.9em;
+            color: #555;
+            margin-top: 5px;
+            display: block;
+        }
+
+
+        /* 页脚 */
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding: 20px;
+            background-color: #343a40; 
+            color: #f8f9fa; 
+            width: 100%;
+        }
+        footer p {
+            margin: 0;
+            font-size: 0.9em;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            body {
+                font-size: 16px; 
+            }
+            .container {
+                width: 95%;
+                padding: 15px; /* Reduced padding for mobile */
+            }
+            h1 {
+                font-size: 2.2em;
+            }
+            h2 {
+                font-size: 1.8em;
+            }
+            .animation-container {
+                height: 300px; 
+            }
+            .formula {
+                font-size: 1em;
+                max-width: 95%;
+                padding: 10px;
+            }
+            .controls button, .controls input[type="range"], .controls label {
+                padding: 8px 12px;
+                font-size: 0.9em;
+            }
+            .controls input[type="range"] {
+                max-width: 100px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="swanAnimationContainer"></div>
+    <div class="container">
+        <header>
+            <h1>MMaDA：洞悉未来！统一多模态扩散模型的魅力之旅</h1>
+        </header>
+
+        <main>
+            <article>
+                <section id="intro">
+                    <h2>引言：MMaDA——开启多模态智能新纪元</h2>
+                    <p>欢迎来到MMaDA的世界！MMaDA (Multimodal Large Diffusion Language Models) 是一类非常新颖的多模态扩散基础模型。想象一下，一个AI模型不仅能理解文字、解答数学题，还能看懂图片、甚至根据你的描述创作全新的图像！MMaDA就是为了实现这样强大而全面的能力而设计的。它像一位<strong class="highlight">“跨界艺术家”</strong>和<strong class="highlight">“全能学霸”</strong>，在文本推理、多模态理解和文本到图像生成等多个领域都展现出了卓越的性能。</p>
+                    <p>这篇解读将带你从一个<span class="concept">“物理逻辑”</span>的视角，深入探索MMaDA的内核。我们将一起揭开它那优雅的统一架构、巧妙的训练策略以及惊艳的创新点。准备好了吗？让我们一起踏上这场充满智慧与想象的旅程，看看MMaDA是如何用数学和算法的“积木”，搭建起通往更智能未来的桥梁！</p>
+                </section>
+
+                <section id="unified-architecture">
+                    <h2>统一扩散架构：万法归一的<span class="concept">“中央处理器”</span></h2>
+                    <p>MMaDA最核心的特点之一就是它的<strong class="highlight">统一扩散架构</strong>。传统的多模态模型常常为不同的数据类型（如文本、图像）设计不同的处理模块，就像给大脑的不同区域分配特定任务。但MMaDA另辟蹊径，它采用了一个共享的概率公式和一个<span class="concept">“模态无关”</span>的设计。这意味着，无论是处理文字还是图像，MMaDA都使用相同的底层逻辑和“思考方式”。</p>
+                    <p>这种设计的好处是显而易见的：它消除了对特定模态组件的依赖，使得不同类型数据的整合与处理变得<strong class="highlight">无缝且高效</strong>。就像一个能够流利切换多种语言的翻译家，MMaDA能够轻松地在文本和视觉信息之间建立联系。其核心的统一目标是<span class="concept">掩码标记预测 (Mask Token Prediction)</span>，即模型学习恢复输入数据中被“遮盖”掉的部分，无论是文本中的词汇还是图像中的像素块（经过离散化处理）。</p>
+                    <div id="unifiedArchitectureAnimationContainer" class="animation-container">
+                        </div>
+                    <div class="controls">
+                        <button id="unifiedArchPlayPause">播放/暂停</button>
+                        <button id="unifiedArchSwitchMode">切换模态 (文本/图像)</button>
+                        <span class="description">展示文本和图像数据如何通过共享核心处理</span>
+                    </div>
+                </section>
+
+                <section id="training-pipeline">
+                    <h2>核心训练流程：<span class="concept">三步炼成</span>AI大师</h2>
+                    <p>MMaDA的强大并非一蹴而就，它需要经历一个精心设计的<strong class="highlight">三阶段训练流程</strong>，就像一位武林高手需要通过层层修炼才能达到巅峰境界。这三个阶段环环相扣，共同塑造了MMaDA的非凡能力。</p>
+
+                    <h3>阶段一：大规模预训练 (Foundation Pretraining)</h3>
+                    <p>这是打基础的阶段。MMaDA会“阅读”海量的文本数据和图文对数据，学习语言的基本规律、图像的基本特征以及两者之间的初步关联。这个阶段的目标是让模型掌握广泛的<span class="concept">世界知识</span>和<span class="concept">通用模式识别能力</span>。预训练采用统一的掩码标记预测目标，让模型学会“填空”，无论是文本填词还是图像补全。</p>
+
+                    <h3>阶段二：混合长思维链微调 (Mixed Long-CoT Finetuning)</h3>
+                    <p>如果说预训练是博览群书，那么混合长思维链（Chain-of-Thought, CoT）微调就是学习<strong class="highlight">“思考过程”</strong>。在这个阶段，MMaDA会学习如何像人一样，在给出最终答案前，先进行一步步的推理。例如，在回答一个数学问题时，它会先展示解题步骤；在生成图片前，它会先“构思”画面的内容和逻辑。</p>
+                    <p>更妙的是，这种CoT格式是<span class="concept">跨模态统一</span>的！这意味着模型学习到的推理能力可以在不同任务间迁移。例如，文本推理能力的提升，可以帮助模型更好地理解复杂指令，从而生成更符合要求的图像。这种策略还有助于模型的<strong class="highlight">“冷启动”训练</strong>，为后续的强化学习阶段打下坚实基础。</p>
+                    <div id="mixedCoTAnimationContainer" class="animation-container">
+                        </div>
+                    <div class="controls">
+                        <button id="cotPlayPause">播放/暂停</button>
+                        <button id="cotSwitchExample">切换CoT示例 (文本推理/图像生成)</button>
+                        <span class="description">演示统一的思维链格式如何应用于不同任务</span>
+                    </div>
+
+                    <h3>阶段三：统一强化学习 (UniGRPO Training)</h3>
+                    <p>这是精益求精的阶段。MMaDA引入了一种名为UniGRPO的<strong class="highlight">统一策略梯度强化学习算法</strong>。强化学习就像给模型请了一位严格的“导师”，通过奖励和惩罚来进一步提升模型的表现。UniGRPO的特别之处在于它是为扩散模型量身定制的，并且利用了<span class="concept">多样化的奖励模型</span>。</p>
+                    <p>例如，在文本推理任务中，奖励可能基于答案的正确性和推理步骤的合理性；在图像生成任务中，奖励可能基于生成图像与文本描述的匹配度（如CLIP Score）以及图像的视觉质量和真实感（如ImageReward）。通过这种方式，UniGRPO能够统一优化模型在推理和生成任务上的表现，确保<strong class="highlight">持续的性能提升</strong>和<strong class="highlight">事实一致性</strong>。</p>
+                    <div id="uniGRPOAnimationContainer" class="animation-container">
+                        </div>
+                    <div class="controls">
+                        <button id="grpoPlayPause">播放/暂停</button>
+                        <label for="grpoTaskSelect">任务类型:</label>
+                        <select id="grpoTaskSelect" style="padding: 8px 12px; font-size: 0.9em; border-radius: 6px; margin:5px; cursor:pointer;">
+                            <option value="text">文本推理</option>
+                            <option value="image">图像生成</option>
+                        </select>
+                        <span class="description">展示不同任务下，多样化奖励如何指导模型优化</span>
+                    </div>
+                     <div id="trainingPipelineAnimationContainer" class="animation-container">
+                        </div>
+                    <div class="controls">
+                        <button id="pipelinePlayPause">播放/暂停流程</button>
+                        <span class="description">MMaDA三阶段训练流程概览</span>
+                    </div>
+                </section>
+
+                <section id="innovations-capabilities">
+                    <h2>关键创新与能力：MMaDA的<span class="concept">“独门绝技”</span></h2>
+                    <p>除了统一架构和精密的训练流程，MMaDA还有一些令人瞩目的创新点和由此带来的强大能力。</p>
+                    
+                    <h3>迭代去噪与掩码恢复 (Iterative Denoising & Masking)</h3>
+                    <p>作为扩散模型，MMaDA的核心生成机制是<strong class="highlight">迭代去噪</strong>。想象一张逐渐清晰的照片，或者一段逐渐显现的文字。模型从一个充满“噪声”或“掩码”的状态开始，通过多步迭代，逐步预测并恢复出原始的、清晰的信息。这个过程非常灵活，可以应用于文本生成、图像合成等多种任务。下图模拟了模型如何通过多轮迭代，从部分被遮掩的输入中恢复出完整的信息。</p>
+                    <div id="denoisingAnimationContainer" class="animation-container">
+                        </div>
+                    <div class="controls">
+                        <button id="denoisingPlayPause">播放/暂停</button>
+                        <label for="denoisingStepsSlider">迭代步数: <span id="denoisingStepsValue">1</span></label>
+                        <input type="range" id="denoisingStepsSlider" min="1" max="10" value="1" step="1">
+                        <span class="description">模拟迭代去噪/掩码恢复过程</span>
+                    </div>
+
+                    <h3>灵活的采样策略 (Flexible Sampling Strategies)</h3>
+                    <p>MMaDA在推理（即生成内容）时，可以采用不同的采样策略以适应不同任务的需求。例如，在生成文本时，它可以使用<span class="concept">半自回归采样 (Semi-Autoregressive Sampling)</span>，这种方法结合了自回归（逐字生成）的连贯性和扩散模型（并行预测）的效率，能够生成更复杂和详细的描述。而在生成图像时，则可以采用<strong class="highlight">并行非自回归采样 (Parallel Non-Autoregressive Sampling)</strong>，一次性处理整个图像序列，效率更高，并可以结合如余弦噪声计划等技术优化生成质量。</p>
+                    <p class="formula">文本生成采样公式 (概念性): Output_block_i = Denoise( Masked_Output_block_i | Context, Previous_blocks )</p>
+                    <p class="formula">图像生成采样公式 (概念性): Full_Image_Tokens = ParallelDenoise_N_steps( Masked_Image_Tokens | Text_Prompt )</p>
+
+                    <h3>任务扩展能力 (Task Extension Capabilities)</h3>
+                    <p>扩散模型的一个显著优势是其天然的<strong class="highlight">“填补”能力 (Inpainting/Extrapolation)</strong>。由于其训练目标就是预测掩码标记，MMaDA无需额外微调就能执行诸如文本补全、图像修复、甚至视觉问答中补全答案等任务。这展示了其统一扩散架构的强大通用性和灵活性。例如，给定一张图片和一句不完整的话“这只猫正在...”，MMaDA可以补全描述；给定一张残缺的画作，它可以尝试修复缺失的部分。</p>
+                </section>
+
+                <section id="performance">
+                    <h2>卓越性能表现：<span class="concept">多项全能冠军</span></h2>
+                    <p>理论再好，也要看疗效！MMaDA在多个基准测试中都取得了令人印象深刻的成绩，证明了其设计的有效性。论文数据显示，MMaDA-8B（80亿参数版本）模型：</p>
+                    <ul>
+                        <li>在<strong class="highlight">文本推理</strong>方面，超越了如LLaMA-3-7B和Qwen2-7B等强大的语言模型。</li>
+                        <li>在<strong class="highlight">多模态理解</strong>方面，优于知名的Show-o和SEED-X模型。</li>
+                        <li>在<strong class="highlight">文本到图像生成</strong>方面，表现超过了SDXL和Janus等先进模型。</li>
+                    </ul>
+                    <p>这些成就凸显了MMaDA作为一个统一多模态基础模型的强大泛化能力，有效地弥合了统一扩散架构中预训练和后训练（微调与强化学习）之间的鸿沟。特别值得一提的是，MMaDA在需要<span class="concept">世界知识的图像生成</span>（如根据描述“伊斯坦布尔最受欢迎的动物”生成猫的图像）和<span class="concept">复杂几何推理</span>等任务上表现出色，这得益于其独特的混合长思维链微调和针对性的强化学习奖励设计。</p>
+                    <p>（注：此处可用静态图表总结关键性能数据，或设计一个简化的数据对比动画，但考虑到复杂性和信息密度，文本总结更为直接。）</p>
+                </section>
+                
+                <section id="physical-logic">
+                    <h2>物理逻辑启示：构建智能的<span class="concept">“第一性原理”</span></h2>
+                    <p>从“物理逻辑”的视角来看，MMaDA的设计哲学颇具启发性。它似乎在尝试寻找一种构建复杂智能系统的<strong class="highlight">“第一性原理”</strong>。这里的“物理”并非指传统物理学，而是指构成智能行为的<span class="concept">基本法则和组件交互方式</span>。</p>
+                    <p>MMaDA的<strong class="highlight">统一扩散架构</strong>可以看作是一种对信息处理本质的探索。扩散过程本身，即从有序到无序再到有序的恢复，与物理世界中许多熵增熵减、信息编解码过程有相似之处。模型通过学习逆转这个“混淆”过程，来理解和生成数据。</p>
+                    <p>其<strong class="highlight">模态无关的设计</strong>，追求的是一种普适性的“计算基元”。就像物理学家试图用少数几个基本粒子和相互作用力来解释宇宙万物一样，MMaDA试图用统一的掩码预测和去噪机制来处理和生成不同模态的信息。这种对<span class="concept">共性</span>和<span class="concept">简约性</span>的追求，是科学探索的共同特征。</p>
+                    <p>而<strong class="highlight">思维链（CoT）微调</strong>和<strong class="highlight">强化学习（UniGRPO）</strong>则是在这个统一的“物理引擎”之上，构建更高级的“行为逻辑”。CoT赋予模型结构化的“思考”能力，使其行为更具可解释性和逻辑性。强化学习则通过环境反馈（奖励），引导模型向期望的目标演化，类似于自然选择或系统自适应的过程。</p>
+                    <p>因此，MMaDA不仅仅是一个强大的AI模型，它更像是一个精心设计的<span class="concept">“人工物理系统”</span>，其内部组件（如分词器、扩散核心、奖励函数）遵循特定的“动力学规则”（训练算法），并通过与“环境”（数据）的交互，演化出复杂的智能行为。这种从基本原理出发，构建统一、可扩展、自适应智能系统的思路，无疑为未来AI的发展提供了宝贵的借鉴。</p>
+                </section>
+
+                <section id="conclusion">
+                    <h2>结论：MMaDA——通往通用人工智能的<span class="concept">潜力股</span></h2>
+                    <p>MMaDA的出现，为我们描绘了一幅激动人心的多模态智能蓝图。它通过<strong class="highlight">统一的扩散框架</strong>、创新的<strong class="highlight">混合长思维链微调</strong>以及高效的<strong class="highlight">UniGRPO强化学习算法</strong>，成功地将文本推理、多模态理解和内容生成等多种能力整合到一个模型之中。</p>
+                    <p>这不仅仅是技术上的突破，更代表了AI设计理念的一次重要演进——从依赖特定任务、特定模态的“专家模型”，向着更通用、更灵活、更接近人类认知方式的<span class="concept">“通才模型”</span>迈进。MMaDA的成功证明了扩散模型作为下一代基础范式在多模态智能领域的巨大潜力。</p>
+                    <p>当然，探索之路永无止境。正如研究者所言，当前MMaDA的模型规模（8B参数）仍有提升空间，未来更大规模的模型有望带来更强的性能。但MMaDA已经为我们指明了一个充满希望的方向：通过<strong class="highlight">系统性地探索和优化统一架构下的预训练与后训练策略</strong>，我们能够构建出越来越强大、越来越智能的多模态AI系统。这无疑是人工智能领域一个值得持续关注和投入的重要方向，也是我们理解和模拟智能本质的关键一步。</p>
+                </section>
+            </article>
+        </main>
+        <footer>
+            <p>&copy; 2025 AI模型探索者. 本文内容基于公开论文分析，旨在学习交流，具体细节请参考原始文献。</p>
+        </footer>
+    </div>
+
+    <script>
+        // P5.js Sketches
+
+        // --- Animation 0: Swans Background (from template) ---
+        let sketchSwans = function(p) {
+            // ... (Swan animation code from template - keeping it for aesthetics)
+            let motherSwan;
+
+            class Swan {
+                constructor(x, y, sizeFactor = 1) {
+                    this.x = x;
+                    this.y = y;
+                    this.sizeFactor = sizeFactor;
+                    this.bodyLength = 30 * sizeFactor;
+                    this.bodyWidth = 20 * sizeFactor;
+                    
+                    this.velocity = p.createVector(p.random(-0.5, 0.5), p.random(-0.5, 0.5)); 
+                    this.speed = p.random(0.2, 0.6) * this.sizeFactor; 
+                    this.velocity.setMag(this.speed);
+                }
+
+                draw() {
+                    p.push();
+                    p.translate(this.x, this.y);
+                    p.rotate(this.velocity.heading() + p.PI / 2); 
+                    
+                    p.fill(255, 255, 255, 100); // Semi-transparent white
+                    p.noStroke();
+                    p.ellipse(0, 0, this.bodyWidth, this.bodyLength); 
+
+                    p.stroke(255, 255, 255, 120);
+                    p.strokeWeight(this.bodyWidth / 3);
+                    p.line(0, -this.bodyLength / 2.5, 0, -this.bodyLength * 0.6); 
+                    p.noStroke();
+
+                    p.fill(255, 255, 255, 100);
+                    p.ellipse(0, -this.bodyLength * 0.7, this.bodyWidth * 0.8, this.bodyWidth * 0.8); 
+                    
+                    p.fill(255, 165, 0, 150); 
+                    p.triangle(0, -this.bodyLength * 0.7 - this.bodyWidth * 0.3,
+                               -this.bodyWidth * 0.25, -this.bodyLength * 0.7,
+                               this.bodyWidth * 0.25, -this.bodyLength * 0.7); 
+                    p.pop();
+                }
+
+                update() {
+                    this.velocity.rotate(p.random(-0.05, 0.05)); 
+                    this.velocity.setMag(this.speed); 
+
+                    this.x += this.velocity.x;
+                    this.y += this.velocity.y;
+
+                    let buffer = this.bodyLength; 
+                    if (this.x < -buffer) this.x = p.width + buffer;
+                    if (this.x > p.width + buffer) this.x = -buffer;
+                    if (this.y < -buffer) this.y = p.height + buffer;
+                    if (this.y > p.height + buffer) this.y = -buffer;
+                }
+            }
+
+            p.setup = function() {
+                let canvas = p.createCanvas(p.windowWidth, p.windowHeight);
+                canvas.parent('swanAnimationContainer');
+                motherSwan = new Swan(p.random(p.width), p.random(p.height), 2.5); // Larger and slightly faster
+                 p.frameRate(15); // Lower frame rate for background
+            };
+
+            p.draw = function() {
+                p.clear(); 
+                motherSwan.update();
+                motherSwan.draw();
+            };
+
+            p.windowResized = function() {
+                p.resizeCanvas(p.windowWidth, p.windowHeight);
+            };
+        };
+        new p5(sketchSwans);
+
+
+        // --- Animation 1: MMaDA Unified Architecture ---
+        let sketchUnifiedArchitecture = function(p) {
+            let playButton, switchButton;
+            let playing = true;
+            let mode = 'text'; // 'text' or 'image'
+            let particleSystem;
+            let coreX, coreY, coreSize;
+
+            class Particle {
+                constructor(x, y, targetX, targetY, isText) {
+                    this.pos = p.createVector(x, y);
+                    this.vel = p.createVector(p.random(-1,1), p.random(-1,1));
+                    this.acc = p.createVector(0,0);
+                    this.target = p.createVector(targetX, targetY);
+                    this.maxSpeed = isText ? 3 : 2;
+                    this.maxForce = 0.2;
+                    this.color = isText ? p.color(70, 130, 180, 150) : p.color(34, 139, 34, 150); // SteelBlue for text, ForestGreen for image
+                    this.size = isText ? p.random(3,6) : p.random(8,15);
+                    this.isText = isText;
+                }
+
+                applyForce(force) {
+                    this.acc.add(force);
+                }
+
+                seek() {
+                    let desired = p5.Vector.sub(this.target, this.pos);
+                    desired.setMag(this.maxSpeed);
+                    let steer = p5.Vector.sub(desired, this.vel);
+                    steer.limit(this.maxForce);
+                    this.applyForce(steer);
+                }
+                
+                arriveCore() {
+                     let desired = p5.Vector.sub(this.target, this.pos);
+                     let d = desired.mag();
+                     if (d < coreSize * 0.6) { // Arrived at core
+                        this.vel.mult(0.9); // Slow down
+                        if (d < 5) this.vel.mult(0); // Stop if very close
+                     } else {
+                        desired.setMag(this.maxSpeed);
+                        let steer = p5.Vector.sub(desired, this.vel);
+                        steer.limit(this.maxForce);
+                        this.applyForce(steer);
+                     }
+                }
+
+
+                update() {
+                    this.vel.add(this.acc);
+                    this.vel.limit(this.maxSpeed);
+                    this.pos.add(this.vel);
+                    this.acc.mult(0);
+                }
+
+                display() {
+                    p.fill(this.color);
+                    p.noStroke();
+                    if (this.isText) {
+                        p.ellipse(this.pos.x, this.pos.y, this.size, this.size);
+                    } else {
+                        p.rectMode(p.CENTER);
+                        p.rect(this.pos.x, this.pos.y, this.size, this.size);
+                    }
+                }
+                
+                isNearTarget() {
+                    return p.dist(this.pos.x, this.pos.y, this.target.x, this.target.y) < coreSize * 0.7;
+                }
+            }
+
+            p.setup = function() {
+                let container = p.select('#unifiedArchitectureAnimationContainer');
+                let canvas = p.createCanvas(container.width, container.height);
+                canvas.parent('unifiedArchitectureAnimationContainer');
+                
+                coreX = p.width / 2;
+                coreY = p.height / 2;
+                coreSize = p.min(p.width, p.height) * 0.25;
+
+                particleSystem = [];
+                spawnParticles();
+
+                playButton = p.select('#unifiedArchPlayPause');
+                switchButton = p.select('#unifiedArchSwitchMode');
+
+                playButton.mousePressed(() => { playing = !playing; if(playing) p.loop(); else p.noLoop(); });
+                switchButton.mousePressed(() => { 
+                    mode = (mode === 'text') ? 'image' : 'text';
+                    particleSystem = []; // Clear old particles
+                    spawnParticles(); // Spawn new ones for the new mode
+                    if (!playing) p.redraw(); // Redraw if paused
+                });
+                if (playing) p.loop(); else p.noLoop();
+                p.redraw();
+            };
+            
+            function spawnParticles() {
+                let numParticles = mode === 'text' ? 50 : 20;
+                for (let i = 0; i < numParticles; i++) {
+                    let startX = p.random(p.width * 0.1, p.width * 0.9);
+                    let startY = p.random(-20, -5); // Start from top
+                    particleSystem.push(new Particle(startX, startY, coreX + p.random(-coreSize/3, coreSize/3) , coreY + p.random(-coreSize/3, coreSize/3), mode === 'text'));
+                }
+            }
+
+            p.draw = function() {
+                p.background(240, 248, 255);
+
+                // Draw shared core
+                p.fill(255, 165, 0, 100); // Orange, semi-transparent
+                p.noStroke();
+                p.ellipse(coreX, coreY, coreSize, coreSize);
+                p.fill(50);
+                p.textAlign(p.CENTER, p.CENTER);
+                p.textSize(coreSize * 0.15);
+                p.text("MMaDA\n统一核心", coreX, coreY);
+
+                // Draw input area
+                p.fill(200, 200, 200, 50);
+                p.rect(0, 0, p.width, p.height * 0.2);
+                p.fill(50);
+                p.textAlign(p.CENTER, p.TOP);
+                p.textSize(14);
+                p.text(mode === 'text' ? "文本输入 (离散词元)" : "图像输入 (离散视觉词元)", p.width/2, 10);
+
+
+                for (let i = particleSystem.length - 1; i >= 0; i--) {
+                    let particle = particleSystem[i];
+                    if (particle.isNearTarget()) {
+                         particle.arriveCore();
+                    } else {
+                        particle.seek();
+                    }
+                    particle.update();
+                    particle.display();
+                    
+                    // Respawn if particle is "processed" (e.g., very slow or too far)
+                    if (particle.vel.mag() < 0.1 && particle.isNearTarget()) {
+                         particleSystem.splice(i, 1); // Remove particle
+                    }
+                }
+                
+                // Replenish particles
+                if (particleSystem.length < (mode === 'text' ? 40 : 15) && p.frameCount % 10 == 0) {
+                    let startX = p.random(p.width * 0.1, p.width * 0.9);
+                    let startY = p.random(-20, -5);
+                     particleSystem.push(new Particle(startX, startY, coreX + p.random(-coreSize/3, coreSize/3) , coreY + p.random(-coreSize/3, coreSize/3), mode === 'text'));
+                }
+
+
+                if (!playing && particleSystem.length === 0) { // If paused and system is empty, spawn some for static view
+                    spawnParticles();
+                }
+            };
+             p.windowResized = function() {
+                let container = p.select('#unifiedArchitectureAnimationContainer');
+                p.resizeCanvas(container.width, container.height);
+                coreX = p.width / 2;
+                coreY = p.height / 2;
+                coreSize = p.min(p.width, p.height) * 0.25;
+                particleSystem = []; 
+                spawnParticles();
+                if (!playing) p.redraw();
+            };
+        };
+        new p5(sketchUnifiedArchitecture);
+
+        // --- Animation 2: MMaDA Training Pipeline Overview ---
+        let sketchTrainingPipeline = function(p) {
+            let playButton;
+            let playing = true;
+            let progress = 0; // 0 to 3, representing stages
+            let stageNames = ["预训练", "CoT微调", "UniGRPO强化"];
+            let stageColors;
+
+            p.setup = function() {
+                let container = p.select('#trainingPipelineAnimationContainer');
+                let canvas = p.createCanvas(container.width, container.height);
+                canvas.parent('trainingPipelineAnimationContainer');
+                
+                stageColors = [p.color(100, 149, 237, 200), p.color(255, 182, 193, 200), p.color(144, 238, 144, 200)]; // CornflowerBlue, LightPink, LightGreen
+
+                playButton = p.select('#pipelinePlayPause');
+                playButton.mousePressed(() => { 
+                    playing = !playing; 
+                    if(playing) {
+                        p.loop();
+                    } else {
+                        p.noLoop();
+                    }
+                });
+                if (playing) p.loop(); else p.noLoop();
+                p.redraw();
+            };
+
+            p.draw = function() {
+                p.background(240, 248, 255);
+                let barHeight = p.height * 0.2;
+                let barWidth = p.width * 0.8;
+                let startX = p.width * 0.1;
+                let spacing = p.height * 0.25;
+
+                for (let i = 0; i < 3; i++) {
+                    let currentY = p.height * 0.15 + i * spacing;
+                    // Draw stage block
+                    p.fill(stageColors[i]);
+                    p.noStroke();
+                    p.rect(startX, currentY, barWidth, barHeight, 10);
+
+                    // Draw stage name
+                    p.fill(0);
+                    p.textAlign(p.CENTER, p.CENTER);
+                    p.textSize(16);
+                    p.text(`阶段 ${i+1}: ${stageNames[i]}`, startX + barWidth / 2, currentY + barHeight / 2);
+
+                    // Draw progress fill for current/passed stages
+                    if (progress > i) { // Completed stage
+                        p.fill(50, 205, 50, 150); // LimeGreen highlight for completion
+                        p.rect(startX, currentY, barWidth, barHeight, 10);
+                    } else if (progress > i - 1 && progress <=i) { // Current stage
+                        let stageProgress = (progress - (i-1)) * barWidth;
+                         if (i === 0 && progress <= 1) stageProgress = progress * barWidth; // Fix for first stage
+                         else if (i > 0 ) stageProgress = (progress - i) * barWidth;
+
+
+                        p.fill(255, 165, 0, 180); // Orange highlight for current progress
+                        p.rect(startX, currentY, stageProgress, barHeight, 10);
+                    }
+                    
+                    // Draw arrows between stages
+                    if (i < 2) {
+                        p.stroke(50);
+                        p.strokeWeight(3);
+                        p.line(startX + barWidth / 2, currentY + barHeight, startX + barWidth / 2, currentY + spacing -5);
+                        // Arrowhead
+                        p.push();
+                        p.translate(startX + barWidth / 2, currentY + spacing - 5);
+                        p.fill(50);
+                        p.triangle(0, 0, -5, -10, 5, -10);
+                        p.pop();
+                    }
+                }
+                
+                // Draw "Data Input" and "MMaDA Model Output"
+                p.fill(150);
+                p.textAlign(p.CENTER, p.CENTER);
+                p.textSize(14);
+                p.text("原始数据输入", startX + barWidth/2, p.height*0.15 - 20);
+                p.text("强大的MMaDA模型", startX + barWidth/2, p.height*0.15 + 2*spacing + barHeight + 20);
+
+
+                if (playing) {
+                    progress += 0.005; 
+                    if (progress > 3) {
+                        progress = 0; // Loop animation
+                    }
+                }
+            };
+             p.windowResized = function() {
+                let container = p.select('#trainingPipelineAnimationContainer');
+                p.resizeCanvas(container.width, container.height);
+                 if (!playing) p.redraw();
+            };
+        };
+        new p5(sketchTrainingPipeline);
+
+
+        // --- Animation 3: Mixed Long-CoT ---
+        let sketchMixedCoT = function(p) {
+            let playButton, switchButton;
+            let playing = true;
+            let exampleType = 'text'; // 'text' or 'image'
+            let animationProgress = 0; // 0 to 1
+
+            let textExample = {
+                task: "文本推理: 1+1=?",
+                rawInput: "1+1",
+                cotProcess: "<think> 这是一个简单的加法。 </think>",
+                result: "2"
+            };
+            let imageExample = {
+                task: "图像生成: 一只猫",
+                rawInput: "一只可爱的猫",
+                cotProcess: "<think> 用户想要一只猫，应该是毛茸茸的，坐在垫子上。 </think>",
+                result: "[图像占位符]"
+            };
+            let currentExample = textExample;
+
+            p.setup = function() {
+                let container = p.select('#mixedCoTAnimationContainer');
+                let canvas = p.createCanvas(container.width, container.height);
+                canvas.parent('mixedCoTAnimationContainer');
+                
+                playButton = p.select('#cotPlayPause');
+                switchButton = p.select('#cotSwitchExample');
+
+                playButton.mousePressed(() => { playing = !playing; if(playing) p.loop(); else p.noLoop(); });
+                switchButton.mousePressed(() => {
+                    exampleType = (exampleType === 'text') ? 'image' : 'text';
+                    currentExample = (exampleType === 'text') ? textExample : imageExample;
+                    animationProgress = 0;
+                    if (!playing) p.redraw();
+                });
+                if (playing) p.loop(); else p.noLoop();
+                p.redraw();
+            };
+
+            p.draw = function() {
+                p.background(240, 248, 255);
+                p.textAlign(p.LEFT, p.TOP);
+                p.textSize(14);
+                p.fill(0);
+
+                let yPos = p.height * 0.1;
+                p.text(`任务: ${currentExample.task}`, p.width * 0.05, yPos);
+                yPos += 30;
+
+                // Raw Input
+                p.fill(100);
+                p.text("原始输入:", p.width * 0.05, yPos);
+                p.fill(0);
+                p.text(currentExample.rawInput, p.width * 0.05 + 80, yPos);
+                yPos += 40;
+
+                // Arrow
+                if (animationProgress > 0.2) {
+                    p.stroke(0);
+                    p.strokeWeight(2);
+                    p.line(p.width * 0.5, yPos, p.width * 0.5, yPos + 20);
+                    p.fill(0);
+                    p.triangle(p.width*0.5, yPos+20, p.width*0.5-5, yPos+15, p.width*0.5+5, yPos+15);
+                    yPos += 30;
+                }
+                
+                // Unified CoT Format Box
+                let boxX = p.width * 0.05;
+                let boxW = p.width * 0.9;
+                let boxH = p.height * 0.4;
+                
+                if (animationProgress > 0.4) {
+                    p.fill(220, 220, 255, 150); // Light purple box
+                    p.stroke(150, 150, 200);
+                    p.rect(boxX, yPos, boxW, boxH, 10);
+                    
+                    p.fill(0);
+                    p.noStroke();
+                    p.textAlign(p.CENTER, p.TOP)
+                    p.text("统一CoT格式", p.width/2, yPos + 10);
+                    p.textAlign(p.LEFT, p.TOP)
+
+                    let textYInBox = yPos + 40;
+                    if (animationProgress > 0.6) {
+                        p.fill(50,50,150); // Darker blue for special token
+                        p.text("<special_token>", boxX + 20, textYInBox);
+                        p.fill(0);
+                        p.text(currentExample.cotProcess, boxX + 20 + p.textWidth("<special_token> "), textYInBox);
+                        textYInBox += p.textAscent() + p.textDescent() + 10;
+                    }
+                    if (animationProgress > 0.8) {
+                         p.fill(50,50,150);
+                        p.text("<special_token>", boxX + 20, textYInBox);
+                        p.fill(0);
+                        p.text(currentExample.result, boxX + 20 + p.textWidth("<special_token> "), textYInBox);
+                        if (exampleType === 'image' && currentExample.result === "[图像占位符]") {
+                            p.fill(100,200,100, 100);
+                            p.rect(boxX + 20 + p.textWidth("<special_token> ") + 5, textYInBox + 20, 80, 60); // Placeholder for image
+                            p.fill(0);
+                            p.textAlign(p.CENTER, p.CENTER);
+                            p.text("猫图", boxX + 20 + p.textWidth("<special_token> ") + 5 + 40, textYInBox + 20 + 30);
+                            p.textAlign(p.LEFT, p.TOP);
+                        }
+                    }
+                }
+
+
+                if (playing) {
+                    animationProgress += 0.01;
+                    if (animationProgress > 1) {
+                        animationProgress = 0;
+                    }
+                }
+            };
+             p.windowResized = function() {
+                let container = p.select('#mixedCoTAnimationContainer');
+                p.resizeCanvas(container.width, container.height);
+                 if (!playing) p.redraw();
+            };
+        };
+        new p5(sketchMixedCoT);
+
+        // --- Animation 4: UniGRPO Reward Mechanism ---
+        let sketchUniGRPO = function(p) {
+            let playButton, taskSelect;
+            let playing = true;
+            let currentTask = 'text'; // 'text' or 'image'
+            let agentPos, rewardPos;
+            let rewardValue = 0;
+            let policyAngle = 0; // Represents policy adjustment
+
+            p.setup = function() {
+                let container = p.select('#uniGRPOAnimationContainer');
+                let canvas = p.createCanvas(container.width, container.height);
+                canvas.parent('uniGRPOAnimationContainer');
+                
+                agentPos = p.createVector(p.width * 0.25, p.height / 2);
+                rewardPos = p.createVector(p.width * 0.75, p.height / 2);
+
+                playButton = p.select('#grpoPlayPause');
+                taskSelect = p.select('#grpoTaskSelect');
+
+                playButton.mousePressed(() => { playing = !playing; if(playing) p.loop(); else p.noLoop(); });
+                taskSelect.changed(() => {
+                    currentTask = taskSelect.value();
+                    rewardValue = 0; // Reset reward animation
+                    policyAngle = 0;
+                    if (!playing) p.redraw();
+                });
+                if (playing) p.loop(); else p.noLoop();
+                p.redraw();
+            };
+
+            p.draw = function() {
+                p.background(240, 248, 255);
+
+                // Agent (Model Policy)
+                p.fill(0, 100, 255, 150); // Blue agent
+                p.noStroke();
+                p.ellipse(agentPos.x, agentPos.y, 50, 50);
+                p.fill(255);
+                p.textAlign(p.CENTER, p.CENTER);
+                p.textSize(12);
+                p.text("策略\nPolicy", agentPos.x, agentPos.y);
+
+                // Action
+                p.stroke(0,0,0,100);
+                p.strokeWeight(2);
+                p.line(agentPos.x + 25, agentPos.y, agentPos.x + 60, agentPos.y); // Action arrow base
+                
+                // Reward Source
+                let rewardColor = currentTask === 'text' ? p.color(50, 200, 50, 180) : p.color(250, 150, 50, 180); // Green for text, Orange for image
+                p.fill(rewardColor);
+                p.ellipse(rewardPos.x, rewardPos.y, 60, 60);
+                p.fill(0);
+                p.text(currentTask === 'text' ? "文本奖励\n(正确性等)" : "图像奖励\n(CLIP Score等)", rewardPos.x, rewardPos.y);
+
+                // Reward Flow & Policy Update
+                if (playing) {
+                    rewardValue += 0.05;
+                    if (rewardValue > 1) rewardValue = 0;
+                    policyAngle = p.sin(rewardValue * p.PI) * 15; // Oscillate to show update
+                }
+                
+                // Draw reward signal (animated line)
+                let signalX = p.lerp(agentPos.x + 60, rewardPos.x - 30, rewardValue);
+                let signalY = agentPos.y;
+                p.fill(255,0,0, 200); // Red signal
+                p.ellipse(signalX, signalY, 10,10);
+                
+                // Show policy "adjustment"
+                p.push();
+                p.translate(agentPos.x + 25, agentPos.y); // Pivot at edge of agent
+                p.rotate(p.radians(policyAngle));
+                p.stroke(0);
+                p.line(0,0, 35, 0); // Policy direction indicator
+                p.fill(0);
+                p.triangle(35,0, 25, -5, 25, 5); // Arrow head
+                p.pop();
+
+                p.fill(0);
+                p.textAlign(p.CENTER, p.BOTTOM);
+                p.textSize(14);
+                p.text("UniGRPO: 奖励驱动策略优化", p.width/2, p.height - 10);
+            };
+             p.windowResized = function() {
+                let container = p.select('#uniGRPOAnimationContainer');
+                p.resizeCanvas(container.width, container.height);
+                agentPos = p.createVector(p.width * 0.25, p.height / 2);
+                rewardPos = p.createVector(p.width * 0.75, p.height / 2);
+                 if (!playing) p.redraw();
+            };
+        };
+        new p5(sketchUniGRPO);
+
+        // --- Animation 5: Iterative Denoising/Masking ---
+        let sketchIterativeDenoising = function(p) {
+            let playButton, stepsSlider;
+            let playing = true;
+            let currentStep = 1;
+            let totalSteps = 10;
+            let tokens = [];
+            let tokenSize = 30;
+            let numTokens = 10;
+            let stepsValueSpan;
+
+            p.setup = function() {
+                let container = p.select('#denoisingAnimationContainer');
+                let canvas = p.createCanvas(container.width, container.height);
+                canvas.parent('denoisingAnimationContainer');
+                
+                playButton = p.select('#denoisingPlayPause');
+                stepsSlider = p.select('#denoisingStepsSlider');
+                stepsValueSpan = p.select('#denoisingStepsValue');
+
+                playButton.mousePressed(() => { playing = !playing; if(playing) p.loop(); else p.noLoop(); });
+                stepsSlider.input(() => {
+                    currentStep = parseInt(stepsSlider.value());
+                    stepsValueSpan.html(currentStep);
+                    initializeTokens(); // Re-mask based on new currentStep if slider changes
+                    if (!playing) p.redraw();
+                });
+                
+                totalSteps = parseInt(stepsSlider.elt.max);
+                initializeTokens();
+                if (playing) p.loop(); else p.noLoop();
+                p.redraw();
+            };
+
+            function initializeTokens() {
+                tokens = [];
+                let content = "MMaDA模型真棒!";
+                let chars = content.split('');
+                numTokens = chars.length;
+                tokenSize = p.min(p.width / (numTokens + 2), p.height * 0.3);
+
+
+                for (let i = 0; i < numTokens; i++) {
+                    // Masking probability decreases with currentStep
+                    let maskProb = 1 - (currentStep / totalSteps);
+                    tokens.push({
+                        char: chars[i] || '?',
+                        isMasked: p.random() < maskProb,
+                        originalMasked: p.random() < maskProb, // Store initial mask state for reset
+                        color: p.color(p.random(100,200), p.random(100,200), p.random(200,255))
+                    });
+                }
+            }
+            
+            function resetMasksBasedOnStep() {
+                 for (let i = 0; i < tokens.length; i++) {
+                    let maskProb = 1 - (currentStep / totalSteps);
+                    tokens[i].isMasked = p.random() < maskProb;
+                }
+            }
+
+
+            p.draw = function() {
+                p.background(240, 248, 255);
+                let startX = (p.width - numTokens * (tokenSize + 5)) / 2;
+                let yPos = p.height / 2;
+
+                for (let i = 0; i < tokens.length; i++) {
+                    let x = startX + i * (tokenSize + 5);
+                    if (tokens[i].isMasked) {
+                        p.fill(180); // Grey for masked
+                        p.stroke(100);
+                        p.rect(x, yPos - tokenSize/2, tokenSize, tokenSize, 5);
+                        p.fill(50);
+                        p.textAlign(p.CENTER, p.CENTER);
+                        p.textSize(tokenSize * 0.6);
+                        p.text("?", x + tokenSize/2, yPos);
+                    } else {
+                        p.fill(tokens[i].color);
+                        p.stroke(p.red(tokens[i].color)-50, p.green(tokens[i].color)-50, p.blue(tokens[i].color)-50);
+                        p.rect(x, yPos - tokenSize/2, tokenSize, tokenSize, 5);
+                        p.fill(0);
+                        p.textAlign(p.CENTER, p.CENTER);
+                        p.textSize(tokenSize * 0.5);
+                        p.text(tokens[i].char, x + tokenSize/2, yPos);
+                    }
+                }
+
+                p.fill(0);
+                p.textAlign(p.CENTER, p.TOP);
+                p.textSize(14);
+                p.text(`迭代去噪步骤: ${currentStep} / ${totalSteps}`, p.width/2, 20);
+                p.textAlign(p.CENTER, p.BOTTOM);
+                p.text("模型逐步恢复被掩盖的信息", p.width/2, p.height - 10);
+
+                if (playing && p.frameCount % 30 == 0) { // Animate step change
+                    currentStep++;
+                    if (currentStep > totalSteps) {
+                        currentStep = 1;
+                        initializeTokens(); // Re-initialize with full masks
+                    }
+                    stepsSlider.value(currentStep);
+                    stepsValueSpan.html(currentStep);
+                    resetMasksBasedOnStep(); // Reveal more tokens as step increases
+                }
+            };
+             p.windowResized = function() {
+                let container = p.select('#denoisingAnimationContainer');
+                p.resizeCanvas(container.width, container.height);
+                initializeTokens(); // Recalculate token sizes and positions
+                 if (!playing) p.redraw();
+            };
+        };
+        new p5(sketchIterativeDenoising);
+
+        // Ensure all sketches are redrawn once after setup, especially if starting paused.
+        document.addEventListener('DOMContentLoaded', () => {
+            // This is a bit of a hack, ideally p5 objects would be accessible to call redraw.
+            // For now, the internal p.redraw() in setup should handle initial draw.
+            // Or, ensure `playing` is true initially for a brief moment then set by user.
+            // The current setup with p.loop()/noLoop() and redraw on input should be okay.
+        });
+
+    </script>
+</body>
+</html>

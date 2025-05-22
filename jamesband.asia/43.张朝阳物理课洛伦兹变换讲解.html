@@ -1,0 +1,947 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>张朝阳物理课：狭义相对论的奇幻之旅</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.2/p5.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
+    <style>
+        /* 基本重置和页面设置 */
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Noto Sans SC', sans-serif;
+            font-size: 18px; /* 基础字号，参考“三号”在屏幕上的可读性 */
+            line-height: 1.8;
+            background-color: #0d1117; /* GitHub 暗黑模式背景色 */
+            color: #c9d1d9; /* GitHub 暗黑模式文字颜色 */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            overflow-x: hidden; /* 防止水平溢出 */
+        }
+
+        /* 背景动画容器 */
+        #backgroundCanvasContainer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 0;
+            pointer-events: none; /* 允许点击穿透 */
+        }
+
+        /* 内容容器 */
+        .container {
+            position: relative;
+            z-index: 1; /* 在背景动画之上 */
+            width: 90%;
+            max-width: 1000px; /* 优化阅读宽度，类似A3纸张感 */
+            margin: 40px auto; /* 增加上下边距 */
+            padding: 30px 40px;
+            background-color: rgba(22, 27, 34, 0.9); /* GitHub 暗黑模式内容区背景 */
+            border: 1px solid #30363d; /* GitHub 暗黑模式边框颜色 */
+            border-radius: 12px; /* 圆角 */
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+        }
+
+        /* 标题样式 */
+        h1, h2, h3 {
+            font-family: 'ZCOOL KuaiLe', cursive; /* 轻松活泼字体 */
+            color: #58a6ff; /* GitHub 暗黑模式链接/标题颜色 */
+            margin-bottom: 0.75em;
+            text-align: center;
+            letter-spacing: 1px;
+        }
+        h1 {
+            font-size: 2.8em; /* 主标题 */
+            color: #79c0ff; /* 更亮的蓝色 */
+            border-bottom: 2px solid #388bfd;
+            padding-bottom: 15px;
+            margin-top: 0;
+        }
+        h2 {
+            font-size: 2.2em; /* 章节标题 */
+            color: #f778ba; /* 粉色系，增加活泼感 */
+            margin-top: 2.5em;
+        }
+        h3 {
+            font-size: 1.6em;
+            color: #a371f7; /* 紫色系 */
+            margin-top: 1.8em;
+        }
+
+        /* 段落和文本样式 */
+        p {
+            margin-bottom: 1.5em;
+            text-align: justify;
+            color: #adbac7; /* 柔和的文字颜色 */
+        }
+
+        /* 强调文字 */
+        strong, .highlight {
+            color: #ffa657; /* 暖黄色强调 */
+            font-weight: bold;
+        }
+        .concept { /* 物理概念词 */
+            font-weight: 500;
+            color: #7ee787; /* 绿色概念词 */
+            padding: 3px 7px;
+            background-color: rgba(63, 185, 80, 0.15);
+            border-radius: 6px;
+            border: 1px solid rgba(63, 185, 80, 0.4);
+            font-family: 'Noto Sans SC', sans-serif; /* 概念词使用标准字体 */
+        }
+        .formula {
+            display: block;
+            text-align: center;
+            margin: 20px auto;
+            padding: 15px;
+            background-color: rgba(34, 39, 46, 0.8);
+            border-left: 4px solid #388bfd;
+            color: #c9d1d9;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 1.1em;
+            border-radius: 4px;
+            white-space: pre-wrap; /* 保证公式换行 */
+        }
+
+        /* 动画容器 */
+        .animation-container {
+            width: 100%;
+            max-width: 600px; /* 动画区域宽度 */
+            height: 380px; /* 动画区域高度 */
+            margin: 30px auto;
+            border: 1px solid #30363d;
+            border-radius: 10px;
+            overflow: hidden;
+            background-color: #010409; /* 更深的动画背景 */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: inset 0 0 12px rgba(0,0,0,0.5);
+        }
+        .animation-container canvas {
+            display: block;
+            max-width: 100%;
+            max-height: 100%;
+            border-radius: 8px;
+        }
+        
+        /* 交互按钮和控件样式 */
+        .controls {
+            text-align: center;
+            margin-bottom: 30px;
+            margin-top: 15px;
+        }
+        .controls button {
+            padding: 12px 25px;
+            font-size: 1em;
+            font-family: 'Noto Sans SC', sans-serif;
+            background-image: linear-gradient(to right, #388bfd, #58a6ff);
+            color: white;
+            border: none;
+            border-radius: 25px; 
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            letter-spacing: 0.5px;
+        }
+        .controls button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 8px 20px rgba(56, 139, 253, 0.4);
+        }
+        .controls button:active {
+            transform: translateY(0px) scale(1);
+        }
+        .controls label {
+            color: #8b949e; /* GitHub 暗黑模式次要文字颜色 */
+            margin: 0 12px;
+            font-size: 0.95em;
+        }
+        .controls input[type="range"] {
+            vertical-align: middle;
+            cursor: grab;
+            width: 160px;
+        }
+
+        /* 作者信息 */
+        .author-info {
+            text-align: center;
+            margin: 20px 0 30px 0;
+            font-size: 0.95em;
+            color: #8b949e;
+        }
+        .author-info strong {
+            color: #79c0ff;
+        }
+
+        /* 页脚 */
+        footer {
+            text-align: center;
+            margin-top: 50px;
+            padding: 30px;
+            background-color: #161b22; /* 页脚背景 */
+            color: #8b949e;
+            width: 100%;
+            font-size: 0.9em;
+            border-top: 1px solid #30363d;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            body {
+                font-size: 17px; /* 移动端稍小字号 */
+            }
+            .container {
+                width: 95%;
+                padding: 20px 25px;
+                margin: 20px auto;
+            }
+            h1 {
+                font-size: 2.2em;
+            }
+            h2 {
+                font-size: 1.8em;
+            }
+            h3 {
+                font-size: 1.4em;
+            }
+            .animation-container {
+                height: 320px; /* 移动端动画高度调整 */
+            }
+            .controls button {
+                padding: 10px 20px;
+                font-size: 0.9em;
+            }
+            .controls input[type="range"] {
+                width: 130px;
+            }
+            .formula {
+                font-size: 1em;
+                padding: 10px;
+            }
+        }
+         @media (max-width: 480px) {
+            body {
+                font-size: 16px;
+            }
+            h1 {
+                font-size: 1.8em;
+            }
+            h2 {
+                font-size: 1.5em;
+            }
+            h3 {
+                font-size: 1.2em;
+            }
+            .animation-container {
+                height: 280px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="backgroundCanvasContainer"></div>
+    <div class="container">
+        <header>
+            <h1>张朝阳物理课：狭义相对论的奇幻之旅</h1>
+            <div class="author-info">
+                <p>解读自 <strong>张朝阳</strong> 先生的物理课程</p>
+                <p>（搜狐创始人、董事局主席兼CEO，麻省理工学院物理学博士）</p>
+            </div>
+        </header>
+
+        <main>
+            <article>
+                <section id="intro">
+                    <h2>引言：颠覆认知的物理画卷</h2>
+                    <p>物理学，一门探索宇宙万物运行规律的学科，充满了无穷的魅力与奥秘。在众多物理学巨匠中，张朝阳先生以其独特的视角和深入浅出的讲解，为我们打开了一扇通往物理世界奇妙殿堂的大门。他的《物理课》系列，不仅传授知识，更点燃了无数人对科学的好奇心与探索欲。</p>
+                    <p>本篇解读，我们将聚焦于张朝阳物理课中关于<strong class="highlight">狭义相对论</strong>的精彩篇章。这部分内容，无疑是近代物理学中最具颠覆性和革命性的理论之一。它彻底改变了我们对<span class="concept">时间</span>、<span class="concept">空间</span>、<span class="concept">质量</span>和<span class="concept">能量</span>的传统认知。准备好了吗？让我们跟随张朝阳老师的思路，一同踏上这场轻松而又深刻的物理探索之旅，揭开狭义相对论的神秘面纱，感受其逻辑之美与思想之深邃！</p>
+                </section>
+
+                <section id="lorentz-transformation">
+                    <h2>第一章：时空的相对性——洛伦兹变换的诞生</h2>
+                    <p>十九世纪末，物理学的天空并非一片晴朗。经典的牛顿力学和伽利略变换在宏观低速世界取得了巨大成功，但面对新兴的电磁理论——麦克斯韦方程组，却显得力不从心。一个核心的矛盾浮出水面：麦克斯韦方程组预言光速在真空中是一个常数（c），而根据伽利略变换，速度是相对的，这意味着在不同的惯性参考系中测量的光速应该不同。这可如何是好？</p>
+                    <p>年轻的爱因斯坦横空出世，他以超凡的洞察力提出了两个基本假设：<strong class="highlight">相对性原理</strong>（所有惯性系中物理定律形式相同）和<strong class="highlight">光速不变原理</strong>（真空中的光速对所有惯性观察者都一样）。为了调和这两个看似矛盾的原理，爱因斯坦大胆地指出，问题不在麦克斯韦方程，也不在相对性原理，而在于我们对时间和空间的固有观念——绝对时空观必须被打破！时间和空间不再是独立不变的背景舞台，而是与观察者的运动状态相关的“弹性”量。</p>
+                    <p>基于这两个基本假设，一套新的时空坐标变换关系——<span class="concept">洛伦兹变换</span>应运而生。它取代了伽利略变换，完美地解释了光速不变的实验事实。假设有两个惯性参考系S和S'，S'系相对于S系以速度u沿x轴正方向运动。在t=t'=0时，两坐标系原点重合。那么，S系中的时空坐标(t, x, y, z)与S'系中的时空坐标(t', x', y', z')之间的变换关系如下（为简化，仅列出x和t的变换）：</p>
+                    <p class="formula">
+                        x' = γ * (x - u*t)<br>
+                        t' = γ * (t - u*x/c²)<br>
+                        其中，γ (洛伦兹因子) = 1 / √(1 - (u/c)²)
+                    </p>
+                    <p>这个γ因子非常关键，当速度u远小于光速c时，γ近似为1，洛伦兹变换就退化为伽利略变换，这解释了为何在日常低速情况下经典力学依然适用。但当u接近光速时，γ会显著大于1，相对论效应就变得不可忽略。</p>
+                    
+                    <h3>洛伦兹变换的奇妙效应</h3>
+                    <p><strong class="highlight">时间膨胀（钟慢效应）</strong>：运动的时钟会变慢。也就是说，如果你观察一个相对于你高速运动的时钟，你会发现它的走时比你自己的静止时钟要慢。这不是时钟本身的机械故障，而是时间本身的相对性体现。宇航员在高速飞船中度过的时间，确实比地球上的人要少。全球定位系统（GPS）的卫星高速运动，其星载原子钟就需要根据时间膨胀和引力效应进行精确校准，否则定位误差会迅速累积到无法接受的程度。</p>
+                    <p><strong class="highlight">长度收缩（尺缩效应）</strong>：运动的物体在其运动方向上的长度会缩短。一把高速飞行的尺子，在飞行方向上测量出来的长度，会比它静止时测量的长度要短。注意，这只是在运动方向上的收缩，垂直于运动方向的长度不变。</p>
+                    <p><strong class="highlight">同时的相对性</strong>：在一个参考系中看来同时发生的两个空间上不同地点的事件，在另一个相对于它运动的参考系中看来，可能并不同时发生。这意味着，“同时”不再是一个绝对的概念，它也依赖于观察者的运动状态。</p>
+
+                    <div id="lorentzAnimationContainer" class="animation-container"></div>
+                    <div class="controls">
+                        <button id="lorentzPlayPause">演示时间膨胀/长度收缩</button>
+                        <label for="lorentzSpeed">飞船速度 (u/c): <span id="lorentzSpeedValue">0.5</span></label>
+                        <input type="range" id="lorentzSpeed" min="0.1" max="0.99" value="0.5" step="0.01">
+                    </div>
+                    <p>动画演示：观察一艘高速飞行的飞船。飞船内部有一个光子钟（光上下反射计时）和一个标尺。当地面观察者（S系）观察高速飞行（以u/c的速度）的飞船（S'系）时，会看到飞船上的时钟变慢，飞船在运动方向上的长度变短。你可以通过滑块调整飞船的速度，观察效应的变化。</p>
+                </section>
+
+                <section id="velocity-addition">
+                    <h2>第二章：速度的重新定义——相对论速度合成</h2>
+                    <p>在经典物理中，速度的合成遵循简单的伽利略法则。比如，一辆火车以速度u前进，你在火车上以相对于火车的速度v'向前扔一个球，那么地面上的人看到球的速度就是u + v'。这个法则在日常生活中非常直观且有效。</p>
+                    <p>然而，当物体的速度接近光速时，伽利略速度合成法则就失效了。如果它依然成立，那么在高速飞船（速度接近c）上向前发射一束光（相对于飞船速度为c），地面观察者看到的光速就会超过c，这与光速不变原理相矛盾。因此，我们需要一套新的速度合成法则，这同样可以从洛伦兹变换推导出来。</p>
+                    <p>假设S'系相对于S系以速度u沿x轴正方向运动。一个物体在S'系中沿x'轴的速度为v_x'，那么它在S系中沿x轴的速度v_x由以下公式给出：</p>
+                    <p class="formula">
+                        v_x = (v_x' + u) / (1 + u*v_x'/c²)
+                    </p>
+                    <p>如果物体在S系中的速度是v_x，那么在S'系中测得的速度v_x'则是：</p>
+                    <p class="formula">
+                        v_x' = (v_x - u) / (1 - u*v_x/c²)
+                    </p>
+                    <p>这个公式最奇妙的一点在于，无论u和v_x'（或v_x）多大，只要它们都不超过c，那么合成后的速度v_x（或v_x'）也永远不会超过c。例如，如果u=0.8c，v_x'=0.7c，根据经典法则，v_x将是1.5c，超了光速。但根据相对论公式，v_x = (0.7c + 0.8c) / (1 + 0.8c*0.7c/c²) = 1.5c / (1 + 0.56) = 1.5c / 1.56 ≈ 0.96c，仍然小于光速！如果v_x' = c (比如在飞船上发射光)，那么v_x = (c + u) / (1 + uc/c²) = (c + u) / ((c+u)/c) = c。这完美地保证了<strong class="highlight">光速在任何惯性参考系中都是c</strong>，它是宇宙中的终极速度极限。</p>
+
+                    <div id="velocityAnimationContainer" class="animation-container"></div>
+                    <div class="controls">
+                        <button id="velocityStart">开始演示速度合成</button>
+                        <label for="trainSpeed">火车速度 (u/c): <span id="trainSpeedValue">0.5</span></label>
+                        <input type="range" id="trainSpeed" min="0.1" max="0.9" value="0.5" step="0.05">
+                        <label for="ballSpeedTrain">球相对火车速度 (v'/c): <span id="ballSpeedTrainValue">0.5</span></label>
+                        <input type="range" id="ballSpeedTrain" min="0.1" max="0.9" value="0.5" step="0.05">
+                    </div>
+                    <p>动画演示：一列火车（S'系）在轨道上高速行驶，车上的人向前抛出一个球。地面观察者（S系）测量球的速度。动画将同时显示经典速度合成结果和相对论速度合成结果，并突出显示相对论结果永远不会超过光速c。你可以调整火车速度和球相对于火车的速度。</p>
+                </section>
+
+                <section id="mass-velocity">
+                    <h2>第三章：质量与速度的共舞——质速关系</h2>
+                    <p>在牛顿的经典力学体系中，物体的质量是一个不变量，它不随物体的运动状态而改变。无论物体是静止还是高速运动，其质量都是恒定的。然而，狭义相对论再次颠覆了这一传统观念。</p>
+                    <p>为了在相对论框架下保持动量守恒定律的普适性，物理学家发现必须修正质量的概念。物体的质量不再是一个恒定的量，而是会随着其<strong class="highlight">速度的增加而增加</strong>。这种随速度变化的质量被称为<span class="concept">相对论质量</span>（或动质量），而物体静止时的质量则被称为<span class="concept">静止质量</span>（m₀）。它们之间的关系如下：</p>
+                    <p class="formula">
+                        m = m₀ / √(1 - (v/c)²)
+                    </p>
+                    <p>其中，m是物体以速度v运动时的相对论质量，m₀是其静止质量。从这个公式可以看出：</p>
+                    <ul>
+                        <li>当v=0时，m = m₀，相对论质量等于静止质量。</li>
+                        <li>当v很小时 (v << c)，分母近似为1，m ≈ m₀，这与经典情况相符。</li>
+                        <li>当v增大时，分母 √(1 - (v/c)²) 减小，因此m增大。</li>
+                        <li>当v趋近于光速c时，分母趋近于0，相对论质量m趋向于<strong class="highlight">无穷大</strong>！</li>
+                    </ul>
+                    <p>质速关系的物理意义深远。它意味着，要将一个有静止质量的物体加速到光速，需要无穷大的能量，因为其质量会变得无穷大，加速也就越来越困难。这从另一个角度印证了<strong class="highlight">任何有静止质量的物体都无法达到光速</strong>，光速是无法逾越的屏障。</p>
+                    <p>张朝阳老师在课程中通常会通过一个精巧的思想实验（例如两个小球的弹性碰撞）并结合动量守恒定律，来逻辑清晰地推导出这个质速关系。这个推导过程展示了物理学如何在新的观测事实和基本原理（如动量守恒）的约束下，对旧有概念进行修正和发展的。</p>
+
+                    <div id="massVelocityAnimationContainer" class="animation-container"></div>
+                    <div class="controls">
+                        <label for="objectVelocity">物体速度 (v/c): <span id="objectVelocityValue">0</span></label>
+                        <input type="range" id="objectVelocity" min="0" max="0.999" value="0" step="0.001">
+                        <p>相对论质量 (m/m₀): <span id="relativisticMassValue">1.000</span></p>
+                    </div>
+                    <p>动画演示：一个物体（例如宇宙飞船）的速度从0开始增加。屏幕上会实时显示其速度（以光速c的百分比表示）和其相对论质量（以静止质量m₀的倍数表示）。同时，会动态绘制出相对论质量随速度变化的曲线图。你可以通过滑块控制物体的速度，直观感受质量是如何随速度急剧增加的。</p>
+                </section>
+
+                <section id="mass-energy">
+                    <h2>第四章：震惊世界的公式——E=mc²</h2>
+                    <p>在质速关系的基础上，爱因斯坦进一步推导出了物理学乃至人类历史上最具影响力的公式之一——<span class="concept">质能方程</span>：</p>
+                    <p class="formula">
+                        E = mc²
+                    </p>
+                    <p>这里的E是物体的总能量，m是其相对论质量，c是光速。这个简洁的公式蕴含着极其深刻的物理意义：</p>
+                    <ol>
+                        <li><strong class="highlight">质量和能量是等价的</strong>：质量和能量是物质同一属性的两种不同表现形式。质量可以看作是“压缩”起来的能量，而能量则是“释放”出来的质量。它们之间可以通过c²这个巨大的转换因子相互转化。</li>
+                        <li><strong class="highlight">物质内部蕴藏巨大能量</strong>：由于光速c是一个非常大的数值 (约 3 × 10⁸ m/s)，c²就更是一个天文数字。这意味着即使是很小的一点点质量，如果完全转化为能量，也将释放出惊人的能量。</li>
+                        <li><strong class="highlight">静止能量</strong>：当物体静止时 (v=0)，其质量为静止质量m₀，此时它仍然具有能量，称为静止能量 E₀ = m₀c²。这是物体固有的一种内部能量，与我们通常所说的动能、势能是不同层面的能量。</li>
+                    </ol>
+                    <p>质能方程的提出，彻底改变了人们对物质和能量的看法。它不仅为原子能的利用（如核裂变和核聚变）奠定了理论基础，也深刻影响了粒子物理学、天体物理学和宇宙学等多个领域。</p>
+                    <ul>
+                        <li><strong class="highlight">核反应</strong>：在核裂变（如原子弹、核电站）或核聚变（如氢弹、太阳发光）过程中，反应前后体系的总静止质量会发生微小的变化（质量亏损 Δm）。这部分亏损的质量就按照 E = (Δm)c² 的关系转化为了巨大的能量释放出来。</li>
+                        <li><strong class="highlight">太阳的能量来源</strong>：太阳之所以能够持续数十亿年发光发热，正是其内部进行的氢核聚变成氦核的反应，将部分质量转化为了辐射能。</li>
+                        <li><strong class="highlight">粒子物理</strong>：在粒子加速器中，高能粒子碰撞可以产生新的粒子，这本质上是能量转化为质量的过程。反之，正反物质湮灭时，它们的质量会完全转化为能量（通常是光子）。</li>
+                    </ul>
+                    <p>张朝阳老师在讲解这部分时，会从质速关系出发，结合力做功改变能量的定义 (dE = Fdx = vdp)，一步步推导出质能方程，让我们领略到物理学逻辑的严密与优美。</p>
+
+                    <div id="emc2AnimationContainer" class="animation-container"></div>
+                    <div class="controls">
+                        <button id="emc2Convert">模拟质量转化为能量</button>
+                        <label for="massAmount">初始质量 (单位): <span id="massAmountValue">1</span></label>
+                        <input type="range" id="massAmount" min="0.1" max="2" value="1" step="0.1">
+                    </div>
+                    <p>动画演示：屏幕上显示一定量的“质量”（用一个发光的球体表示）。点击“模拟转化”按钮后，部分或全部“质量”会消失，同时爆发出强烈的“能量”（用扩散的光芒和粒子效果表示）。能量的大小与消失的质量成正比。你可以调整初始质量的大小，观察转化效果。</p>
+                </section>
+
+                <section id="speed-of-light-limit">
+                    <h2>第五章：“超光速”的迷思与宇宙的膨胀</h2>
+                    <p>狭义相对论一个广为人知的结论是“任何有质量的物体都不能超光速”。然而，当我们观察宇宙时，会遇到一些看似与此矛盾的现象，比如<strong class="highlight">宇宙的膨胀</strong>。根据哈勃定律，远方的星系正在以极高的速度离我们远去，对于足够遥远的星系，其退行速度甚至可以超过光速c。这是否意味着相对论错了呢？</p>
+                    <p>答案是否定的。这里需要理解“超光速”的精确含义。狭义相对论的限制是针对<strong class="highlight">物体在局部惯性参考系中的运动速度</strong>而言的。也就是说，在一个给定的空间区域内，任何信息或物质的传播速度都不能超过光速c。这是闵可夫斯基时空结构决定的因果律的体现。</p>
+                    <p>而宇宙的膨胀，并非星系本身在空间中以超光速“飞行”，而是<span class="concept">空间本身在膨胀</span>。想象一个正在吹大的气球表面，气球上的两个点（代表星系）之间的距离会越来越大。点本身在气球表面可能只移动了很小距离，但由于气球皮的拉伸，它们之间的“退行速度”可以非常快，甚至超过光在气球皮上传播的速度。这种由于空间膨胀导致的超光速退行，并不传递信息，也不违背狭义相对论的局部光速限制。</p>
+                    <p>因此，当我们说“一切物体不能超光速”时，更严谨的表述是：在闵可夫斯基时空中，任何携带能量和信息的物理实体的传播速度都不能超过真空光速c；或者说，有静止质量的质点的世界线必须是类时曲线，光子的世界线是类光曲线。</p>
+                    
+                    <div id="expansionAnimationContainer" class="animation-container"></div>
+                    <div class="controls">
+                        <button id="expansionPlayPause">开始/暂停宇宙膨胀</button>
+                    </div>
+                    <p>动画演示：模拟宇宙膨胀的二维示意图。屏幕上散布着一些“星系”（点）。当动画播放时，这些点之间的距离会随时间均匀增大，代表空间的膨胀。你会观察到，距离中心点越远的星系，其“退行”速度越快。动画可以标出某个遥远星系的退行速度，并与光速c进行对比，说明空间膨胀可以导致视在速度超光速。</p>
+                </section>
+
+                <section id="conclusion">
+                    <h2>结语：仰望星空，思辨不息</h2>
+                    <p>通过对张朝阳物理课中狭义相对论部分的解读，我们一同领略了爱因斯坦这一伟大理论的深邃与奇妙。从洛伦兹变换对时空观念的重塑，到质速关系揭示的质量可变性，再到E=mc²所阐释的质能等价，狭义相对论不仅是物理学的一座丰碑，更是人类思想史上的一次深刻革命。</p>
+                    <p>这些看似抽象的理论，实则与我们宇宙的运行规律息息相关，也为现代科技的发展（如GPS、核能、粒子物理研究）提供了坚实的理论基石。张朝阳先生用他清晰的逻辑和生动的讲解，将这些复杂的概念变得易于理解，激发了我们对物理世界的好奇与热情。</p>
+                    <p>科学的探索永无止境。狭义相对论之后，还有广义相对论、量子力学等更为广阔和深奥的领域等待我们去认知。愿我们都能保持这份对未知的好奇，不断学习，不断思辨，在探索宇宙奥秘的道路上，收获更多的智慧与惊喜。正如张朝阳老师所倡导的，通过学习物理，我们可以“研算我们存在的世界，获得本质的恍然大悟”。</p>
+                </section>
+            </article>
+        </main>
+        <footer>
+            <p>&copy; 2025 狭义相对论解读。灵感与核心内容源自张朝阳先生的物理课程。</p>
+            <p>本页面仅为学习交流目的，所有动画均为概念性演示。</p>
+        </footer>
+    </div>
+
+    <script>
+        // --- 全局背景星空动画 ---
+        let sketchBackground = function(p) {
+            let stars = [];
+            const numStars = 200;
+
+            p.setup = function() {
+                let canvas = p.createCanvas(p.windowWidth, p.windowHeight);
+                canvas.parent('backgroundCanvasContainer');
+                for (let i = 0; i < numStars; i++) {
+                    stars.push({
+                        x: p.random(p.width),
+                        y: p.random(p.height),
+                        size: p.random(0.5, 2.5),
+                        alpha: p.random(50, 150)
+                    });
+                }
+                p.noStroke();
+            };
+
+            p.draw = function() {
+                p.clear(); 
+                for (let star of stars) {
+                    p.fill(200, 220, 255, star.alpha * (p.sin(p.frameCount * 0.01 + star.x * 0.1) * 0.3 + 0.7) ); // Twinkling effect
+                    p.ellipse(star.x, star.y, star.size, star.size);
+                    star.y += star.size * 0.02; // Slow drift
+                    if (star.y > p.height) {
+                        star.y = 0;
+                        star.x = p.random(p.width);
+                    }
+                }
+            };
+
+            p.windowResized = function() {
+                p.resizeCanvas(p.windowWidth, p.windowHeight);
+                 stars = []; // Reinitialize stars on resize
+                for (let i = 0; i < numStars; i++) {
+                    stars.push({
+                        x: p.random(p.width),
+                        y: p.random(p.height),
+                        size: p.random(0.5, 2.5),
+                        alpha: p.random(50, 150)
+                    });
+                }
+            };
+        };
+        new p5(sketchBackground);
+
+        // --- 动画1: 洛伦兹变换 (时间膨胀与长度收缩) ---
+        let sketchLorentz = function(p) {
+            let shipSpeed = 0.5; // u/c
+            let playing = false;
+            let shipLength = 100;
+            let shipHeight = 30;
+            let lightX, lightY, lightVY, lightTravelled;
+            let clockTimeSPrime = 0; // Time in ship's frame S'
+            let clockTimeS = 0; // Time observed in S frame
+
+            p.setup = function() {
+                let container = p.select('#lorentzAnimationContainer');
+                let canvas = p.createCanvas(container.width, container.height);
+                canvas.parent('lorentzAnimationContainer');
+                p.select('#lorentzPlayPause').mousePressed(() => { playing = !playing; if(playing) resetAnimation(); });
+                let speedSlider = p.select('#lorentzSpeed');
+                speedSlider.input(() => {
+                    shipSpeed = parseFloat(speedSlider.value());
+                    p.select('#lorentzSpeedValue').html(shipSpeed.toFixed(2));
+                    if(playing) resetAnimation(); else p.redraw();
+                });
+                shipSpeed = parseFloat(speedSlider.value());
+                p.select('#lorentzSpeedValue').html(shipSpeed.toFixed(2));
+                resetAnimation();
+                p.noLoop(); // Redraw on demand or when playing
+            };
+            
+            function resetAnimation(){
+                lightX = p.width / 2;
+                lightY = p.height / 2 - shipHeight / 2 + 5;
+                lightVY = 2; // Speed of light in animation units
+                lightTravelled = 0;
+                clockTimeSPrime = 0;
+                clockTimeS = 0;
+                p.redraw();
+            }
+
+            p.draw = function() {
+                p.background(1, 4, 9); // Dark background for canvas
+                let gamma = 1 / p.sqrt(1 - shipSpeed * shipSpeed);
+                let contractedLength = shipLength / gamma;
+
+                // Draw Ship (S' frame perspective - for its own clock and ruler)
+                p.push();
+                p.translate(p.width / 2, p.height / 2);
+                p.fill(100, 150, 200, 150);
+                p.stroke(180, 220, 255);
+                p.rectMode(p.CENTER);
+                p.rect(0, 0, contractedLength, shipHeight); // Observed length
+                
+                // Light clock inside the ship
+                p.fill(255, 255, 0); // Light particle
+                p.noStroke();
+                p.ellipse(0, lightY - p.height/2, 5, 5); // Light position relative to ship center
+
+                // Ruler inside ship (shows its proper length if we were in S')
+                p.stroke(255);
+                p.line(-shipLength/2, shipHeight/2 + 5, shipLength/2, shipHeight/2 + 5);
+                p.fill(255);
+                p.textSize(10);
+                p.textAlign(p.CENTER);
+                p.text(`飞船固有长度: ${shipLength.toFixed(0)}`, 0, shipHeight/2 + 18);
+                p.pop();
+
+                // Text for observer in S frame
+                p.fill(200, 220, 255);
+                p.textSize(12);
+                p.textAlign(p.LEFT);
+                p.text(`地面观察者 (S系):`, 10, 20);
+                p.text(`飞船观测长度: ${contractedLength.toFixed(1)} (尺缩效应)`, 10, 40);
+                p.text(`飞船表观时间 (S系): ${clockTimeS.toFixed(1)}`, 10, 60);
+                p.text(`飞船固有时间 (S'系): ${clockTimeSPrime.toFixed(1)} (钟慢效应)`, 10, 80);
+                p.text(`γ = ${gamma.toFixed(2)}`, 10, 100);
+
+
+                if (playing) {
+                    p.loop(); // Start drawing loop
+                    lightY += lightVY;
+                    lightTravelled += p.abs(lightVY);
+                    
+                    if (lightY > p.height/2 + shipHeight/2 - 5 || lightY < p.height/2 - shipHeight/2 + 5) {
+                        lightVY *= -1; // Bounce
+                        if(lightVY > 0) { // Completed one tick (down and up)
+                           clockTimeSPrime += (shipHeight-10) / p.abs(lightVY) * 2 ; // Time for light to travel up and down in S'
+                        }
+                    }
+                    // For S frame, time passes normally, but events in S' are dilated
+                    clockTimeS = clockTimeSPrime * gamma; 
+
+                } else {
+                    p.noLoop(); // Stop drawing loop
+                    p.fill(255,255,255,150);
+                    p.textAlign(p.CENTER, p.CENTER);
+                    p.textSize(18);
+                    p.text("点击按钮开始演示", p.width/2, p.height - 30);
+                }
+            };
+             // Ensure first frame is drawn
+            p.setup = function() { // Overwrite setup to call redraw
+                let container = p.select('#lorentzAnimationContainer');
+                let canvas = p.createCanvas(container.width, container.height);
+                canvas.parent('lorentzAnimationContainer');
+                p.select('#lorentzPlayPause').mousePressed(() => { playing = !playing; if(playing) {resetAnimation(); p.loop();} else p.noLoop(); });
+                let speedSlider = p.select('#lorentzSpeed');
+                speedSlider.input(() => {
+                    shipSpeed = parseFloat(speedSlider.value());
+                    p.select('#lorentzSpeedValue').html(shipSpeed.toFixed(2));
+                    if(playing) {resetAnimation(); p.loop();} else {resetAnimation(); p.redraw();}
+                });
+                shipSpeed = parseFloat(speedSlider.value());
+                p.select('#lorentzSpeedValue').html(shipSpeed.toFixed(2));
+                resetAnimation();
+                p.noLoop();
+                p.redraw(); // Draw the initial state
+            };
+        };
+        new p5(sketchLorentz);
+
+        // --- 动画2: 相对论速度合成 ---
+        let sketchVelocity = function(p) {
+            let u = 0.5; // Train speed (u/c)
+            let v_prime = 0.5; // Ball speed relative to train (v'/c)
+            let trainX = 0;
+            let ballX_classical = 0;
+            let ballX_relativistic = 0;
+            let playing = false;
+            let time = 0;
+            const scale = 250; // Scale factor for distances
+
+            p.setup = function() {
+                let container = p.select('#velocityAnimationContainer');
+                let canvas = p.createCanvas(container.width, container.height);
+                canvas.parent('velocityAnimationContainer');
+                
+                p.select('#velocityStart').mousePressed(() => {
+                    playing = true;
+                    trainX = 0;
+                    ballX_classical = 0;
+                    ballX_relativistic = 0;
+                    time = 0;
+                    p.loop();
+                });
+
+                let trainSpeedSlider = p.select('#trainSpeed');
+                trainSpeedSlider.input(() => {
+                    u = parseFloat(trainSpeedSlider.value());
+                    p.select('#trainSpeedValue').html(u.toFixed(2));
+                    if(!playing) p.redraw();
+                });
+                u = parseFloat(trainSpeedSlider.value());
+                p.select('#trainSpeedValue').html(u.toFixed(2));
+
+                let ballSpeedSlider = p.select('#ballSpeedTrain');
+                ballSpeedSlider.input(() => {
+                    v_prime = parseFloat(ballSpeedSlider.value());
+                    p.select('#ballSpeedTrainValue').html(v_prime.toFixed(2));
+                     if(!playing) p.redraw();
+                });
+                v_prime = parseFloat(ballSpeedSlider.value());
+                p.select('#ballSpeedTrainValue').html(v_prime.toFixed(2));
+                p.noLoop();
+                p.redraw(); // Initial draw
+            };
+
+            p.draw = function() {
+                p.background(1, 4, 9);
+                p.translate(20, p.height / 2); // Shift origin for better view
+
+                // Draw track
+                p.stroke(100);
+                p.line(0, 30, p.width - 40, 30);
+
+                // Calculate velocities in S frame
+                let v_classical = u + v_prime; // Classical addition (can exceed 1 if u,v_prime are fractions of c)
+                let v_relativistic = (u + v_prime) / (1 + u * v_prime); // Relativistic addition
+
+                // Draw Train
+                p.fill(100, 150, 200);
+                p.rect(trainX * scale, -20, 60, 40); // Train position
+                p.fill(255);
+                p.textSize(10);
+                p.text("火车", trainX*scale + 5, 0);
+
+                // Draw Balls
+                p.fill(255, 100, 100); // Classical ball
+                p.ellipse(ballX_classical * scale, 15, 10, 10);
+                
+                p.fill(100, 255, 100); // Relativistic ball
+                p.ellipse(ballX_relativistic * scale, 15, 10, 10);
+
+                // Display info
+                p.fill(200, 220, 255);
+                p.textSize(12);
+                p.textAlign(p.LEFT);
+                p.text(`地面观测:`, 5, -p.height/2 + 20);
+                p.text(`经典合成速度 (v_c/c): ${v_classical.toFixed(3)}`, 5, -p.height/2 + 40);
+                p.text(`相对论合成速度 (v_r/c): ${v_relativistic.toFixed(3)}`, 5, -p.height/2 + 60);
+                 p.fill(255,100,100);
+                p.text(`红色: 经典球`, 5, -p.height/2 + 80);
+                p.fill(100,255,100);
+                p.text(`绿色: 相对论球`, 5, -p.height/2 + 100);
+
+
+                if (playing) {
+                    time += 0.02; // Animation time step
+                    trainX += u * 0.02; // Train moves
+                    // Ball's position relative to ground
+                    ballX_classical = v_classical * time ; 
+                    ballX_relativistic = v_relativistic * time;
+
+                    if (trainX * scale > p.width - 80 || ballX_relativistic * scale > p.width - 80) {
+                        playing = false;
+                        p.noLoop();
+                    }
+                } else if (time === 0) { // Initial state or after reset
+                    p.fill(255,255,255,150);
+                    p.textAlign(p.CENTER);
+                    p.textSize(18);
+                    p.text("设置参数后点击开始", (p.width-40)/2, p.height/2 - 30);
+                }
+            };
+        };
+        new p5(sketchVelocity);
+
+        // --- 动画3: 质速关系 ---
+        let sketchMassVelocity = function(p) {
+            let v_c = 0; // velocity / c
+            let m0 = 1; // rest mass (arbitrary unit)
+
+            p.setup = function() {
+                let container = p.select('#massVelocityAnimationContainer');
+                let canvas = p.createCanvas(container.width, container.height);
+                canvas.parent('massVelocityAnimationContainer');
+                
+                let velocitySlider = p.select('#objectVelocity');
+                velocitySlider.input(() => {
+                    v_c = parseFloat(velocitySlider.value());
+                    p.select('#objectVelocityValue').html(v_c.toFixed(3));
+                    let relativisticMass;
+                    if (v_c >= 1) { // Avoid division by zero or sqrt of negative
+                        relativisticMass = Infinity;
+                    } else {
+                        relativisticMass = m0 / p.sqrt(1 - v_c * v_c);
+                    }
+                    p.select('#relativisticMassValue').html(relativisticMass.toFixed(3));
+                    p.redraw(); // Redraw graph
+                });
+                p.noLoop();
+                p.redraw(); // Initial draw
+            };
+
+            p.draw = function() {
+                p.background(1, 4, 9);
+                
+                // Draw graph axes
+                let padding = 40;
+                let graphWidth = p.width - 2 * padding;
+                let graphHeight = p.height - 2 * padding;
+
+                p.stroke(150);
+                p.line(padding, padding, padding, p.height - padding); // Y-axis (mass)
+                p.line(padding, p.height - padding, p.width - padding, p.height - padding); // X-axis (v/c)
+
+                // Labels
+                p.fill(200, 220, 255);
+                p.noStroke();
+                p.textAlign(p.CENTER, p.CENTER);
+                p.text("m/m₀", padding / 2, padding + graphHeight / 2);
+                p.text("v/c", padding + graphWidth / 2, p.height - padding / 2);
+                p.text("0", padding, p.height - padding + 10);
+                p.text("1", padding + graphWidth, p.height - padding + 10);
+
+                // Draw the curve m = m0 / sqrt(1 - (v/c)^2)
+                p.stroke(100, 255, 100); // Green curve
+                p.noFill();
+                p.beginShape();
+                let maxMassDisplay = 10; // Cap displayed mass ratio for visual clarity
+                for (let i = 0; i <= graphWidth; i++) {
+                    let v_ratio = i / graphWidth; // v/c from 0 to 1
+                    if (v_ratio >= 0.9999) v_ratio = 0.9999; // Avoid infinity for plotting
+                    let mass_ratio = 1 / p.sqrt(1 - v_ratio * v_ratio);
+                    let x = padding + i;
+                    let y = p.height - padding - p.min(mass_ratio -1, maxMassDisplay-1) * (graphHeight / (maxMassDisplay-1)); // Scale mass
+                    if (mass_ratio > m0) { // only plot if mass > m0
+                         p.vertex(x, y);
+                    } else if (i===0) { // ensure start of curve is plotted at m0
+                        p.vertex(padding, p.height - padding);
+                    }
+                }
+                p.endShape();
+
+                // Mark current point from slider
+                let current_v_pixel = padding + v_c * graphWidth;
+                let current_m_ratio;
+                 if (v_c >= 1) { current_m_ratio = Infinity;} 
+                 else { current_m_ratio = 1 / p.sqrt(1 - v_c * v_c); }
+
+                let current_m_pixel = p.height - padding - p.min(current_m_ratio - 1, maxMassDisplay - 1) * (graphHeight / (maxMassDisplay - 1));
+                if(current_m_ratio <= maxMassDisplay) {
+                    p.fill(255, 100, 100); // Red dot
+                    p.ellipse(current_v_pixel, current_m_pixel, 8, 8);
+                }
+
+                // Draw m0 line
+                p.stroke(255,255,0,100); // Yellow dashed line for m0
+                p.drawingContext.setLineDash([5, 5]);
+                p.line(padding, p.height - padding, p.width - padding, p.height - padding);
+                p.drawingContext.setLineDash([]);
+                p.fill(255,255,0);
+                p.text("m₀", padding -15, p.height - padding);
+
+            };
+        };
+        new p5(sketchMassVelocity);
+
+        // --- 动画4: E=mc² ---
+        let sketchEmc2 = function(p) {
+            let massAmount = 1;
+            let energyParticles = [];
+            let converting = false;
+            let conversionProgress = 0;
+            let sphereSize;
+
+            p.setup = function() {
+                let container = p.select('#emc2AnimationContainer');
+                let canvas = p.createCanvas(container.width, container.height);
+                canvas.parent('emc2AnimationContainer');
+                sphereSize = 50 * massAmount;
+
+                p.select('#emc2Convert').mousePressed(() => {
+                    converting = true;
+                    conversionProgress = 0;
+                    energyParticles = [];
+                    p.loop();
+                });
+                let massSlider = p.select('#massAmount');
+                massSlider.input(() => {
+                    massAmount = parseFloat(massSlider.value());
+                    p.select('#massAmountValue').html(massAmount.toFixed(1));
+                    sphereSize = 50 * massAmount;
+                    if(!converting) p.redraw();
+                });
+                massAmount = parseFloat(massSlider.value());
+                p.select('#massAmountValue').html(massAmount.toFixed(1));
+                sphereSize = 50 * massAmount;
+                p.noLoop();
+                p.redraw(); // Initial draw
+            };
+
+            p.draw = function() {
+                p.background(1, 4, 9);
+                let centerX = p.width / 2;
+                let centerY = p.height / 2;
+
+                if (converting) {
+                    conversionProgress += 0.01;
+                    let currentMass = p.max(0, massAmount * (1 - conversionProgress));
+                    sphereSize = 50 * currentMass;
+
+                    // Emit energy particles
+                    if (conversionProgress < 1 && p.frameCount % 2 === 0) {
+                        let numEmit = p.floor(massAmount * 5 * conversionProgress); // More particles as conversion progresses
+                        for (let i = 0; i < numEmit; i++) {
+                            let angle = p.random(p.TWO_PI);
+                            let speed = p.random(2, 5 + massAmount * 5 * conversionProgress);
+                            energyParticles.push({
+                                x: centerX,
+                                y: centerY,
+                                vx: p.cos(angle) * speed,
+                                vy: p.sin(angle) * speed,
+                                life: p.random(50, 100 + massAmount * 30),
+                                color: p.color(p.random(200, 255), p.random(100, 220), 0, 200)
+                            });
+                        }
+                    }
+                    if (conversionProgress >= 1.5) { // Allow particles to travel a bit after mass is gone
+                        converting = false;
+                        p.noLoop();
+                    }
+                }
+                
+                // Draw remaining mass sphere
+                if (sphereSize > 0.1) {
+                    p.noStroke();
+                    let baseCol = p.color(80, 150, 255);
+                    for(let r = sphereSize; r > 0; r -=3 ){
+                        p.fill(p.red(baseCol), p.green(baseCol), p.blue(baseCol), p.map(r, 0, sphereSize, 0, 100));
+                        p.ellipse(centerX, centerY, r, r);
+                    }
+                    p.fill(220, 230, 255);
+                     p.ellipse(centerX, centerY, sphereSize*0.8, sphereSize*0.8);
+                }
+
+
+                // Update and draw energy particles
+                for (let i = energyParticles.length - 1; i >= 0; i--) {
+                    let particle = energyParticles[i];
+                    particle.x += particle.vx;
+                    particle.y += particle.vy;
+                    particle.life -= 2;
+                    p.fill(p.red(particle.color), p.green(particle.color), p.blue(particle.color), particle.life);
+                    p.ellipse(particle.x, particle.y, p.random(3,8), p.random(3,8));
+                    if (particle.life <= 0) {
+                        energyParticles.splice(i, 1);
+                    }
+                }
+                if (!converting && energyParticles.length === 0 && conversionProgress === 0) {
+                     p.fill(255,255,255,100);
+                     p.textAlign(p.CENTER, p.CENTER);
+                     p.textSize(16);
+                     p.text("点击按钮模拟质能转化", centerX, centerY + sphereSize/2 + 30);
+                }
+            };
+        };
+        new p5(sketchEmc2);
+
+        // --- 动画5: 宇宙膨胀 ---
+        let sketchExpansion = function(p) {
+            let galaxies = [];
+            const numGalaxies = 50;
+            let expansionFactor = 1.0;
+            let playing = false;
+            let hubbleConstantAnim = 0.005; // Animation speed for expansion
+
+            p.setup = function() {
+                let container = p.select('#expansionAnimationContainer');
+                let canvas = p.createCanvas(container.width, container.height);
+                canvas.parent('expansionAnimationContainer');
+                
+                for (let i = 0; i < numGalaxies; i++) {
+                    galaxies.push({
+                        initialX: p.random(-p.width * 1.5, p.width * 1.5), // Start further out for more dramatic effect
+                        initialY: p.random(-p.height * 1.5, p.height * 1.5),
+                        size: p.random(2, 5),
+                        color: p.color(p.random(150,255), p.random(150,255), p.random(200,255), p.random(150,250))
+                    });
+                }
+                p.select('#expansionPlayPause').mousePressed(() => {
+                    playing = !playing;
+                    if (playing) {
+                        p.loop();
+                    } else {
+                        p.noLoop();
+                    }
+                });
+                p.noLoop();
+                p.redraw(); // Initial draw
+            };
+
+            p.draw = function() {
+                p.background(1, 4, 9);
+                let centerX = p.width / 2;
+                let centerY = p.height / 2;
+
+                // Draw central observer point (optional)
+                p.fill(255, 255, 0);
+                p.ellipse(centerX, centerY, 8, 8);
+                p.textSize(10);
+                p.fill(255);
+                p.text("观测者", centerX + 15, centerY);
+
+
+                for (let galaxy of galaxies) {
+                    // Current position based on expansion
+                    let currentX = centerX + galaxy.initialX * expansionFactor;
+                    let currentY = centerY + galaxy.initialY * expansionFactor;
+                    
+                    p.fill(galaxy.color);
+                    p.noStroke();
+                    p.ellipse(currentX, currentY, galaxy.size * p.sqrt(expansionFactor), galaxy.size * p.sqrt(expansionFactor)); // Galaxies can appear to grow slightly
+
+                    // Optional: Show velocity vector for a few galaxies
+                    if (p.dist(centerX, centerY, currentX, currentY) > 10 && galaxy.initialX % 10 < 2) { // Pick a few
+                        let vX = galaxy.initialX * hubbleConstantAnim * expansionFactor * 50; // Scaled for display
+                        let vY = galaxy.initialY * hubbleConstantAnim * expansionFactor * 50;
+                        p.stroke(255,100,100,100);
+                        p.line(currentX, currentY, currentX + vX, currentY + vY);
+                    }
+                }
+
+                if (playing) {
+                    expansionFactor += hubbleConstantAnim;
+                    if (expansionFactor > 5) { // Reset or stop after some time
+                        expansionFactor = 1.0; // Reset
+                        // playing = false; p.noLoop(); // Or stop
+                    }
+                } else if (expansionFactor === 1.0) {
+                    p.fill(255,255,255,150);
+                    p.textAlign(p.CENTER, p.CENTER);
+                    p.textSize(18);
+                    p.text("点击按钮开始模拟宇宙膨胀", centerX, p.height - 30);
+                }
+            };
+        };
+        new p5(sketchExpansion);
+
+    </script>
+</body>
+</html>

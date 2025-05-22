@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>麦克斯韦方程组与光速恒定：真空的奥秘</title>
+    <style>
+        /* 字体与整体风格 */
+        body {
+            font-family: 'Helvetica Neue', Helvetica, Arial, 'Hiragino Sans GB', 'Microsoft YaHei', 'WenQuanYi Micro Hei', sans-serif; /* 优先使用现代、清晰的字体，兼顾中英文 */
+            background-color: #1a1a2e; /* 神秘-深色背景 (深蓝紫色调) */
+            color: #e0e0e0; /* 柔和的浅色文字 */
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            line-height: 1.9; /* 增加行高以提高可读性 */
+            font-size: 16px; /* 默认为三号字体的大致网页对应大小 */
+        }
+
+        /* 内容容器 */
+        .container {
+            width: 90%;
+            max-width: 1000px; /* 限制最大宽度，优化大屏幕阅读体验 */
+            padding: 30px;
+            background-color: #2a2a3e; /* 容器背景，比body稍浅 */
+            border-radius: 12px; /* 圆角 */
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35); /* 增加立体感 */
+            margin-top: 25px;
+            margin-bottom: 25px;
+        }
+
+        /* 标题样式 */
+        h1, h2, h3 {
+            color: #a6c1ee; /* 标题颜色 (淡蓝色，更柔和) */
+            border-bottom: 2px solid #4a4a6a; /* 标题下划线 */
+            padding-bottom: 12px;
+            margin-top: 35px;
+            margin-bottom: 20px;
+        }
+        h1 {
+            font-size: 2.4em; /* 调整标题大小 */
+            text-align: center;
+        }
+        h2 {
+            font-size: 1.9em;
+        }
+        h3 {
+            font-size: 1.5em;
+            color: #b39ddb; /* H3 使用淡紫色 */
+        }
+
+        /* 段落与文本 */
+        p, li {
+            margin-bottom: 18px;
+            text-align: justify; /* 两端对齐，使文本更整齐 */
+            font-size: 1.05em;
+        }
+        ol, ul {
+            padding-left: 30px;
+        }
+
+        /* 关键文本高亮 */
+        .highlight {
+            color: #ffd54f; /* 醒目的黄色高亮 (稍调整) */
+            font-weight: bold;
+            padding: 3px 6px;
+            background-color: rgba(255, 213, 79, 0.15);
+            border-radius: 4px;
+        }
+
+        /* 公式样式 */
+        .equation {
+            margin: 25px 0;
+            padding: 18px;
+            background-color: #1e1e30; /* 公式背景，更深一些 */
+            border-left: 6px solid #a6c1ee; /* 左侧强调边框 */
+            border-radius: 6px;
+            white-space: pre-wrap; /* 保留公式中的空格和换行 */
+            font-family: 'Consolas', 'Courier New', Courier, monospace; /* 等宽字体，适合公式 */
+            font-size: 1.15em;
+            overflow-x: auto; /* 公式过长时允许水平滚动 */
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+        /* 动画容器 */
+        .animation-container {
+            position: relative;
+            width: 100%; /* 宽度自适应父容器 */
+            max-width: 720px; /* 动画区域最大宽度 */
+            margin: 35px auto; /* 居中显示 */
+            background-color: #252535; /* 动画区域背景 */
+            border: 1px solid #4a4a6a;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.25);
+        }
+
+        .animation-container canvas {
+            display: block;
+            width: 100%; /* Canvas 宽度铺满容器 */
+            background-color: #e8eaf6; /* 动画区域用更柔和的浅色背景 */
+        }
+        /* 强制为每个 canvas 定高 */
+        #conceptCanvas { height: 380px; }
+        #conflictCanvas { height: 380px; }
+        #experimentCanvas { height: 420px; }
+        #timelineCanvas { height: 320px; }
+        #resolutionCanvas { height: 380px; }
+        #vacuumPropertyCanvas {height: 380px;}
+
+
+        /* 控制按钮区域 */
+        .controls {
+            padding: 18px;
+            text-align: center;
+            background-color: #1e1e30; /* 控制区域背景 */
+        }
+
+        .controls button {
+            padding: 14px 28px;
+            margin: 10px;
+            background: linear-gradient(145deg, #8e67d1, #7755b5); /* 按钮渐变色 (紫色系) */
+            color: #ffffff;
+            border: none;
+            border-radius: 28px; /* 更圆的按钮 */
+            cursor: pointer;
+            font-size: 1.05em;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.25);
+        }
+
+        .controls button:hover {
+            background: linear-gradient(145deg, #7755b5, #6a4aa3);
+            transform: translateY(-3px) scale(1.02); /* 轻微上浮和放大效果 */
+            box-shadow: 0 6px 15px rgba(0,0,0,0.3);
+        }
+        .controls button:active {
+            transform: translateY(0px) scale(1); /* 点击时效果 */
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            body {
+                font-size: 15px;
+            }
+            .container {
+                width: 95%;
+                padding: 20px;
+            }
+            h1 { font-size: 2em; }
+            h2 { font-size: 1.7em; }
+            p, li { font-size: 1em; }
+            .controls button {
+                padding: 12px 22px;
+                font-size: 0.95em;
+            }
+            #conceptCanvas, #conflictCanvas, #vacuumPropertyCanvas, #resolutionCanvas { height: 300px; }
+            #experimentCanvas { height: 350px; }
+            #timelineCanvas { height: 280px; }
+        }
+        @media (max-width: 480px) {
+            body {
+                font-size: 14px;
+            }
+            .container {
+                padding: 15px;
+            }
+            h1 { font-size: 1.7em; }
+            h2 { font-size: 1.4em; }
+            .equation { font-size: 1em; }
+            #conceptCanvas, #conflictCanvas, #vacuumPropertyCanvas, #resolutionCanvas { height: 250px; }
+            #experimentCanvas { height: 300px; }
+            #timelineCanvas { height: 240px; }
+        }
+
+        /* 页脚 */
+        .footer {
+            text-align: center;
+            margin-top: 35px;
+            padding: 25px;
+            font-size: 0.95em;
+            color: #b0b0b0;
+        }
+        .author-info {
+            text-align:center; 
+            font-style: italic;
+            color: #c0c0c0;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>麦克斯韦方程组的<span class="highlight">光速预言</span>与世纪难题：真空的奥秘</h1>
+        <p class="author-info"><strong>作者：</strong> (张朝阳)</p>
+        <p class="author-info"><strong>机构：</strong> (网易云)</p>
+        <hr style="border-color: #4a4a6a; margin-bottom: 30px;">
+
+        <h2>引言：物理学的十字路口</h2>
+        <p>19世纪末，物理学的天空阳光普照，经典物理的大厦似乎坚不可摧。然而，两朵不期而遇的“乌云”悄然聚集，预示着一场科学的风暴即将来临。其中一朵，便是由伟大的<span class="highlight">麦克斯韦电磁理论</span>所引发的关于光速的深刻困惑。麦克斯韦方程组，作为人类智慧的结晶，以其无与伦比的优雅和简洁，统一了电学与磁学现象，并石破天惊地预言了电磁波的存在。更令人称奇的是，它精确地计算出电磁波在真空中的传播速度——光速 <span class="highlight">c</span>。然而，这个理论推导出的光速 <span class="highlight">c</span>，竟然是一个不依赖于任何参考系、不依赖于光源或观测者运动状态的<span class="highlight">绝对常数</span>！这与当时物理学界奉为圭臬的<span class="highlight">伽利略相对性原理</span>及其深入人心的速度叠加法则，形成了无法调和的尖锐矛盾，将物理学引向了一个充满挑战与机遇的十字路口。</p>
+
+        <h2>一、麦克斯韦方程组：电磁世界的统一法则</h2>
+        <p>詹姆斯·克拉克·麦克斯韦在19世纪60年代提出的这组方程，是经典电磁学的核心。它们并非凭空创造，而是对库仑、高斯、安培、法拉第等前人实验和理论成果的精炼总结与天才推广。这四个方程共同描绘了电场（E）和磁场（B）如何产生、如何相互作用，以及它们与电荷和电流的动态关系：</p>
+        <div class="equation">
+            1. ∇ ⋅ E = ρ / ε₀  (高斯电场定律：揭示电荷是电场的“源泉”，电场线始于正电荷，止于负电荷)
+        </div>
+        <div class="equation">
+            2. ∇ ⋅ B = 0       (高斯磁场定律：表明自然界不存在独立的磁单极子，磁感线总是闭合的曲线)
+        </div>
+        <div class="equation">
+            3. ∇ × E = -∂B/∂t   (法拉第电磁感应定律：阐述了变化的磁场能够激发出电场，这是发电机原理的理论基础)
+        </div>
+        <div class="equation">
+            4. ∇ × B = μ₀J + μ₀ε₀ ∂E/∂t (安培-麦克斯韦定律：说明电流可以产生磁场，而麦克斯韦创造性地引入“位移电流”项 <span class="highlight">μ₀ε₀ ∂E/∂t</span>，指出变化的电场也能产生磁场，这是预言电磁波的关键)
+        </div>
+        <p>在这些方程中，<span class="highlight">ε₀</span> 是真空介电常数，<span class="highlight">μ₀</span> 是真空磁导率，ρ 代表电荷密度，J 代表电流密度矢量。这组方程不仅解释了已知的电磁现象，更蕴含了全新的物理规律。</p>
+
+        <h2>二、从方程到预言：光速 <span class="highlight">c</span> 的诞生与真空的属性</h2>
+        <p>麦克斯韦的非凡洞察力在于，他敏锐地意识到，如果变化的磁场能产生电场（法拉第定律），而他补充的理论指出变化的电场也能产生磁场（安培-麦克斯韦定律中的位移电流项），那么这两种场就能相互激发、交替产生，并以波的形式在空间中传播出去——这就是电磁波。为了探究这种波的性质，麦克斯韦考察了在<span class="highlight">真空</span>中的情况。在真空中，不存在自由电荷（ρ=0）和传导电流（J=0），麦克斯韦方程组简化为：</p>
+        <div class="equation">
+            ∇ ⋅ E = 0
+            ∇ ⋅ B = 0
+            ∇ × E = -∂B/∂t
+            ∇ × B = μ₀ε₀ ∂E/∂t
+        </div>
+        <p>通过对这组简化方程进行一系列标准的矢量微积分运算（例如，对法拉第定律方程两边取旋度，然后利用矢量恒等式 ∇ × (∇ × A) = ∇(∇ ⋅ A) - ∇²A，并代入其他方程），可以分别推导出电场E和磁场B在真空中传播时所必须满足的波动方程：</p>
+        <div class="equation">
+            ∇²E = μ₀ε₀ ∂²E/∂t²
+        </div>
+        <div class="equation">
+            ∇²B = μ₀ε₀ ∂²B/∂t²
+        </div>
+        <p>这两个方程是标准的三维波动方程，其一般形式为 ∇²ψ = (1/v²) ∂²ψ/∂t²，其中 ψ 代表波动的物理量（此处为E或B的分量），v 代表波的传播速度。通过直接比较系数，我们可以清晰地看到，电磁波在真空中的传播速度 v（通常记为 <span class="highlight">c</span>）由下式给出：</p>
+        <div class="equation">
+            c = 1 / √(μ₀ε₀)
+        </div>
+        <p>这里的关键在于您提到的核心观点：“<span class="highlight">μ₀ 和 ε₀ 都是通过实验测定的物理常数，它们描述的是真空本身的电磁特性。</span>” 让我们深入剖析这一点：</p>
+        
+        <h3>2.1 真空介电常数 ε₀ (Permittivity of Free Space)</h3>
+        <p>ε₀，也称为电容率，其数值约为 8.854 × 10⁻¹² 法拉/米 (F/m)。它反映了真空对于电场的“容许”程度，或者说是在真空中建立电场时，真空所表现出的“响应特性”。</p>
+        <ul>
+            <li><strong>物理意义</strong>：想象在真空中放置两个点电荷，它们之间的库仑力 F = (1 / (4πε₀)) * (q₁q₂ / r²)。ε₀ 的出现表明，即使是真空，也会影响电荷间的相互作用强度。它衡量了电场线在真空中“穿透”的难易程度。一个介质的介电常数越大，意味着在相同电荷分布下，它内部建立的电场强度越弱（因为介质极化会削弱外电场）。真空的介电常数是所有介质中最小的。</li>
+            <li><strong>实验测定</strong>：历史上，ε₀ 的值可以通过多种精密实验间接或直接测定。例如，通过精确测量已知几何形状（如平行板电容器）在真空中的电容 C (C = ε₀ * A/d，A为极板面积，d为间距)，结合库仑定律的验证实验，可以推算出 ε₀。现代物理学中，由于光速 c 已被定义为一个精确值，而 μ₀ 在旧的SI单位制中也曾被定义（后随SI单位制改革而变为实验测量值），ε₀ 可以通过 c 和 μ₀ 的关系 ε₀ = 1 / (μ₀c²) 精确计算得出。</li>
+        </ul>
+
+        <h3>2.2 真空磁导率 μ₀ (Permeability of Free Space)</h3>
+        <p>μ₀，其数值约为 4π × 10⁻⁷ 特斯拉·米/安培 (T·m/A) 或 亨利/米 (H/m)。它反映了真空对于磁场的“导通”能力，即在真空中建立磁场时，真空的“磁响应特性”。</p>
+        <ul>
+            <li><strong>物理意义</strong>：考虑真空中两根平行的无限长载流直导线，它们单位长度上相互作用的磁力 F/L = (μ₀ / (2π)) * (I₁I₂ / r)。μ₀ 的存在说明真空影响着电流之间磁相互作用的强度。它衡量了磁感线在真空中“穿透”的难易程度。</li>
+            <li><strong>实验测定</strong>：历史上，μ₀ 的值可以通过安培力定律的精密实验来确定，例如通过测量已知电流和几何构型的线圈产生的磁场强度。在2019年国际单位制（SI）重新定义之前，μ₀ 被定义为一个精确值 (4π × 10⁻⁷ H/m)，这个定义曾用于定义单位“安培”。在新SI单位制下，基本电荷 e 被精确定义，安培的定义随之改变，μ₀ 变成了一个需要通过实验测量的物理常数，尽管其测量值与旧定义值在实验不确定度范围内高度一致。</li>
+        </ul>
+
+        <h3>2.3 真空的“电磁特性”：并非一无所有</h3>
+        <p>麦克斯韦的理论以及 ε₀ 和 μ₀ 这两个常数的出现，深刻地改变了人们对“真空”的认知。在经典牛顿物理中，真空常被视为空无一物的背景空间。然而，ε₀ 和 μ₀ 都是具有确定数值的物理量，这表明：</p>
+        <ul>
+            <li><strong>真空具有物理属性</strong>：真空不是绝对的“空”，而是可以被看作一种特殊的“物理介质”，它能够支持电场和磁场的存在与传播，并对这些场的行为施加影响。它有能力储存电场能和磁场能。</li>
+            <li><strong>真空决定了光速</strong>：光速 c 完全由真空自身的这两个基本电磁属性（ε₀ 和 μ₀）所唯一确定。这意味着光速是真空内禀的性质，而非光源或光的某种属性。这为光速的普适性和不变性提供了理论基础。</li>
+            <li><strong>哲学意涵</strong>：真空具有物理属性这一观念，是物理学从经典向现代过渡的重要一步。后续的量子场论进一步揭示，真空实际上是一个充满着量子涨落和虚粒子对的复杂动态系统，远非“空空如也”。</li>
+        </ul>
+        <p>因此，当麦克斯韦将通过实验测定的 ε₀ 和 μ₀ 的数值代入 c = 1 / √(μ₀ε₀) 公式时，计算出的 c 值与当时通过地面光学实验（如斐索的旋转齿轮法、傅科的旋转镜法）测得的光速值在实验误差范围内惊人地一致！这不仅有力地证明了光本质上就是一种电磁波，也首次揭示了光速这个宇宙基本常数与真空电磁性质之间的深刻联系。光速 <span class="highlight">c</span> (精确值为 299,792,458 米/秒，在现代SI单位制中，这个值被用作定义“米”的基础) 成为了连接电学、磁学和光学的桥梁。</p>
+
+        <div class="animation-container">
+            <canvas id="vacuumPropertyCanvas"></canvas>
+            <div class="controls">
+                <button onclick="playVacuumPropertyAnimation()">动画: 真空属性与光速</button>
+            </div>
+        </div>
+        <p style="text-align:center; font-size:0.9em; color:#ccc;"><em>动画说明：展示ε₀和μ₀如何体现真空的电磁特性，并形象化它们如何共同决定光速c。</em></p>
+
+        <div class="animation-container">
+            <canvas id="conceptCanvas"></canvas>
+            <div class="controls">
+                <button onclick="playConceptAnimation()">动画1: 电磁波的产生与传播</button>
+            </div>
+        </div>
+        <p style="text-align:center; font-size:0.9em; color:#ccc;"><em>动画说明：动态展示变化的电场如何激发振荡的磁场，变化的磁场又如何反过来激发振荡的电场，两者相互垂直并共同以光速向前传播，形成电磁波。</em></p>
+
+        <h2>三、伽利略的困惑：相对速度的经典图景</h2>
+        <p>在麦克斯韦理论问世之前，经典物理学中关于运动和速度的描述，主要遵循<span class="highlight">伽利略相对性原理</span>和与之配套的<span class="highlight">伽利略变换</span>。该原理指出，力学规律在所有惯性参考系（即静止或匀速直线运动的参考系）中都具有相同的数学形式。伽利略变换则给出了不同惯性参考系之间时间和空间坐标的转换关系，并由此推导出速度的叠加法则。</p>
+        <p>假设有两个惯性参考系 S 和 S'。S' 系相对于 S 系沿着 x 方向以恒定速度 u 运动。如果在 S 系中观测到一个物体（比如一束光）沿着 x 方向以速度 v 运动，那么根据伽利略速度叠加法则，在 S' 系中观测到该物体的速度 v' 应该是：</p>
+        <div class="equation">
+            v'_x = v_x - u  (如果 S' 与物体运动方向相同)
+        </div>
+        <div class="equation">
+            v'_y = v_y
+        </div>
+        <div class="equation">
+            v'_z = v_z
+        </div>
+        <p>这意味着，速度是相对的。例如，在一辆时速100公里的火车上，你向前扔出一个时速20公里的小球（相对于火车），那么站在地面上的人观测到小球的速度将是120公里/小时。如果光也遵循这个法则，那么在不同惯性参考系中测量的光速理应不同。若光源向你运动，你测得的光速应为 c+u；若光源远离你运动，则光速为 c-u。然而，麦克斯韦方程组斩钉截铁地指出：<span class="highlight">真空中的光速恒为 c</span>，与参考系无关！这无疑是对经典时空观的巨大挑战。</p>
+
+        <div class="animation-container">
+            <canvas id="conflictCanvas"></canvas>
+            <div class="controls">
+                <button onclick="playConflictAnimation()">动画2: 伽利略变换 vs 光速不变</button>
+            </div>
+        </div>
+        <p style="text-align:center; font-size:0.9em; color:#ccc;"><em>动画说明：通过对比场景（例如，运动的火车上发光），生动展示伽利略变换预测的光速变化与麦克斯韦理论预测的光速恒定之间的鲜明冲突。</em></p>
+
+        <h2>四、寻找“以太”：迈克尔逊-莫雷实验的“零结果”</h2>
+        <p>面对这一尖锐矛盾，19世纪的物理学家们陷入了深深的困惑。为了维护麦克斯韦电磁理论的正确性（其已在众多实验中得到验证），同时又不愿轻易放弃根深蒂固的伽利略相对性原理，许多人转而求助于一个古老的假说——“<span class="highlight">以太</span>”(Luminiferous Aether)。他们假设宇宙中弥漫着一种绝对静止的、无所不在的弹性介质，即以太，光就是以太的振动在其中传播，其速度 <span class="highlight">c</span> 是相对于这个绝对静止的以太参考系而言的。如此一来，地球在宇宙中运动，必然会相对于以太产生一种“以太风”。测量到这种以太风，就能确定地球的绝对运动，并且不同方向上的光速会因以太风而略有差异。</p>
+        <p>1887年，美国物理学家阿尔伯特·迈克尔逊和爱德华·莫雷进行了一个极其精密的干涉实验，其目的正是要探测这种假想的以太风。他们设计了一个迈克尔逊干涉仪，将一束光分成两束相互垂直的光路，经反射镜反射后重新汇合产生干涉条纹。如果存在以太风，当干涉仪旋转时，两束光经历的光程会因相对于以太风速度的不同而发生微小变化，从而导致干涉条纹的移动。</p>
+        <p>然而，实验结果却令整个物理学界震惊：<span class="highlight">无论干涉仪如何旋转，无论在一年中的哪个季节进行测量（地球公转方向不同），都观测不到预期的干涉条纹移动</span>。这个著名的“零结果”强烈地暗示：要么以太不存在，要么地球恰好相对于以太静止（但这与地球公转的事实矛盾），要么光速在所有方向上、在所有惯性参考系中都是相同的！这个“失败”的实验，反而成为了物理学史上最重要的“判决性”实验之一，它为以太理论敲响了丧钟，并为全新的时空观铺平了道路。</p>
+
+        <div class="animation-container">
+            <canvas id="experimentCanvas"></canvas>
+            <div class="controls">
+                <button onclick="playExperimentAnimation()">动画3: 迈克尔逊-莫雷实验原理与“零结果”</button>
+            </div>
+        </div>
+        <p style="text-align:center; font-size:0.9em; color:#ccc;"><em>动画说明：展示迈克尔逊干涉仪的基本光路构造，模拟在有“以太风”假设下预期的条纹移动，并对比实际观测到的“零结果”，强调实验对以太说的否定。</em></p>
+
+        <h2>五、爱因斯坦的登场：狭义相对论的曙光</h2>
+        <p>在麦克斯韦理论的辉煌成就与迈克尔逊-莫雷实验令人费解的“零结果”所共同营造的迷雾之中，一位年轻的专利局职员——阿尔伯特·爱因斯坦——横空出世。1905年，他发表了题为《论动体的电动力学》的论文，提出了<span class="highlight">狭义相对论</span>。爱因斯坦没有试图去“修补”以太理论，而是从根本上反思了时间和空间的概念。他大胆地提出了两条看似简单却具有革命性的基本公设：</p>
+        <ol>
+            <li><span class="highlight">相对性原理</span>：所有物理定律（包括电磁学定律）在一切惯性参考系中都具有相同的数学形式。这意味着不存在任何特殊的、绝对静止的参考系（如以太）。</li>
+            <li><span class="highlight">光速不变原理</span>：真空中的光速 <span class="highlight">c</span> 在一切惯性参考系中测量到的数值都相同，与光源的运动状态和观测者的运动状态均无关。</li>
+        </ol>
+        <p>爱因斯坦深刻地认识到，问题并非出在麦克斯韦方程组本身，也非实验有误，而是我们长期以来习以为常的、基于牛顿经典物理学的绝对时间和绝对空间观念需要被修正。为了同时满足这两条公设，特别是光速不变原理，经典的伽利略变换必须被一种新的时空坐标变换关系所取代，这就是<span class="highlight">洛伦兹变换</span>（洛伦兹在此之前已为解释某些电磁现象导出过类似形式的变换，但爱因斯坦赋予了其全新的物理内涵和普适性）。</p>
+        <p>在洛伦兹变换的框架下，光速不变得到了完美的理论自洽。然而，其代价是时间和空间不再是彼此独立和绝对的量，而是相互关联并依赖于观测者相对运动状态的“相对量”。由此，狭义相对论推导出了一系列惊世骇俗的结论，如“<span class="highlight">时间膨胀</span>”（运动的时钟变慢）、“<span class="highlight">长度收缩</span>”（运动的物体在运动方向上长度缩短）、质量与速度的关系，以及最著名的“<span class="highlight">质能等价关系 E=mc²</span>”。这些结论彻底颠覆了牛顿的绝对时空观，为物理学开辟了一个全新的纪元。</p>
+        
+        <div class="animation-container">
+            <canvas id="timelineCanvas"></canvas>
+            <div class="controls">
+                <button onclick="playTimelineAnimation()">动画4: 关键理论发展时间轴</button>
+            </div>
+        </div>
+        <p style="text-align:center; font-size:0.9em; color:#ccc;"><em>动画说明：以时间轴的形式，串联起从麦克斯韦方程组的提出、以太说的流行、迈克尔逊-莫雷实验的冲击，到洛伦兹变换的雏形，最终至爱因斯坦狭义相对论诞生的关键历史节点和核心人物贡献。</em></p>
+
+        <h2>六、结论：一场深刻的物理学革命</h2>
+        <p>麦克斯韦方程组关于真空光速是一个普适常数的预言，犹如一颗投入平静湖面的石子，激起了经典物理学体系的层层涟漪，并最终演变成一场席卷整个物理学界的思想革命。这一预言与伽利略相对性原理之间的深刻矛盾，并非简单的理论瑕疵，而是指向了更深层次的自然规律。正是这个矛盾，以及如迈克尔逊-莫雷实验等一代代物理学家不懈的实验探索和理论思辨，最终催生了爱因斯坦狭义相对论的诞生。</p>
+        <p>狭义相对论的建立，不仅圆满解决了光速不变的难题，将麦克斯韦电磁理论纳入了一个更广阔、更自洽的理论框架之中，而且从根本上重塑了人类对时间、空间、物质和能量的认知。它宣告了牛顿绝对时空观的终结，揭示了时空的相对性及其与物质运动的紧密联系。麦克斯韦方程组的深远历史意义，因此远不止于其对电磁现象的完美统一和对无线电技术等应用的开创，更在于它所蕴含的光速不变的思想萌芽，成为了点燃20世纪物理学革命的火花之一，直接引领了通往相对论的道路，并与量子力学共同构成了现代物理学的两大巍峨支柱。这场由光速引发的探索，是人类智慧勇于挑战旧有观念、追求更深层自然真理的壮丽史诗。</p>
+
+        <div class="animation-container">
+            <canvas id="resolutionCanvas"></canvas>
+            <div class="controls">
+                <button onclick="playResolutionAnimation()">动画5: 矛盾的提出、探索与解决</button>
+            </div>
+        </div>
+        <p style="text-align:center; font-size:0.9em; color:#ccc;"><em>动画说明：以动态流程图或概念关联图的形式，清晰展示从“麦克斯韦预言光速恒定”与“伽利略变换预言光速相对”的初始矛盾，经过“以太说假设”、“实验（M-M实验）证伪”，最终导向“爱因斯坦提出光速不变原理”和“狭义相对论建立”这一完整逻辑链条和科学思想的演进过程。</em></p>
+
+        <div class="footer">
+            <p>&copy; 2024 (张朝阳 / 网易云). 版权所有 (内容为模拟生成，仅供学习参考).</p>
+        </div>
+    </div>
+
+    <script>
+        // 动画绘制函数 (此处为静态占位符的增强版，旨在更清晰地展示概念)
+
+        // 通用绘制函数：绘制带背景和边框的文本框
+        function drawTextBox(ctx, text, x, y, width, padding, font, textColor, bgColor, borderColor = '#555', textAlign = 'center') {
+            ctx.font = font;
+            const lines = [];
+            let currentLine = '';
+            const words = text.split(' ');
+
+            // 简单的自动换行逻辑 (基于空格)
+            for (const word of words) {
+                const testLine = currentLine + word + ' ';
+                const metrics = ctx.measureText(testLine);
+                if (metrics.width > width - 2 * padding && currentLine !== '') {
+                    lines.push(currentLine.trim());
+                    currentLine = word + ' ';
+                } else {
+                    currentLine = testLine;
+                }
+            }
+            lines.push(currentLine.trim());
+
+            const lineHeight = parseInt(font, 10) * 1.4;
+            const boxHeight = lines.length * lineHeight + 2 * padding;
+            const boxY = y - boxHeight / 2;
+
+            // 绘制背景和边框
+            ctx.fillStyle = bgColor;
+            ctx.strokeStyle = borderColor;
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.roundRect(x - width / 2, boxY, width, boxHeight, 5); // 使用 roundRect
+            ctx.fill();
+            ctx.stroke();
+            
+            // 绘制文本
+            ctx.fillStyle = textColor;
+            ctx.textAlign = textAlign;
+            let textX = x;
+            if (textAlign === 'left') textX = x - width / 2 + padding;
+            if (textAlign === 'right') textX = x + width / 2 - padding;
+
+            for (let i = 0; i < lines.length; i++) {
+                ctx.fillText(lines[i], textX, boxY + padding + lineHeight * (i + 0.7));
+            }
+        }
+        
+        // 通用绘制箭头
+        function drawArrow(ctx, fromX, fromY, toX, toY, color = '#333', lineWidth = 2) {
+            const headlen = 10; // length of head in pixels
+            const dx = toX - fromX;
+            const dy = toY - fromY;
+            const angle = Math.atan2(dy, dx);
+            ctx.strokeStyle = color;
+            ctx.fillStyle = color;
+            ctx.lineWidth = lineWidth;
+            ctx.beginPath();
+            ctx.moveTo(fromX, fromY);
+            ctx.lineTo(toX, toY);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(toX, toY);
+            ctx.lineTo(toX - headlen * Math.cos(angle - Math.PI / 6), toY - headlen * Math.sin(angle - Math.PI / 6));
+            ctx.lineTo(toX - headlen * Math.cos(angle + Math.PI / 6), toY - headlen * Math.sin(angle + Math.PI / 6));
+            ctx.closePath();
+            ctx.fill();
+        }
+
+
+        // 动画: 真空属性与光速
+        const vacuumPropertyCanvas = document.getElementById('vacuumPropertyCanvas');
+        const vacuumPropertyCtx = vacuumPropertyCanvas.getContext('2d');
+        function drawVacuumPropertyAnimation() {
+            vacuumPropertyCtx.clearRect(0, 0, vacuumPropertyCanvas.width, vacuumPropertyCanvas.height);
+            vacuumPropertyCtx.textAlign = 'center';
+            vacuumPropertyCtx.font = '16px Arial';
+            
+            const centerX = vacuumPropertyCanvas.width / 2;
+            const startY = 60;
+            const boxWidth = 220;
+
+            drawTextBox(vacuumPropertyCtx, '真空介电常数 ε₀ (Permittivity)\n~8.854e-12 F/m\n决定真空对电场的响应', centerX - boxWidth/1.5, startY, boxWidth, 10, '15px Arial', '#1a237e', '#c5cae9');
+            drawTextBox(vacuumPropertyCtx, '真空磁导率 μ₀ (Permeability)\n~4πe-7 H/m\n决定真空对磁场的响应', centerX + boxWidth/1.5, startY, boxWidth, 10, '15px Arial', '#004d40', '#b2dfdb');
+
+            drawArrow(vacuumPropertyCtx, centerX - boxWidth/1.5 + boxWidth/2 , startY + 40, centerX - 30, startY + 120, '#7b1fa2');
+            drawArrow(vacuumPropertyCtx, centerX + boxWidth/1.5 - boxWidth/2, startY + 40, centerX + 30, startY + 120, '#7b1fa2');
+
+            vacuumPropertyCtx.fillStyle = '#333';
+            vacuumPropertyCtx.font = 'bold 20px Arial';
+            vacuumPropertyCtx.fillText('共同决定', centerX, startY + 140);
+            
+            drawArrow(vacuumPropertyCtx, centerX, startY + 155, centerX, startY + 200, '#d32f2f');
+
+            drawTextBox(vacuumPropertyCtx, '光速 c = 1 / √(μ₀ε₀)\n约 299,792,458 m/s\n真空内禀属性，宇宙常数', centerX, startY + 240, 300, 15, 'bold 18px Arial', '#fff', '#f44336');
+            
+            vacuumPropertyCtx.fillStyle = '#555';
+            vacuumPropertyCtx.font = 'italic 14px Arial';
+            vacuumPropertyCtx.fillText('真空并非“虚无”，而是具有可测量的电磁特性！', centerX, vacuumPropertyCanvas.height - 20);
+        }
+        function playVacuumPropertyAnimation() {
+            alert('播放动画: 真空属性与光速 (概念演示)');
+            drawVacuumPropertyAnimation();
+        }
+
+
+        // 动画1: 电磁波的产生与传播
+        const conceptCanvas = document.getElementById('conceptCanvas');
+        const conceptCtx = conceptCanvas.getContext('2d');
+        function drawConceptAnimation() {
+            conceptCtx.clearRect(0, 0, conceptCanvas.width, conceptCanvas.height);
+            conceptCtx.fillStyle = '#263238'; 
+            conceptCtx.font = '16px Arial';
+            conceptCtx.textAlign = 'center';
+            
+            const w = conceptCanvas.width;
+            const h = conceptCanvas.height;
+            const midY = h / 2;
+            const amplitude = 60;
+            const wavelength = 200;
+            const propagationX = w * 0.8; // Where the wave front is shown
+
+            conceptCtx.fillText('变化的电场 (E) 激发 变化的磁场 (B)', w / 2, 30);
+            conceptCtx.fillText('变化的磁场 (B) 激发 变化的电场 (E)', w / 2, 60);
+
+            // Draw E field (e.g., vertical oscillation)
+            conceptCtx.strokeStyle = '#d32f2f'; // Red for E
+            conceptCtx.lineWidth = 3;
+            conceptCtx.beginPath();
+            for (let x = 0; x <= propagationX; x++) {
+                const y = midY + amplitude * Math.sin((x / wavelength) * 2 * Math.PI - Math.PI/2); // Shifted to start at trough for visual
+                if (x === 0) conceptCtx.moveTo(x + 50, y);
+                else conceptCtx.lineTo(x + 50, y);
+            }
+            conceptCtx.stroke();
+            conceptCtx.fillStyle = '#d32f2f';
+            conceptCtx.fillText('E场 (电场)', propagationX + 30, midY - amplitude - 10);
+
+            // Draw B field (e.g., horizontal oscillation, shown as into/out of page or perpendicular plane)
+            // Simplified: draw B field oscillating perpendicularly in perspective
+            conceptCtx.strokeStyle = '#1976d2'; // Blue for B
+            conceptCtx.lineWidth = 3;
+            conceptCtx.beginPath();
+            for (let x = 0; x <= propagationX; x++) {
+                // Simulating perspective for B field perpendicular to E and propagation
+                const z_amplitude_factor = Math.cos((x / wavelength) * 2 * Math.PI - Math.PI/2);
+                const y_offset_perspective = 20 * z_amplitude_factor; // Small y offset for perspective
+                const x_width_perspective = amplitude * z_amplitude_factor * 0.5; // Width change for perspective
+                
+                conceptCtx.moveTo(x + 50 - x_width_perspective, midY + y_offset_perspective - amplitude * 0.3);
+                conceptCtx.lineTo(x + 50 + x_width_perspective, midY + y_offset_perspective + amplitude * 0.3);
+            }
+            conceptCtx.stroke();
+            conceptCtx.fillStyle = '#1976d2';
+            conceptCtx.fillText('B场 (磁场)', propagationX + 30, midY + amplitude + 25);
+            
+            // Propagation direction arrow
+            drawArrow(conceptCtx, 50, midY + amplitude + 50, propagationX + 50, midY + amplitude + 50, '#2e7d32', 3);
+            conceptCtx.fillStyle = '#2e7d32';
+            conceptCtx.fillText('传播方向 (速度 c)', w / 2, midY + amplitude + 75);
+            
+            conceptCtx.fillStyle = '#263238';
+            conceptCtx.fillText('=> 电磁波以光速 c 传播 (E ⊥ B ⊥ c)', w / 2, h - 20);
+        }
+        function playConceptAnimation() {
+            alert('播放动画1: 电磁波的产生与传播 (概念演示)');
+            drawConceptAnimation(); 
+        }
+
+        // 动画2: 伽利略变换下的光速
+        const conflictCanvas = document.getElementById('conflictCanvas');
+        const conflictCtx = conflictCanvas.getContext('2d');
+        function drawConflictAnimation() {
+            conflictCtx.clearRect(0, 0, conflictCanvas.width, conflictCanvas.height);
+            conflictCtx.fillStyle = '#263238';
+            conflictCtx.font = '15px Arial';
+            conflictCtx.textAlign = 'center';
+            const w = conflictCanvas.width;
+            const h = conflictCanvas.height;
+
+            conflictCtx.fillText('场景：光源S发光，观测者O₁静止，观测者O₂以速度u向右运动', w / 2, 30);
+
+            // Light source
+            conflictCtx.fillStyle = 'yellow';
+            conflictCtx.beginPath();
+            conflictCtx.arc(w * 0.15, h * 0.4, 20, 0, 2 * Math.PI);
+            conflictCtx.fill();
+            conflictCtx.fillStyle = '#263238';
+            conflictCtx.fillText('光源S', w * 0.15, h * 0.4 + 40);
+
+            // Light beam
+            drawArrow(conflictCtx, w * 0.15 + 20, h*0.4, w * 0.8, h*0.4, '#ffeb3b', 3);
+            conflictCtx.fillText('光 (速度c)', w*0.5, h*0.4 - 15);
+
+            // Observer O1 (static)
+            conflictCtx.fillRect(w * 0.8 - 10, h * 0.4 - 25, 20, 50); // Observer icon
+            conflictCtx.fillText('O₁ (静止)', w * 0.8, h * 0.4 + 45);
+
+            // Observer O2 (moving)
+            conflictCtx.fillRect(w * 0.5 - 10, h * 0.7 - 25, 20, 50); // Observer icon
+            drawArrow(conflictCtx, w * 0.5 + 20, h * 0.7, w*0.5 + 70, h*0.7, '#1976d2', 2); // Velocity u
+            conflictCtx.fillText('u', w*0.5 + 45, h*0.7 - 10);
+            conflictCtx.fillText('O₂ (以u运动)', w * 0.5, h * 0.7 + 45);
+
+
+            // Predictions
+            drawTextBox(conflictCtx, '麦克斯韦理论:\nO₁ 测得光速: c\nO₂ 测得光速: c', w / 4, h*0.55, 200, 10, 'bold 16px Arial', '#fff', '#4caf50');
+            drawTextBox(conflictCtx, '伽利略变换:\nO₁ 测得光速: c\nO₂ 测得光速: c - u', 3 * w / 4, h*0.55, 200, 10, 'bold 16px Arial', '#fff', '#f44336');
+            
+            conflictCtx.font = 'bold 22px Arial';
+            conflictCtx.fillStyle = '#e53935';
+            conflictCtx.fillText('世纪大矛盾!', w / 2, h - 30);
+        }
+        function playConflictAnimation() {
+            alert('播放动画2: 伽利略变换 vs 光速不变 (概念演示)');
+            drawConflictAnimation();
+        }
+
+        // 动画3: 迈克尔逊-莫雷实验原理
+        const experimentCanvas = document.getElementById('experimentCanvas');
+        const experimentCtx = experimentCanvas.getContext('2d');
+        function drawExperimentAnimation() {
+            experimentCtx.clearRect(0, 0, experimentCanvas.width, experimentCanvas.height);
+            experimentCtx.fillStyle = '#263238';
+            experimentCtx.font = '14px Arial';
+            experimentCtx.textAlign = 'center';
+            const w = experimentCanvas.width;
+            const h = experimentCanvas.height;
+
+            experimentCtx.fillText('迈克尔逊干涉仪 与 以太风探测', w / 2, 30);
+            
+            const centerX = w / 2;
+            const centerY = h / 2 - 30; // Shift up for text below
+            const armLength = Math.min(w,h) * 0.25;
+
+            // Components
+            experimentCtx.fillStyle = 'yellow'; // Light Source
+            experimentCtx.fillRect(centerX - armLength - 30, centerY - 10, 20, 20);
+            experimentCtx.fillStyle = '#263238';
+            experimentCtx.fillText('光源', centerX - armLength - 20, centerY + 25);
+
+            experimentCtx.fillStyle = '#78909c'; // Beam Splitter
+            experimentCtx.save();
+            experimentCtx.translate(centerX, centerY);
+            experimentCtx.rotate(Math.PI / 4);
+            experimentCtx.fillRect(-15, -5, 30, 10);
+            experimentCtx.restore();
+            experimentCtx.fillText('分束镜', centerX, centerY + 25);
+
+            experimentCtx.fillStyle = '#bdbdbd'; // Mirrors
+            experimentCtx.fillRect(centerX - 5, centerY - armLength - 20, 10, 20); // Mirror 1 (Top)
+            experimentCtx.fillText('M₁', centerX, centerY - armLength - 25);
+            experimentCtx.fillRect(centerX + armLength, centerY - 10, 20, 10);   // Mirror 2 (Right)
+            experimentCtx.fillText('M₂', centerX + armLength + 25, centerY);
+
+            experimentCtx.fillStyle = '#546e7a'; // Detector
+            experimentCtx.fillRect(centerX - 15, centerY + armLength + 10, 30, 20);
+            experimentCtx.fillText('探测器', centerX, centerY + armLength + 45);
+
+            // Light paths
+            experimentCtx.strokeStyle = '#ff9800'; experimentCtx.lineWidth = 1.5;
+            // Path 1 (to M1 and detector)
+            experimentCtx.beginPath(); experimentCtx.moveTo(centerX - armLength -10, centerY); experimentCtx.lineTo(centerX, centerY); // Source to splitter
+            experimentCtx.lineTo(centerX, centerY - armLength); // Splitter to M1
+            experimentCtx.lineTo(centerX, centerY); // M1 to splitter
+            experimentCtx.lineTo(centerX, centerY + armLength +10); // Splitter to Detector
+            experimentCtx.stroke();
+            // Path 2 (to M2 and detector)
+            experimentCtx.beginPath(); experimentCtx.moveTo(centerX, centerY); // Splitter (already from source)
+            experimentCtx.lineTo(centerX + armLength, centerY); // Splitter to M2
+            experimentCtx.lineTo(centerX, centerY); // M2 to splitter
+            // (Path to detector is common, already drawn for Path 1)
+            experimentCtx.stroke();
+
+            // Ether wind (conceptual)
+            drawArrow(experimentCtx, w*0.1, h*0.2, w*0.4, h*0.2, '#81d4fa', 2);
+            experimentCtx.fillStyle = '#0277bd';
+            experimentCtx.fillText('假设的以太风 ->', w*0.25, h*0.2 - 10);
+
+            drawTextBox(experimentCtx, '预期：若有以太风，旋转装置，两光路光程差改变，干涉条纹移动。', w/2, h - 90, w*0.8, 10, 'bold 15px Arial', '#fff', '#ef6c00');
+            drawTextBox(experimentCtx, '实际观测：零结果！干涉条纹无任何可观测的移动。', w/2, h - 35, w*0.8, 10, 'bold 16px Arial', '#fff', '#2e7d32');
+        }
+        function playExperimentAnimation() {
+            alert('播放动画3: 迈克尔逊-莫雷实验原理与“零结果” (概念演示)');
+            drawExperimentAnimation();
+        }
+
+        // 动画4: 理论发展时间轴
+        const timelineCanvas = document.getElementById('timelineCanvas');
+        const timelineCtx = timelineCanvas.getContext('2d');
+        function drawTimelineAnimation() {
+            timelineCtx.clearRect(0, 0, timelineCanvas.width, timelineCanvas.height);
+            timelineCtx.fillStyle = '#263238';
+            timelineCtx.font = '13px Arial'; // Slightly smaller for more text
+            timelineCtx.textAlign = 'left';
+            const w = timelineCanvas.width;
+            const h = timelineCanvas.height;
+
+            const startX = 40;
+            const endX = w - 40;
+            const midY = h / 2;
+
+            // Timeline
+            timelineCtx.strokeStyle = '#9fa8da'; timelineCtx.lineWidth = 4;
+            timelineCtx.beginPath(); timelineCtx.moveTo(startX, midY); timelineCtx.lineTo(endX, midY); timelineCtx.stroke();
+
+            const events = [
+                { year: '~1865', text: '麦克斯韦方程组\n预言光速c，挑战经典', color: '#ff8a65', xPos: 0.15 },
+                { year: '1887', text: '迈克尔逊-莫雷实验\n“零结果”，以太危机', color: '#ba68c8', xPos: 0.4 },
+                { year: '~1890s', text: '洛伦兹、彭加莱等\n探索变换、时空概念', color: '#4fc3f7', xPos: 0.65 },
+                { year: '1905', text: '爱因斯坦\n狭义相对论诞生！', color: '#a5d6a7', xPos: 0.9 }
+            ];
+
+            events.forEach((event, index) => {
+                const eventX = startX + (endX - startX) * event.xPos;
+                
+                // Event marker
+                timelineCtx.fillStyle = event.color;
+                timelineCtx.beginPath(); timelineCtx.arc(eventX, midY, 10, 0, 2 * Math.PI); timelineCtx.fill();
+                timelineCtx.strokeStyle = '#fff'; timelineCtx.lineWidth = 2; timelineCtx.stroke(); // White border for marker
+
+                // Event text box
+                const textY = (index % 2 === 0) ? midY - 70 : midY + 70; // Alternate above/below
+                drawTextBox(timelineCtx, `${event.year}\n${event.text}`, eventX, textY, 150, 8, '12px Arial', '#263238', event.color+'aa', event.color, 'center');
+                // Line to timeline
+                timelineCtx.strokeStyle = event.color; timelineCtx.lineWidth = 1.5;
+                timelineCtx.beginPath();
+                timelineCtx.moveTo(eventX, midY + ( (index % 2 === 0) ? -10 : 10) ); // from marker edge
+                timelineCtx.lineTo(eventX, textY + ( (index % 2 === 0) ? 30 : -30) ); // to box edge
+                timelineCtx.stroke();
+            });
+        }
+        function playTimelineAnimation() {
+            alert('播放动画4: 关键理论发展时间轴 (概念演示)');
+            drawTimelineAnimation();
+        }
+
+        // 动画5: 矛盾的解决与新理论的诞生
+        const resolutionCanvas = document.getElementById('resolutionCanvas');
+        const resolutionCtx = resolutionCanvas.getContext('2d');
+        function drawResolutionAnimation() {
+            resolutionCtx.clearRect(0, 0, resolutionCanvas.width, resolutionCanvas.height);
+            resolutionCtx.fillStyle = '#263238';
+            resolutionCtx.font = '15px Arial';
+            resolutionCtx.textAlign = 'center';
+            const w = resolutionCanvas.width;
+            const h = resolutionCanvas.height;
+
+            const boxW = 220;
+            const boxH = 60; // Increased height for more text
+            const spacingY = 85;
+            const centerX = w / 2;
+
+            let currentY = 50;
+            drawTextBox(resolutionCtx, '麦克斯韦理论:\n真空光速c是常数', centerX, currentY, boxW, 10, '14px Arial', '#111', '#ffcc80');
+            
+            currentY += spacingY;
+            drawArrow(resolutionCtx, centerX, currentY - spacingY + boxH/2 -5, centerX, currentY - boxH/2, '#90a4ae', 2);
+            drawTextBox(resolutionCtx, '经典物理 (伽利略变换):\n速度是相对的', centerX, currentY, boxW, 10, '14px Arial', '#111', '#ef9a9a');
+            
+            currentY += spacingY * 0.6; // Shorter space for conflict text
+            // Conflict Text (no box, just text)
+            resolutionCtx.font = 'bold 18px Arial';
+            resolutionCtx.fillStyle = '#f44336';
+            resolutionCtx.fillText('VS', centerX - 80, currentY -5);
+            resolutionCtx.fillText('=> 尖锐矛盾!', centerX + 40, currentY);
+            resolutionCtx.font = '15px Arial'; // Reset font
+
+            currentY += spacingY * 0.8;
+            drawArrow(resolutionCtx, centerX, currentY - spacingY*0.8 + 5, centerX, currentY - boxH/2, '#90a4ae', 2);
+            drawTextBox(resolutionCtx, '实验探索:\nM-M实验等“零结果”\n以太说被否定', centerX, currentY, boxW, 10, '14px Arial', '#111', '#81d4fa');
+
+            currentY += spacingY;
+            drawArrow(resolutionCtx, centerX, currentY - spacingY + boxH/2 -5, centerX, currentY - boxH/2, '#90a4ae', 2);
+            drawTextBox(resolutionCtx, '爱因斯坦的洞察:\n光速不变 & 相对性原理\n=> 狭义相对论诞生!', centerX, currentY, boxW + 40, 10, 'bold 14px Arial', '#fff', '#66bb6a');
+        }
+        function playResolutionAnimation() {
+            alert('播放动画5: 矛盾的提出、探索与解决 (概念演示)');
+            drawResolutionAnimation();
+        }
+
+
+        // 页面加载时绘制所有动画的初始静态帧
+        window.onload = function() {
+            // 确保canvas尺寸在绘制前已设定 (CSS已处理大部分情况)
+            drawVacuumPropertyAnimation();
+            drawConceptAnimation();
+            drawConflictAnimation();
+            drawExperimentAnimation();
+            drawTimelineAnimation();
+            drawResolutionAnimation();
+
+            // Add resize listener to redraw canvases if needed (optional, for better responsiveness if canvas content scales)
+            // window.addEventListener('resize', function() {
+            //     drawVacuumPropertyAnimation();
+            //     drawConceptAnimation();
+            //     // ... redraw all others
+            // });
+        };
+    </script>
+</body>
+</html>

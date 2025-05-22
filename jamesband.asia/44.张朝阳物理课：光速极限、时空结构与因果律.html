@@ -1,0 +1,914 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>张朝阳物理课：光速极限、时空结构与因果律</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.2/p5.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
+    <style>
+        /* 基本重置和页面设置 */
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Noto Sans SC', sans-serif;
+            font-size: 18px; /* 基础字号，参考“三号”在屏幕上的可读性 */
+            line-height: 1.8;
+            background-color: #0d1117; /* GitHub 暗黑模式背景色 */
+            color: #c9d1d9; /* GitHub 暗黑模式文字颜色 */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            overflow-x: hidden; /* 防止水平溢出 */
+        }
+
+        /* 背景动画容器 */
+        #backgroundCanvasContainer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 0;
+            pointer-events: none; /* 允许点击穿透 */
+        }
+
+        /* 内容容器 */
+        .container {
+            position: relative;
+            z-index: 1; /* 在背景动画之上 */
+            width: 90%;
+            max-width: 1000px; /* 优化阅读宽度，类似A3纸张感 */
+            margin: 40px auto; /* 增加上下边距 */
+            padding: 30px 40px;
+            background-color: rgba(22, 27, 34, 0.9); /* GitHub 暗黑模式内容区背景 */
+            border: 1px solid #30363d; /* GitHub 暗黑模式边框颜色 */
+            border-radius: 12px; /* 圆角 */
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+        }
+
+        /* 标题样式 */
+        h1, h2, h3 {
+            font-family: 'ZCOOL KuaiLe', cursive; /* 轻松活泼字体 */
+            color: #58a6ff; /* GitHub 暗黑模式链接/标题颜色 */
+            margin-bottom: 0.75em;
+            text-align: center;
+            letter-spacing: 1px;
+        }
+        h1 {
+            font-size: 2.6em; /* 主标题 */
+            color: #79c0ff; /* 更亮的蓝色 */
+            border-bottom: 2px solid #388bfd;
+            padding-bottom: 15px;
+            margin-top: 0;
+        }
+        h2 {
+            font-size: 2.0em; /* 章节标题 */
+            color: #f778ba; /* 粉色系，增加活泼感 */
+            margin-top: 2.2em;
+        }
+        h3 {
+            font-size: 1.5em;
+            color: #a371f7; /* 紫色系 */
+            margin-top: 1.6em;
+            text-align: left;
+        }
+
+        /* 段落和文本样式 */
+        p, li {
+            margin-bottom: 1.2em;
+            text-align: justify;
+            color: #adbac7; /* 柔和的文字颜色 */
+        }
+        ul, ol {
+            padding-left: 30px;
+        }
+
+        /* 强调文字 */
+        strong, .highlight {
+            color: #ffa657; /* 暖黄色强调 */
+            font-weight: bold;
+        }
+        .concept { /* 物理概念词 */
+            font-weight: 500;
+            color: #7ee787; /* 绿色概念词 */
+            padding: 3px 7px;
+            background-color: rgba(63, 185, 80, 0.15);
+            border-radius: 6px;
+            border: 1px solid rgba(63, 185, 80, 0.4);
+            font-family: 'Noto Sans SC', sans-serif; /* 概念词使用标准字体 */
+        }
+        .formula {
+            display: block;
+            text-align: center;
+            margin: 20px auto;
+            padding: 15px;
+            background-color: rgba(34, 39, 46, 0.8);
+            border-left: 4px solid #388bfd;
+            color: #c9d1d9;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 1.05em;
+            border-radius: 4px;
+            white-space: pre-wrap; /* 保证公式换行 */
+        }
+
+        /* 动画容器 */
+        .animation-container {
+            width: 100%;
+            max-width: 580px; /* 动画区域宽度 */
+            height: 360px; /* 动画区域高度 */
+            margin: 25px auto;
+            border: 1px solid #30363d;
+            border-radius: 10px;
+            overflow: hidden;
+            background-color: #010409; /* 更深的动画背景 */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: inset 0 0 12px rgba(0,0,0,0.5);
+        }
+        .animation-container canvas {
+            display: block;
+            max-width: 100%;
+            max-height: 100%;
+            border-radius: 8px;
+        }
+        
+        /* 交互按钮和控件样式 */
+        .controls {
+            text-align: center;
+            margin-bottom: 25px;
+            margin-top: 15px;
+        }
+        .controls button {
+            padding: 10px 22px;
+            font-size: 0.95em;
+            font-family: 'Noto Sans SC', sans-serif;
+            background-image: linear-gradient(to right, #388bfd, #58a6ff);
+            color: white;
+            border: none;
+            border-radius: 22px; 
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            letter-spacing: 0.5px;
+        }
+        .controls button:hover {
+            transform: translateY(-2px) scale(1.05);
+            box-shadow: 0 7px 18px rgba(56, 139, 253, 0.35);
+        }
+        .controls button:active {
+            transform: translateY(0px) scale(1);
+        }
+        .controls label {
+            color: #8b949e; /* GitHub 暗黑模式次要文字颜色 */
+            margin: 0 10px;
+            font-size: 0.9em;
+        }
+        .controls input[type="range"] {
+            vertical-align: middle;
+            cursor: grab;
+            width: 140px;
+        }
+
+        /* 作者信息 */
+        .author-info {
+            text-align: center;
+            margin: 20px 0 30px 0;
+            font-size: 0.95em;
+            color: #8b949e;
+        }
+        .author-info strong {
+            color: #79c0ff;
+        }
+
+        /* 页脚 */
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding: 25px;
+            background-color: #161b22; /* 页脚背景 */
+            color: #8b949e;
+            width: 100%;
+            font-size: 0.9em;
+            border-top: 1px solid #30363d;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            body {
+                font-size: 17px; /* 移动端稍小字号 */
+            }
+            .container {
+                width: 95%;
+                padding: 20px 25px;
+                margin: 20px auto;
+            }
+            h1 {
+                font-size: 2.1em;
+            }
+            h2 {
+                font-size: 1.7em;
+            }
+            h3 {
+                font-size: 1.3em;
+            }
+            .animation-container {
+                height: 310px; /* 移动端动画高度调整 */
+            }
+            .controls button {
+                padding: 9px 18px;
+                font-size: 0.85em;
+            }
+            .controls input[type="range"] {
+                width: 120px;
+            }
+            .formula {
+                font-size: 1em;
+                padding: 10px;
+            }
+        }
+         @media (max-width: 480px) {
+            body {
+                font-size: 16px;
+            }
+            h1 {
+                font-size: 1.7em;
+            }
+            h2 {
+                font-size: 1.4em;
+            }
+            h3 {
+                font-size: 1.15em;
+            }
+            .animation-container {
+                height: 270px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="backgroundCanvasContainer"></div>
+    <div class="container">
+        <header>
+            <h1>张朝阳物理课：光速极限、时空结构与因果律</h1>
+            <div class="author-info">
+                <p>解读自 <strong>张朝阳</strong> 先生的物理课程精髓</p>
+                <p>（搜狐创始人、董事局主席兼CEO，麻省理工学院物理学博士）</p>
+            </div>
+        </header>
+
+        <main>
+            <article>
+                <section id="intro-causality">
+                    <h2>引言：宇宙的交通规则——光速与因果</h2>
+                    <p>“狭义相对论的限制是针对物体在<span class="concept">局部惯性参考系</span>中的运动速度而言的。也就是说，在一个给定的空间区域内，任何信息或物质的传播速度都不能超过光速c。这是<span class="concept">闵可夫斯基时空结构</span>决定的<span class="concept">因果律</span>的体现。” 这段精辟的论述，如同物理学中的交通法规，为宇宙中信息的传递和事件的关联划定了清晰的界限。它告诉我们，光速c不仅仅是一个速度值，更是宇宙深层结构——因果律——的守护者。</p>
+                    <p>在张朝阳先生的物理课中，对这些基本概念的透彻理解是探索相对论奇境的基石。本篇解读，我们将深入剖析这句话背后蕴含的物理逻辑，探讨为何光速限制必须在“局部”和“惯性”的框架下理解，闵可夫斯基时空又是如何编织出因果的网格，以及这一切如何共同构成了我们对宇宙运行方式的认知。让我们一起，再次踏上这场充满思辨乐趣的物理之旅！</p>
+                </section>
+
+                <section id="local-inertial-frames">
+                    <h2>第一章：相对论的舞台——局部惯性参考系</h2>
+                    <p>想象一下，你在一个平稳飞行的飞机上抛球，球的运动轨迹和你站在地面上抛球一样简单。这个飞机内部，就是一个近似的<span class="concept">惯性参考系</span>——牛顿第一定律（惯性定律）在其中成立的参考系。在这样的参考系里，物体不受外力时保持静止或匀速直线运动。</p>
+                    <p>狭义相对论的优雅与简洁，正是在惯性参考系这个理想舞台上得以完美展现。但为何要强调“<strong class="highlight">局部</strong>”呢？这是因为，在我们的真实宇宙中，由于引力的存在，严格意义上的“全局”惯性参考系是不存在的。引力会使时空弯曲（这是广义相对论的主题）。然而，在足够小的时空区域内，我们可以忽略引力的影响，认为时空是平直的，这样的区域就可以近似为一个局部惯性参考系。爱因斯坦的等效原理告诉我们，在这样一个局部区域内，引力的效应与加速参考系的效应是无法区分的，反之，一个自由下落的电梯（忽略空气阻力）内部就是一个极好的局部惯性参考系，里面的人会感到失重。</p>
+                    <p>所以，狭义相对论及其光速限制，首先是在这些“平坦”的局部小块时空中成立的。这就像在地球表面，虽然地球是个球体，但在我们日常活动的小范围内，地面可以近似看作是平的。正是在这些局部惯性系中，光速c扮演着至高无上的角色。</p>
+                    <div id="localInertialFrameAnimation" class="animation-container"></div>
+                    <div class="controls">
+                        <button id="lifPlayPause">演示局部惯性系</button>
+                        <label for="lifZoom">放大镜 (观察区域):</label>
+                        <input type="range" id="lifZoom" min="0.2" max="1" value="0.5" step="0.05">
+                    </div>
+                    <p>动画演示：一个宏观上可能弯曲的时空（用网格表示）。一个“放大镜”扫过这个时空，当放大镜聚焦在一个小区域时，该区域内的网格显得平直，代表一个局部惯性参考系。区域内有一个小球在做匀速直线运动，表示惯性定律在此局部成立。你可以调整放大镜的“观察区域大小”，体会“局部”的含义。</p>
+                </section>
+
+                <section id="minkowski-spacetime">
+                    <h2>第二章：时空的交响曲——闵可夫斯基的宇宙图景</h2>
+                    <p>在牛顿的经典世界里，时间和空间是相互独立的绝对存在，像一个固定不变的背景舞台，所有物理现象都在其上发生。然而，爱因斯坦的狭义相对论彻底改变了这一图景。他的老师闵可夫斯基更进一步，将时间和三维空间巧妙地融合为一个统一的四维实体——<span class="concept">闵可夫斯基时空</span>。</p>
+                    <p>在这个四维时空中，一个“点”不再仅仅是空间中的一个位置，而是一个“<strong class="highlight">事件</strong>”，它包含了时间和空间三个坐标 (t, x, y, z)。两个事件之间的“距离”也不再是简单的空间距离，而是一个被称为“<span class="concept">时空间隔</span>”(ds²)的量，其定义为：</p>
+                    <p class="formula">ds² = (c*dt)² - dx² - dy² - dz²</p>
+                    <p>这个时空间隔有一个神奇的特性：它在所有惯性参考系下都是<strong class="highlight">不变</strong>的，即具有洛伦兹不变性。这取代了经典物理中空间距离和时间间隔各自的绝对性。根据ds²的符号，两个事件之间的关系可以分为三类：</p>
+                    <ul>
+                        <li><strong>类时间隔 (ds² > 0)</strong>：两个事件之间可以通过低于或等于光速的信号相互联系。它们在时间上是有顺序的，一个可以作为另一个的因或果。</li>
+                        <li><strong>类光间隔 (ds² = 0)</strong>：只有光（或以光速传播的现象）才能连接这两个事件。</li>
+                        <li><strong>类空间隔 (ds² < 0)</strong>：两个事件之间无法通过任何低于或等于光速的信号建立因果联系。在某些参考系看来它们可能同时发生，但在另一些参考系看来它们的发生顺序可能相反。</li>
+                    </ul>
+                    <p>闵可夫斯基时空的这种结构，通过<span class="concept">光锥</span>形象地展现出来。对于任何一个事件（作为光锥顶点），所有未来可能被它影响的事件构成了未来光锥，所有过去可能影响它的事件构成了过去光锥。只有光锥内部和边界上的事件才与顶点事件有因果关联。</p>
+                    <div id="minkowskiLightConeAnimation" class="animation-container"></div>
+                    <div class="controls">
+                        <button id="mlcToggleView">切换光锥/事件</button>
+                        <label for="mlcTime">时间轴演化:</label>
+                        <input type="range" id="mlcTime" min="0" max="100" value="0" step="1">
+                    </div>
+                    <p>动画演示：展示一个简化的(1+1)维闵可夫斯基时空图（一维空间x，一维时间t，光速c设为1，所以光锥边界是45度线）。中心是一个事件点。演示未来光锥、过去光锥和类空区域。可以拖动一个“测试事件点”，观察它相对于中心事件是类时、类光还是类空。时间轴演化可以动态展示光锥的扩展。</p>
+                </section>
+
+                <section id="causality-speed-limit">
+                    <h2>第三章：因果的守护神——光速不变与信息传递</h2>
+                    <p><span class="concept">因果律</span>，即原因必定发生在结果之前，是物理学乃至我们日常经验中最基本的法则之一。如果这个法则被打破，世界将陷入逻辑混乱：你可以回到过去阻止自己的出生，或者在收到信息之前就对其做出反应。</p>
+                    <p>狭义相对论通过光速不变原理和闵可夫斯基时空结构，巧妙地维护了因果律的尊严。核心在于，任何携带<strong class="highlight">能量或信息</strong>的物理过程，其传播速度都不能超过真空光速c。为什么呢？</p>
+                    <p>想象一下，如果你能以超光速发送一个信号。由于“同时的相对性”，在一个参考系S中，你发送信号的事件A发生在接收信号的事件B之前。但在另一个高速运动的参考系S'中，通过洛伦兹变换计算，事件B完全有可能发生在事件A之前！这意味着在S'系看来，结果出现在了原因之前，因果关系被颠倒了。这就导致了无法容忍的逻辑悖论。</p>
+                    <p>光速c就像一个宇宙警察，它限制了所有“交通工具”（信息和物质）的最高速度，确保了在所有惯性参考系中，时间的“单向箭头”和事件的因果顺序得以保持一致。任何试图超光速传递信息的行为，都会撞上这堵由时空结构本身建立起来的“因果墙”。因此，光速c不仅仅是一个速度的上限，更是宇宙<strong class="highlight">因果结构稳定性的保证</strong>。</p>
+                    <div id="causalityViolationAnimation" class="animation-container"></div>
+                    <div class="controls">
+                        <button id="cvToggleSignal">发送亚光速/假想超光速信号</button>
+                    </div>
+                    <p>动画演示：在一个(1+1)维时空图上，事件A发出信号。如果信号以亚光速传播，它将始终在事件A的未来光锥内到达事件B。如果假设一个信号能以超光速传播（路径斜率小于45度），动画将展示在某个变换后的参考系中（通过倾斜时空轴模拟，简化展示），事件B可能看起来发生在事件A之前，从而形象地揭示因果可能被破坏的情况。</p>
+                </section>
+
+                <section id="worldlines-spacetime">
+                    <h2>第四章：时空中的足迹——世界线的故事</h2>
+                    <p>在闵可夫斯基的四维时空中，一个物体（或粒子）在运动过程中经历的一系列事件点，连接起来就构成了一条连续的曲线，这条曲线被称为该物体的<span class="concept">世界线</span>。世界线是物体在时空中的完整“生命历程”的几何表示。</p>
+                    <p>根据物体相对于光速的运动情况，世界线可以分为：</p>
+                    <ul>
+                        <li><strong>类时世界线</strong>：对于所有有静止质量的物体（如电子、质子、你我他），它们的速度v必须小于光速c。它们的世界线上任意两点间的时空间隔都是类时的 (ds² > 0)。这意味着在任何时刻，这些物体的运动方向在时空图上总是更偏向时间轴（与时间轴的夹角小于45度，若c=1）。</li>
+                        <li><strong>类光世界线</strong>：对于没有静止质量的粒子，如光子，它们永远以光速c运动。它们的世界线上任意两点间的时空间隔都是类光的 (ds² = 0)。在时空图上，它们的世界线恰好是光锥的边界（与时间轴夹角为45度）。</li>
+                        <li><strong>类空世界线（假想）</strong>：如果存在超光速粒子（所谓的“快子”，tachyons），它们的世界线将是类空的 (ds² < 0)，在时空图上更偏向空间轴（与时间轴夹角大于45度）。然而，快子的存在会导致严重的因果悖论，并且至今没有任何实验证据支持它们的存在。它们更多是理论探讨中的一种可能性。</li>
+                    </ul>
+                    <p>因此，光速c的限制，体现在世界线的几何形态上：<strong class="highlight">所有真实物理客体（携带能量和信息）的世界线都必须是类时或类光的</strong>，它们不能“横穿”到类空区域去，保证了其运动始终在光锥的约束之内，从而维护了因果一致性。</p>
+                    <div id="worldlinesAnimation" class="animation-container"></div>
+                    <div class="controls">
+                        <button id="wlAddMassive">添加类时线 (物体)</button>
+                        <button id="wlAddLightlike">添加类光线 (光子)</button>
+                        <button id="wlAddTachyon">添加假想类空线</button>
+                        <button id="wlClear">清除所有线</button>
+                    </div>
+                    <p>动画演示：一个(1+1)维时空图，中心有一个事件点和它的光锥。用户可以点击按钮添加不同类型的世界线：一条代表有质量物体的类时世界线（在光锥内蜿蜒前进），一条代表光子的类光世界线（沿光锥边缘直线传播），以及一条代表假想快子的类空世界线（穿越到光锥外，并标注其问题性）。</p>
+                </section>
+
+                <section id="apparent-ftl">
+                    <h2>第五章：眼见不一定为实——那些“看起来”超光速的现象</h2>
+                    <p>尽管狭义相对论严格禁止信息和能量以超光速传播，但在自然界和一些思想实验中，我们确实会遇到一些速度“看起来”超过光速c的现象。理解这些现象的关键在于区分<strong class="highlight">信息/能量的实际传递速度</strong>和<strong class="highlight">某些几何点或模式的表观运动速度</strong>。</p>
+                    <p>以下是一些常见的例子：</p>
+                    <ul>
+                        <li><strong>宇宙膨胀</strong>：正如之前讨论的，遥远星系因宇宙空间自身的膨胀而导致的退行速度可以超过c。但这并非星系在局部空间中以超光速飞行，而是它们之间的“空间”在变多。这不传递局部信息。</li>
+                        <li><strong>影子的运动</strong>：想象用手电筒照射远处的墙壁。如果你快速晃动手电筒，手电筒光斑在墙上移动的速度可以轻易超过光速c，只要墙壁足够远，晃动速度足够快。但影子的各个部分之间并没有传递信息，影子的移动只是光源信息到达墙面不同点的时间序列。</li>
+                        <li><strong>剪刀效应</strong>：当一把非常长的剪刀以很快的速度闭合时，其两个刀片交点（剪切点）的移动速度理论上可以超过光速。但这同样是一个几何点的运动，不代表物质或能量的超光速传递。</li>
+                        <li><strong>量子纠缠中的“瞬时”关联</strong>：一对纠缠粒子，无论相隔多远，当对其中一个进行测量时，另一个的状态似乎会“瞬间”确定。这曾让爱因斯坦称之为“鬼魅般的超距作用”。然而，现代理解是，这种关联虽然超距，但<strong class="highlight">不能用来以超光速传递经典信息</strong>。测量结果是随机的，只有在事后比较两地数据时才能发现其关联性。</li>
+                    </ul>
+                    <p>这些例子都强调了狭义相对论中光速限制的核心：它限制的是<span class="concept">因果链条的传播速度</span>，即一个事件能够对另一个遥远事件产生影响（传递信息或能量）的最大速度。表观的超光速现象并不违反这一根本原则。</p>
+                    <div id="shadowFTLAnimation" class="animation-container"></div>
+                    <div class="controls">
+                        <label for="sftlRotationSpeed">光源旋转速度:</label>
+                        <input type="range" id="sftlRotationSpeed" min="0.01" max="0.1" value="0.03" step="0.005">
+                    </div>
+                    <p>动画演示：一个点光源（手电筒）发出一束光，投射到一个远处的屏幕（墙壁）上形成一个光斑（影子）。光源可以绕中心点旋转。当旋转速度较快且屏幕距离较远时，光斑在屏幕上扫过的速度可以非常快。动画将计算并显示光斑的表观速度，并与光速c进行对比，同时强调这并非信息传递。</p>
+                </section>
+
+                <section id="conclusion-causality">
+                    <h2>结语：时空法则的基石</h2>
+                    <p>“光速是宇宙中最快的速度”，这句话简单而深刻。通过本次的探讨，我们更加清晰地认识到，这一限制并非武断的规定，而是深深植根于我们宇宙的<span class="concept">时空结构</span>和<span class="concept">因果律</span>之中。在任何一个局部惯性参考系中，闵可夫斯基时空的光锥结构严格规定了事件之间可能的因果联系，而光速c正是划分这种联系的临界速度。</p>
+                    <p>任何试图超越光速传递信息或能量的尝试，都将面临颠覆因果律的风险，导致逻辑上的悖论。因此，光速c不仅是速度的上限，更是宇宙秩序和逻辑自洽性的根本保障。张朝阳先生的物理课，正是通过这样层层深入的逻辑剖析，引导我们理解这些看似抽象的物理原理背后所蕴含的宇宙和谐之美。</p>
+                    <p>对光速极限的理解，也让我们能更准确地看待宇宙中的各种现象，区分真实的物理传递与表观的运动模式。这正是科学思辨的魅力所在——在纷繁复杂的现象中，洞察其不变的本质规律。</p>
+                </section>
+            </article>
+        </main>
+        <footer>
+            <p>&copy; 2025 光速极限与因果律解读。内容灵感与核心思想源自张朝阳先生的物理课程。</p>
+            <p>本页面所有动画均为概念性、简化性演示，旨在辅助理解，不完全代表真实物理过程的精确模拟。</p>
+        </footer>
+    </div>
+
+    <script>
+        // --- 全局背景星空动画 (复用) ---
+        let sketchBackground = function(p) {
+            let stars = [];
+            const numStars = 150; // 减少一点数量，让页面更清爽
+            p.setup = function() {
+                let canvas = p.createCanvas(p.windowWidth, p.windowHeight);
+                canvas.parent('backgroundCanvasContainer');
+                for (let i = 0; i < numStars; i++) {
+                    stars.push({
+                        x: p.random(p.width),
+                        y: p.random(p.height),
+                        size: p.random(0.3, 2.0), // 减小一点尺寸
+                        alpha: p.random(40, 120) // 减小一点亮度
+                    });
+                }
+                p.noStroke();
+            };
+            p.draw = function() {
+                p.clear(); 
+                for (let star of stars) {
+                    p.fill(180, 200, 235, star.alpha * (p.sin(p.frameCount * 0.008 + star.x * 0.08) * 0.25 + 0.75) ); 
+                    p.ellipse(star.x, star.y, star.size, star.size);
+                    star.y += star.size * 0.015; 
+                    if (star.y > p.height) {
+                        star.y = 0;
+                        star.x = p.random(p.width);
+                    }
+                }
+            };
+            p.windowResized = function() {
+                p.resizeCanvas(p.windowWidth, p.windowHeight);
+                 stars = []; 
+                for (let i = 0; i < numStars; i++) {
+                    stars.push({
+                        x: p.random(p.width),
+                        y: p.random(p.height),
+                        size: p.random(0.3, 2.0),
+                        alpha: p.random(40, 120)
+                    });
+                }
+            };
+        };
+        new p5(sketchBackground);
+
+        // --- 动画1: 局部惯性参考系 ---
+        let sketchLocalInertialFrame = function(p) {
+            let globalGrid = [];
+            let gridSize = 20;
+            let zoomFactor = 0.5; // Represents the size of the "flat" local region
+            let ball = {x: 0, y: 0, vx: 1, vy: 0.5};
+            let playing = true;
+
+            p.setup = function() {
+                let container = p.select('#localInertialFrameAnimation');
+                let canvas = p.createCanvas(container.width, container.height);
+                canvas.parent('localInertialFrameAnimation');
+                p.select('#lifPlayPause').mousePressed(() => { playing = !playing; if(playing) p.loop(); else p.noLoop(); });
+                let zoomSlider = p.select('#lifZoom');
+                zoomSlider.input(() => {
+                    zoomFactor = parseFloat(zoomSlider.value());
+                    p.redraw();
+                });
+                ball.x = p.width/2; ball.y = p.height/2;
+                p.noLoop(); p.redraw();
+            };
+
+            p.draw = function() {
+                p.background(1, 4, 9);
+                let centerX = p.width / 2;
+                let centerY = p.height / 2;
+
+                // Draw "global" curved spacetime (conceptual)
+                p.stroke(50, 70, 100);
+                for (let i = 0; i < p.width; i += gridSize) {
+                    p.beginShape();
+                    for (let j = 0; j < p.height; j += 5) {
+                        let curve = p.sin(i * 0.01 + j * 0.02 + p.frameCount * 0.01 * playing) * 10; // Gentle waving
+                        p.vertex(i + curve, j);
+                    }
+                    p.endShape();
+                }
+                 for (let j = 0; j < p.height; j += gridSize) {
+                    p.beginShape();
+                    for (let i = 0; i < p.width; i += 5) {
+                        let curve = p.cos(j * 0.01 + i * 0.02 + p.frameCount * 0.01 * playing) * 10;
+                        p.vertex(i, j + curve);
+                    }
+                    p.endShape();
+                }
+
+
+                // Draw "magnifying glass" showing local flat region
+                let localRegionSize = p.min(p.width, p.height) * zoomFactor;
+                p.fill(10, 20, 40, 150); // Semi-transparent overlay for the glass
+                p.stroke(150, 180, 255);
+                p.ellipse(centerX, centerY, localRegionSize * 1.1, localRegionSize * 1.1);
+                
+                p.push();
+                p.translate(centerX, centerY);
+                p.rectMode(p.CENTER);
+                // Draw flat grid inside the local region
+                p.stroke(100, 200, 100); // Green for flat local grid
+                for (let x = -localRegionSize / 2; x < localRegionSize / 2; x += gridSize/2) {
+                    p.line(x, -localRegionSize / 2, x, localRegionSize / 2);
+                }
+                for (let y = -localRegionSize / 2; y < localRegionSize / 2; y += gridSize/2) {
+                    p.line(-localRegionSize / 2, y, localRegionSize / 2, y);
+                }
+                
+                // Ball moving in local inertial frame
+                if(playing){
+                    ball.x += ball.vx;
+                    ball.y += ball.vy;
+                    if (ball.x > localRegionSize/2 || ball.x < -localRegionSize/2) ball.vx *= -1;
+                    if (ball.y > localRegionSize/2 || ball.y < -localRegionSize/2) ball.vy *= -1;
+                }
+                p.fill(255, 100, 100);
+                p.ellipse(ball.x - centerX + p.constrain(ball.x - centerX, -localRegionSize/2 + 5, localRegionSize/2 -5), 
+                          ball.y - centerY + p.constrain(ball.y - centerY, -localRegionSize/2 + 5, localRegionSize/2 -5), 10, 10);
+                p.pop();
+
+                if (!playing) {
+                    p.fill(255,255,255,150); p.textAlign(p.CENTER, p.CENTER); p.textSize(16);
+                    p.text("演示暂停", centerX, p.height - 20);
+                }
+            };
+             p.setup = function() { // Ensure first frame draw
+                let container = p.select('#localInertialFrameAnimation');
+                let canvas = p.createCanvas(container.width, container.height);
+                canvas.parent('localInertialFrameAnimation');
+                p.select('#lifPlayPause').mousePressed(() => { playing = !playing; if(playing) p.loop(); else p.noLoop(); });
+                let zoomSlider = p.select('#lifZoom');
+                zoomSlider.input(() => {
+                    zoomFactor = parseFloat(zoomSlider.value());
+                    if (!playing) p.redraw();
+                });
+                ball.x = p.width/2; ball.y = p.height/2;
+                p.noLoop(); p.redraw();
+            };
+        };
+        new p5(sketchLocalInertialFrame);
+
+        // --- 动画2: 闵可夫斯基时空与光锥 ---
+        let sketchMinkowskiLightCone = function(p) {
+            let timeParam = 0; // For animation
+            let showEvent = false;
+            let eventPos = {x:0, y:0, t:0};
+
+            p.setup = function() {
+                let container = p.select('#minkowskiLightConeAnimation');
+                let canvas = p.createCanvas(container.width, container.height);
+                canvas.parent('minkowskiLightConeAnimation');
+                p.select('#mlcToggleView').mousePressed(() => { showEvent = !showEvent; p.redraw();});
+                let timeSlider = p.select('#mlcTime');
+                timeSlider.input(() => {
+                    timeParam = parseFloat(timeSlider.value());
+                    if(!showEvent) p.redraw(); // Only redraw cone if not showing specific event
+                });
+                 p.noLoop(); p.redraw();
+            };
+            
+            function drawLightCone(cx, cy, currentTime, scale) {
+                let coneHeight = currentTime * scale;
+                let coneBaseRadius = currentTime * scale; // c=1 implies slope is 1
+
+                p.stroke(255, 255, 0, 150); // Yellow for light cone
+                p.noFill();
+                // Future light cone
+                p.line(cx, cy, cx + coneBaseRadius, cy - coneHeight);
+                p.line(cx, cy, cx - coneBaseRadius, cy - coneHeight);
+                p.line(cx + coneBaseRadius, cy - coneHeight, cx - coneBaseRadius, cy - coneHeight); // Top base (conceptual in 2D)
+                
+                // Past light cone
+                p.line(cx, cy, cx + coneBaseRadius, cy + coneHeight);
+                p.line(cx, cy, cx - coneBaseRadius, cy + coneHeight);
+                p.line(cx + coneBaseRadius, cy + coneHeight, cx - coneBaseRadius, cy + coneHeight); // Bottom base
+
+                p.fill(255,255,0, 80);
+                p.triangle(cx, cy, cx + coneBaseRadius, cy - coneHeight, cx - coneBaseRadius, cy - coneHeight);
+                p.triangle(cx, cy, cx + coneBaseRadius, cy + coneHeight, cx - coneBaseRadius, cy + coneHeight);
+
+                p.fill(255); p.textSize(10); p.textAlign(p.CENTER);
+                p.text("未来光锥", cx, cy - coneHeight - 10);
+                p.text("过去光锥", cx, cy + coneHeight + 20);
+                p.text("类空区域", cx + coneBaseRadius + 40, cy);
+            }
+
+            p.draw = function() {
+                p.background(1, 4, 9);
+                let centerX = p.width / 2;
+                let displayTimeAxisY = p.height * 0.8; // Time axis points upwards
+                let originY = displayTimeAxisY; // Event origin on time axis for drawing
+                let scaleSpace = p.width * 0.4 / 100; // Scale for space dimension
+                let scaleTime = p.height * 0.35 / 100; // Scale for time dimension (cone height)
+                
+                // Draw axes
+                p.stroke(100, 150, 200);
+                p.line(centerX, p.height*0.1, centerX, p.height*0.9); // Time axis (ct)
+                p.line(p.width*0.1, originY, p.width*0.9, originY);   // Space axis (x)
+                p.fill(200); p.noStroke(); p.textSize(12);
+                p.text("ct (时间)", centerX + 15, p.height*0.1 - 5);
+                p.text("x (空间)", p.width*0.9 + 15, originY);
+
+                if (showEvent) {
+                    p.fill(255,0,0); p.ellipse(centerX + eventPos.x * scaleSpace, originY - eventPos.t * scaleTime, 10,10);
+                    p.text(`事件 (${eventPos.x}, ${eventPos.t})`, centerX + eventPos.x*scaleSpace + 20, originY - eventPos.t*scaleTime -10);
+                    // Determine if event is timelike, spacelike, or lightlike relative to origin (0,0)
+                    let ds_squared = (eventPos.t * eventPos.t) - (eventPos.x * eventPos.x); // c=1
+                    let type = "";
+                    if (p.abs(ds_squared) < 0.1 && p.abs(p.abs(eventPos.t) - p.abs(eventPos.x)) < 0.1 ) type = "类光"; // Approx for float
+                    else if (ds_squared > 0) type = "类时";
+                    else type = "类空";
+                    p.text(type, centerX + eventPos.x*scaleSpace + 20, originY - eventPos.t*scaleTime +5);
+                    drawLightCone(centerX, originY, 50, scaleTime); // Static cone for reference
+                } else {
+                    drawLightCone(centerX, originY, timeParam, scaleTime);
+                     p.fill(255,255,255,150); p.textAlign(p.CENTER, p.CENTER); p.textSize(16);
+                    p.text("拖动滑块观察光锥演化", centerX, p.height - 20);
+                }
+            };
+            // Mouse interaction for placing event when in "showEvent" mode
+            p.mousePressed = function() {
+                if (showEvent && p.mouseX > 0 && p.mouseX < p.width && p.mouseY > 0 && p.mouseY < p.height) {
+                    let originY = p.height * 0.8;
+                    let scaleSpace = p.width * 0.4 / 100;
+                    let scaleTime = p.height * 0.35 / 100;
+                    eventPos.x = (p.mouseX - p.width/2) / scaleSpace;
+                    eventPos.t = (originY - p.mouseY) / scaleTime;
+                    p.redraw();
+                }
+            };
+             p.setup = function() { // Ensure first frame draw
+                let container = p.select('#minkowskiLightConeAnimation');
+                let canvas = p.createCanvas(container.width, container.height);
+                canvas.parent('minkowskiLightConeAnimation');
+                p.select('#mlcToggleView').mousePressed(() => { showEvent = !showEvent; if(!showEvent) timeParam=0; p.redraw();});
+                let timeSlider = p.select('#mlcTime');
+                timeSlider.input(() => {
+                    if(!showEvent) {
+                        timeParam = parseFloat(timeSlider.value());
+                        p.redraw(); 
+                    }
+                });
+                 p.noLoop(); p.redraw();
+            };
+        };
+        new p5(sketchMinkowskiLightCone);
+
+        // --- 动画3: 因果律的守护 ---
+        let sketchCausalityViolation = function(p) {
+            let eventA = {x: -100, t: 0}; // Event A (sender)
+            let signalType = 'subluminal'; // 'subluminal' or 'ftl'
+            let signalPos = {x:0, t:0};
+            let signalSpeed = 0.5; // Fraction of c for subluminal, >1 for FTL
+            let time = 0;
+            let playing = false;
+
+            p.setup = function() {
+                let container = p.select('#causalityViolationAnimation');
+                let canvas = p.createCanvas(container.width, container.height);
+                canvas.parent('causalityViolationAnimation');
+                p.select('#cvToggleSignal').mousePressed(() => {
+                    if (signalType === 'subluminal') {
+                        signalType = 'ftl';
+                        signalSpeed = 1.5; // Example FTL speed (c=1)
+                    } else {
+                        signalType = 'subluminal';
+                        signalSpeed = 0.5; // Example subluminal speed
+                    }
+                    resetSignal();
+                });
+                resetSignal();
+                p.noLoop(); p.redraw();
+            };
+
+            function resetSignal(){
+                time = 0;
+                signalPos.x = eventA.x;
+                signalPos.t = eventA.t;
+                playing = true;
+                p.loop();
+            }
+            
+            function drawAxesAndCone(ox, oy, scale) {
+                // Axes
+                p.stroke(100,150,200);
+                p.line(ox, p.height*0.1, ox, p.height*0.9); // ct axis
+                p.line(p.width*0.1, oy, p.width*0.9, oy);   // x axis
+                p.fill(200); p.noStroke(); p.textSize(10);
+                p.text("ct", ox + 10, p.height*0.1);
+                p.text("x", p.width*0.9, oy - 10);
+
+                // Light cone for Event A
+                p.stroke(255,255,0,100);
+                let coneTipX = ox + eventA.x * scale;
+                let coneTipY = oy - eventA.t * scale; // t is 0, so coneTipY is oy
+                let coneHeight = p.height * 0.4;
+                p.line(coneTipX, coneTipY, coneTipX + coneHeight, coneTipY - coneHeight); // c=1, slope=1
+                p.line(coneTipX, coneTipY, coneTipX - coneHeight, coneTipY - coneHeight);
+            }
+
+            p.draw = function() {
+                p.background(1, 4, 9);
+                let scale = 1; // Scale for drawing
+                let originX = p.width / 2;
+                let originT = p.height / 2; // Time=0 at middle of Y axis
+
+                drawAxesAndCone(originX, originT, scale);
+
+                // Event A
+                p.fill(0,255,0); p.ellipse(originX + eventA.x*scale, originT - eventA.t*scale, 10,10);
+                p.text("A (发送)", originX + eventA.x*scale - 25, originT - eventA.t*scale -10);
+
+                // Signal propagation
+                if(playing){
+                    time += 0.5;
+                    signalPos.x = eventA.x + signalSpeed * time; // Assuming signal starts at t=0 from A
+                    signalPos.t = time; // Time elapsed since signal emission
+                }
+                
+                p.fill(255,0,0); 
+                let sigDrawX = originX + signalPos.x*scale;
+                let sigDrawT = originT - signalPos.t*scale;
+                p.ellipse(sigDrawX, sigDrawT, 8,8);
+                p.text("信号", sigDrawX + 15, sigDrawT);
+
+                // Check if signal is outside light cone for FTL
+                if (signalType === 'ftl' && p.abs(signalPos.x - eventA.x) > p.abs(signalPos.t)) { // |dx| > c*dt (c=1)
+                    p.stroke(255,0,0);
+                    p.line(originX + eventA.x*scale, originT - eventA.t*scale, sigDrawX, sigDrawT);
+                    p.fill(255,100,100); p.textAlign(p.CENTER);
+                    p.text("超光速信号! 可能破坏因果!", p.width/2, 30);
+                } else if (signalType === 'subluminal') {
+                     p.stroke(0,255,255);
+                     p.line(originX + eventA.x*scale, originT - eventA.t*scale, sigDrawX, sigDrawT);
+                }
+                
+                if (signalPos.t * scale > originT * 0.8 || p.abs(signalPos.x*scale) > originX * 0.8) {
+                    playing = false; p.noLoop();
+                }
+                 if (!playing && time==0) {
+                    p.fill(255,255,255,150); p.textAlign(p.CENTER, p.CENTER); p.textSize(16);
+                    p.text("点击按钮发送信号", p.width/2, p.height - 20);
+                }
+            };
+             p.setup = function() { // Ensure first frame draw
+                let container = p.select('#causalityViolationAnimation');
+                let canvas = p.createCanvas(container.width, container.height);
+                canvas.parent('causalityViolationAnimation');
+                p.select('#cvToggleSignal').mousePressed(() => {
+                    if (signalType === 'subluminal') {
+                        signalType = 'ftl';
+                        signalSpeed = 1.5; 
+                    } else {
+                        signalType = 'subluminal';
+                        signalSpeed = 0.5; 
+                    }
+                    resetSignal();
+                });
+                resetSignal();
+                p.noLoop(); p.redraw();
+            };
+        };
+        new p5(sketchCausalityViolation);
+
+        // --- 动画4: 时空中的世界线 ---
+        let sketchWorldlines = function(p) {
+            let worldlines = [];
+            let scale = 1;
+            let originX, originY;
+
+            p.setup = function() {
+                let container = p.select('#worldlinesAnimation');
+                let canvas = p.createCanvas(container.width, container.height);
+                canvas.parent('worldlinesAnimation');
+                originX = p.width/2; originY = p.height/2;
+
+                p.select('#wlAddMassive').mousePressed(() => addWorldline('massive'));
+                p.select('#wlAddLightlike').mousePressed(() => addWorldline('lightlike'));
+                p.select('#wlAddTachyon').mousePressed(() => addWorldline('tachyon'));
+                p.select('#wlClear').mousePressed(() => { worldlines = []; p.redraw(); });
+                p.noLoop(); p.redraw();
+            };
+
+            function addWorldline(type) {
+                let line = { type: type, points: [], color: p.color(255) };
+                let startT = 0;
+                let startX = p.random(-originX*0.3, originX*0.3); // Random start x near origin
+                line.points.push({x: startX, t: startT});
+
+                let speed;
+                if (type === 'massive') { speed = p.random(0.2, 0.8); line.color = p.color(100,255,100); } // v < c
+                else if (type === 'lightlike') { speed = 1; line.color = p.color(255,255,0); } // v = c
+                else { speed = p.random(1.2, 2.0); line.color = p.color(255,100,100); } // v > c (tachyon)
+                
+                let angle = p.random(-p.PI/8, p.PI/8); // Slight random direction for massive/tachyon
+                if (type === 'lightlike') angle = (p.random(1) > 0.5) ? p.PI/4 : -p.PI/4; // Photon moves at 45 deg
+
+                for (let t = 1; t < 100; t+=2) { // Simulate for some time duration
+                    let currentX, currentT;
+                    if(type === 'lightlike'){ // For light, dx = dt (if c=1)
+                        currentX = startX + ( (speed * t) * ( (p.random(1)>0.5)?1:-1 ) ) ; // Light can go left or right
+                        currentX = startX + speed * t * ( (p.random(1)>0.5)?1:-1 );
+                         if (Math.abs(startX + speed * t) > originX * 0.9 || t > originY * 0.9 / scale) break;
+                         currentX = startX + speed * t * p.cos(angle);
+                    } else {
+                         currentX = startX + speed * t * p.sin(angle); // Simplified: constant velocity in some direction
+                    }
+                     currentT = startT + t * (type === 'lightlike' ? 1 : p.cos(angle)); // For massive/tachyon, project time component
+                     currentT = startT + t;
+
+
+                    if (p.abs(currentX * scale) > originX * 0.9 || currentT * scale > originY * 0.9) break;
+                    line.points.push({x: currentX, t: currentT});
+                }
+                worldlines.push(line);
+                p.redraw();
+            }
+            
+            function drawAxesAndConeSimple(ox, oy, scaleFactor) {
+                p.stroke(100,150,200);
+                p.line(ox, p.height*0.1, ox, p.height*0.9); // ct
+                p.line(p.width*0.1, oy, p.width*0.9, oy);   // x
+                p.fill(200);p.noStroke();p.textSize(10);
+                p.text("ct", ox + 10, p.height*0.1);
+                p.text("x", p.width*0.9, oy - 10);
+
+                p.stroke(255,255,0,80); // Light cone from origin
+                let coneH = oy - p.height*0.1;
+                p.line(ox, oy, ox + coneH, oy - coneH);
+                p.line(ox, oy, ox - coneH, oy - coneH);
+                p.line(ox, oy, ox + coneH, oy + coneH);
+                p.line(ox, oy, ox - coneH, oy + coneH);
+            }
+
+            p.draw = function() {
+                p.background(1, 4, 9);
+                drawAxesAndConeSimple(originX, originY, scale);
+
+                for (let wl of worldlines) {
+                    p.stroke(wl.color);
+                    p.noFill();
+                    p.beginShape();
+                    for (let pt of wl.points) {
+                        // Map simulation coords to drawing coords: time positive upwards
+                        p.vertex(originX + pt.x * scale, originY - pt.t * scale);
+                    }
+                    p.endShape();
+                    if(wl.points.length > 0){
+                        let lastPt = wl.points[wl.points.length-1];
+                        p.fill(wl.color); p.noStroke(); p.textSize(10);
+                        p.text(wl.type, originX + lastPt.x*scale + 5, originY - lastPt.t*scale -5);
+                    }
+                }
+                if (worldlines.length === 0) {
+                    p.fill(255,255,255,150); p.textAlign(p.CENTER, p.CENTER); p.textSize(16);
+                    p.text("点击按钮添加世界线", originX, p.height - 20);
+                }
+            };
+        };
+        new p5(sketchWorldlines);
+
+        // --- 动画5: 表观超光速 (影子) ---
+        let sketchShadowFTL = function(p) {
+            let lightSource = {x: 0, y: 0};
+            let screenDist = 200; // Distance to screen
+            let rotationAngle = 0;
+            let rotationSpeed = 0.03;
+            let beamLength = 400;
+
+            p.setup = function() {
+                let container = p.select('#shadowFTLAnimation');
+                let canvas = p.createCanvas(container.width, container.height);
+                canvas.parent('shadowFTLAnimation');
+                lightSource.x = p.width/2;
+                lightSource.y = p.height - 50; // Light source at bottom center
+                
+                let speedSlider = p.select('#sftlRotationSpeed');
+                speedSlider.input(() => {
+                    rotationSpeed = parseFloat(speedSlider.value());
+                });
+                p.loop(); // This animation is continuous
+            };
+
+            p.draw = function() {
+                p.background(1, 4, 9);
+                
+                // Draw light source
+                p.fill(255,255,0);
+                p.ellipse(lightSource.x, lightSource.y, 20, 20);
+                p.text("光源", lightSource.x - 15, lightSource.y + 25);
+
+                // Draw screen
+                p.stroke(150);
+                let screenY = lightSource.y - screenDist;
+                p.line(0, screenY, p.width, screenY);
+                p.fill(200); p.noStroke(); p.textSize(10);
+                p.text("屏幕", p.width - 40, screenY - 10);
+
+                // Light beam
+                rotationAngle += rotationSpeed;
+                let beamEndX = lightSource.x + beamLength * p.cos(rotationAngle - p.PI/2); // -PI/2 to point upwards initially
+                let beamEndY = lightSource.y + beamLength * p.sin(rotationAngle - p.PI/2);
+                
+                p.stroke(255,255,200,100);
+                p.line(lightSource.x, lightSource.y, beamEndX, beamEndY);
+
+                // Calculate shadow/light spot position on screen
+                // Line equation from lightSource to (beamEndX, beamEndY)
+                // Intersect with y = screenY
+                let spotX = lightSource.x;
+                if (beamEndY < screenY && lightSource.y > screenY) { // Beam is pointing towards/across screen
+                    let slope = (beamEndY - lightSource.y) / (beamEndX - lightSource.x);
+                    if (p.abs(beamEndX - lightSource.x) > 0.01) { // Avoid division by zero if beam is vertical
+                         spotX = lightSource.x + (screenY - lightSource.y) / slope;
+                    } else { // Vertical beam
+                        spotX = lightSource.x;
+                    }
+                    p.fill(255,200,150);
+                    p.ellipse(spotX, screenY, 15,15); // Light spot
+
+                    // Calculate spot speed (conceptual)
+                    // Need previous spotX:
+                    if (p.frameCount > 1 && typeof p.previousSpotX !== 'undefined') {
+                        let spotSpeed = p.abs(spotX - p.previousSpotX) / (1/p.frameRate()); // pixels per second (approx)
+                        p.fill(255); p.textSize(12);
+                        p.text(`光斑表观速度: ${spotSpeed.toFixed(0)} px/frame (概念)`, 20, 30);
+                        if (spotSpeed > 50){ // Arbitrary threshold for "fast"
+                             p.text("表观速度可能远超光速c!", 20, 50);
+                        }
+                    }
+                    p.previousSpotX = spotX;
+                } else {
+                    p.previousSpotX = undefined; // Reset if beam not hitting screen
+                }
+            };
+        };
+        new p5(sketchShadowFTL);
+
+    </script>
+</body>
+</html>

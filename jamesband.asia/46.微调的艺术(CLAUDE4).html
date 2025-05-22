@@ -1,0 +1,961 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SFT记忆，RL泛化：基础模型后训练的物理逻辑解析</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.7.0/p5.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;600;700&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            font-size: 16px;
+            line-height: 1.8;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 40px;
+            margin-top: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 30px;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            border-radius: 15px;
+            color: white;
+        }
+        
+        .title {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 15px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .authors {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-bottom: 10px;
+        }
+        
+        .institutions {
+            font-size: 12px;
+            opacity: 0.8;
+        }
+        
+        .section {
+            margin-bottom: 40px;
+            padding: 25px;
+            background: rgba(255, 255, 255, 0.7);
+            border-radius: 15px;
+            border-left: 5px solid #667eea;
+        }
+        
+        .section-title {
+            font-size: 22px;
+            font-weight: 600;
+            color: #667eea;
+            margin-bottom: 20px;
+            position: relative;
+        }
+        
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 50px;
+            height: 3px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            border-radius: 2px;
+        }
+        
+        .highlight {
+            background: linear-gradient(45deg, #ffeb3b, #ff9800);
+            padding: 2px 8px;
+            border-radius: 5px;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .key-point {
+            background: rgba(102, 126, 234, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+            border-left: 4px solid #667eea;
+        }
+        
+        .animation-container {
+            width: 100%;
+            height: 400px;
+            border: 2px solid #ddd;
+            border-radius: 15px;
+            margin: 20px 0;
+            background: rgba(255, 255, 255, 0.9);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .canvas-container {
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+        
+        .canvas-container canvas {
+            width: 100% !important;
+            height: 100% !important;
+            display: block;
+        }
+        
+        .controls {
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+            z-index: 10;
+        }
+        
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 20px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s ease;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .physics-analogy {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            margin: 20px 0;
+        }
+        
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .comparison-table th, .comparison-table td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .comparison-table th {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            font-weight: 600;
+        }
+        
+        .formula {
+            background: rgba(102, 126, 234, 0.1);
+            padding: 10px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            margin: 10px 0;
+            border: 1px dashed #667eea;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+                margin: 10px;
+            }
+            
+            .title {
+                font-size: 24px;
+            }
+            
+            .section-title {
+                font-size: 20px;
+            }
+            
+            body {
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="title">SFT记忆，RL泛化：基础模型后训练的物理逻辑解析</div>
+            <div class="authors">
+                <strong>作者团队：</strong>Tianzhe Chu, Yuexiang Zhai, Jihan Yang, Shengbang Tong, 
+                Saining Xie, Dale Schuurmans, Quoc V. Le, Sergey Levine, Yi Ma
+            </div>
+            <div class="institutions">
+                <strong>研究机构：</strong>香港大学 (HKU) • 加州大学伯克利分校 (UC Berkeley) • 
+                Google DeepMind • 纽约大学 (NYU)
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="section-title">🎯 核心发现与物理类比</div>
+            <div class="physics-analogy">
+                <h4>🧮 物理系统类比</h4>
+                <p><strong>SFT (监督微调)</strong> 如同<span class="highlight">晶体结构</span>：倾向于形成固定模式，记忆特定配置，但在新环境下难以适应</p>
+                <p><strong>RL (强化学习)</strong> 如同<span class="highlight">流体动力学</span>：能够根据环境反馈动态调整，形成普适性规律</p>
+            </div>
+            
+            <div class="key-point">
+                <strong>🔬 核心洞察：</strong>这项研究揭示了AI训练中的一个基本物理原理——
+                <span class="highlight">记忆与泛化之间的本质权衡</span>。SFT像固体的记忆效应，而RL像液体的适应性流动。
+            </div>
+
+            <div class="animation-container">
+                <div class="canvas-container" id="learningModeCanvas"></div>
+                <div class="controls">
+                    <button class="btn" onclick="toggleLearningAnimation()">播放/暂停</button>
+                    <button class="btn" onclick="resetLearningAnimation()">重置</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="section-title">⚖️ SFT vs RL：记忆与泛化的对比</div>
+            
+            <table class="comparison-table">
+                <thead>
+                    <tr>
+                        <th>特性</th>
+                        <th>SFT (监督微调)</th>
+                        <th>RL (强化学习)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>学习机制</strong></td>
+                        <td>模式记忆 (Pattern Memorization)</td>
+                        <td>规律探索 (Rule Discovery)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>物理类比</strong></td>
+                        <td>晶体固化过程</td>
+                        <td>自适应流体</td>
+                    </tr>
+                    <tr>
+                        <td><strong>分布内性能</strong></td>
+                        <td>快速收敛</td>
+                        <td>稳步提升</td>
+                    </tr>
+                    <tr>
+                        <td><strong>分布外泛化</strong></td>
+                        <td>性能下降 (-8.1% 到 -79.5%)</td>
+                        <td>性能提升 (+3.0% 到 +11.0%)</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="animation-container">
+                <div class="canvas-container" id="performanceComparisonCanvas"></div>
+                <div class="controls">
+                    <button class="btn" onclick="togglePerformanceAnimation()">播放/暂停</button>
+                    <button class="btn" onclick="switchTaskType()">切换任务类型</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="section-title">🧪 实验设计：双任务验证体系</div>
+            
+            <div class="key-point">
+                <strong>🎮 GeneralPoints环境：</strong>基于Points24的算术推理卡牌游戏
+                <div class="formula">
+                目标：使用四张卡牌 [a, b, c, d] 构造等式 = 24<br>
+                规则变体：J, Q, K → {10, 10, 10} vs {11, 12, 13}
+                </div>
+            </div>
+
+            <div class="key-point">
+                <strong>🗺️ V-IRL环境：</strong>现实世界视觉导航任务
+                <div class="formula">
+                目标：根据文本指令和视觉观察导航到目标位置<br>
+                动作空间：绝对方向 vs 相对方向
+                </div>
+            </div>
+
+            <div class="animation-container">
+                <div class="canvas-container" id="taskEnvironmentCanvas"></div>
+                <div class="controls">
+                    <button class="btn" onclick="toggleTaskAnimation()">播放/暂停</button>
+                    <button class="btn" onclick="switchEnvironment()">切换环境</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="section-title">📊 验证步数的关键作用</div>
+            
+            <p>研究发现，<span class="highlight">验证迭代次数</span>对RL的泛化能力有显著影响，这类似于物理系统中的<strong>多次测量提高精度</strong>的原理。</p>
+
+            <div class="key-point">
+                <strong>🔄 验证步数效应：</strong>
+                <ul>
+                    <li>1步验证：仅+0.48%的OOD性能提升</li>
+                    <li>3步验证：+2.15%的性能提升</li>
+                    <li>5步验证：+2.99%的性能提升</li>
+                    <li>10步验证：+5.99%的性能提升</li>
+                </ul>
+            </div>
+
+            <div class="animation-container">
+                <div class="canvas-container" id="verificationStepsCanvas"></div>
+                <div class="controls">
+                    <button class="btn" onclick="toggleVerificationAnimation()">播放/暂停</button>
+                    <button class="btn" onclick="changeVerificationSteps()">改变步数</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="section-title">👁️ RL对视觉能力的意外提升</div>
+            
+            <div class="physics-analogy">
+                <h4>🌟 意外发现</h4>
+                <p>RL训练不仅提升了推理能力，还<span class="highlight">意外改善了视觉识别准确率</span>，
+                这类似于物理系统中的"耦合效应"——一个子系统的优化带动整体性能提升。</p>
+            </div>
+
+            <div class="key-point">
+                <strong>🎯 视觉识别提升机制：</strong>
+                <div class="formula">
+                RL训练 → 结果导向奖励 → 视觉-推理耦合优化 → 识别能力提升
+                </div>
+            </div>
+
+            <div class="animation-container">
+                <div class="canvas-container" id="visualCapabilityCanvas"></div>
+                <div class="controls">
+                    <button class="btn" onclick="toggleVisualAnimation()">播放/暂停</button>
+                    <button class="btn" onclick="showRecognitionDetails()">显示细节</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="section-title">🚀 实践意义与未来展望</div>
+            
+            <div class="key-point">
+                <strong>💡 核心启示：</strong>
+                <ul>
+                    <li><span class="highlight">SFT作为"格式教师"</span>：稳定输出格式，为RL训练奠定基础</li>
+                    <li><span class="highlight">RL作为"泛化引擎"</span>：学习可迁移的推理规律</li>
+                    <li><span class="highlight">协同训练策略</span>：SFT初始化 + RL微调的最优范式</li>
+                </ul>
+            </div>
+
+            <div class="physics-analogy">
+                <h4>🔮 物理学视角的预测</h4>
+                <p>基于<strong>信息论</strong>和<strong>统计力学</strong>原理，我们可以预测：未来的AI训练将更多采用
+                <span class="highlight">"相变"式的多阶段训练</span>，每个阶段对应不同的学习物理机制。</p>
+            </div>
+
+            <div class="formula">
+                <strong>训练效果公式化表达：</strong><br>
+                泛化能力 = f(初始知识结构, 环境反馈质量, 验证迭代深度)<br>
+                其中 f 遵循信息熵最大化原理
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="section-title">🎯 结论：记忆与泛化的智慧平衡</div>
+            
+            <p>这项研究从<strong>物理学视角</strong>揭示了AI训练的深层规律：</p>
+            
+            <div class="key-point">
+                <strong>🧬 核心洞察：</strong>
+                SFT和RL代表了学习系统中<span class="highlight">两种基本的信息处理模式</span>——
+                记忆固化与适应进化。最优的AI系统需要在这两种模式间找到动态平衡，
+                就像自然界中<strong>结构稳定性与功能灵活性</strong>的精妙平衡。
+            </div>
+
+            <div class="physics-analogy">
+                <p><strong>🌊 展望未来：</strong>下一代AI训练方法可能借鉴<span class="highlight">量子系统的叠加态原理</span>，
+                同时保持记忆的确定性和泛化的概率性，实现真正的"智能涌现"。</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 全局变量
+        let learningModeSketch, performanceSketch, taskSketch, verificationSketch, visualSketch;
+        let animations = {
+            learning: { playing: false, reset: false },
+            performance: { playing: false, taskType: 'GP-L' },
+            task: { playing: false, environment: 'GeneralPoints' },
+            verification: { playing: false, steps: 1 },
+            visual: { playing: false, showDetails: false }
+        };
+
+        // 学习模式对比动画
+        function setupLearningModeAnimation() {
+            learningModeSketch = new p5((p) => {
+                let time = 0;
+                let particles = [];
+                
+                p.setup = () => {
+                    let canvas = p.createCanvas(400, 300);
+                    canvas.parent('learningModeCanvas');
+                    
+                    // 初始化粒子（代表数据点）
+                    for (let i = 0; i < 30; i++) {
+                        particles.push({
+                            x: p.random(p.width),
+                            y: p.random(p.height),
+                            targetX: p.random(p.width),
+                            targetY: p.random(p.height),
+                            sftX: p.random(50, 150),
+                            sftY: p.random(50, 250),
+                            rlX: p.random(250, 350),
+                            rlY: p.random(50, 250),
+                            size: p.random(3, 8),
+                            color: p.color(p.random(100, 255), p.random(100, 255), p.random(100, 255))
+                        });
+                    }
+                    
+                    // 手动绘制一帧
+                    p.background(245);
+                    p.textAlign(p.CENTER, p.CENTER);
+                    p.textSize(16);
+                    p.fill(102, 126, 234);
+                    p.text('SFT: 记忆固化', 100, 30);
+                    p.fill(118, 75, 162);
+                    p.text('RL: 适应进化', 300, 30);
+                };
+                
+                p.draw = () => {
+                    if (!animations.learning.playing && !animations.learning.reset) return;
+                    
+                    if (animations.learning.reset) {
+                        time = 0;
+                        animations.learning.reset = false;
+                    }
+                    
+                    p.background(245, 245, 250);
+                    
+                    // 绘制标题
+                    p.textAlign(p.CENTER, p.CENTER);
+                    p.textSize(16);
+                    p.fill(102, 126, 234);
+                    p.text('SFT: 记忆固化', 100, 30);
+                    p.fill(118, 75, 162);
+                    p.text('RL: 适应进化', 300, 30);
+                    
+                    // 绘制分界线
+                    p.stroke(200);
+                    p.line(200, 50, 200, 270);
+                    
+                    // SFT区域 - 晶体结构效果
+                    p.noStroke();
+                    for (let i = 0; i < particles.length / 2; i++) {
+                        let particle = particles[i];
+                        let progress = p.min(time / 200, 1);
+                        
+                        // 向固定位置聚集
+                        let currentX = p.lerp(particle.x, particle.sftX, progress);
+                        let currentY = p.lerp(particle.y, particle.sftY, progress);
+                        
+                        p.fill(particle.color.levels[0], particle.color.levels[1], particle.color.levels[2], 180);
+                        p.circle(currentX, currentY, particle.size * (1 + 0.5 * progress));
+                    }
+                    
+                    // RL区域 - 流体动力学效果
+                    for (let i = particles.length / 2; i < particles.length; i++) {
+                        let particle = particles[i];
+                        
+                        // 动态适应性移动
+                        let flowX = 50 * p.sin(time * 0.02 + i);
+                        let flowY = 30 * p.cos(time * 0.03 + i);
+                        
+                        particle.rlX += flowX * 0.01;
+                        particle.rlY += flowY * 0.01;
+                        
+                        // 边界检测
+                        if (particle.rlX < 210) particle.rlX = 210;
+                        if (particle.rlX > 390) particle.rlX = 390;
+                        if (particle.rlY < 60) particle.rlY = 60;
+                        if (particle.rlY > 260) particle.rlY = 260;
+                        
+                        p.fill(particle.color.levels[0], particle.color.levels[1], particle.color.levels[2], 150);
+                        p.circle(particle.rlX, particle.rlY, particle.size);
+                    }
+                    
+                    // 绘制文字说明
+                    p.fill(60);
+                    p.textSize(12);
+                    p.text('固定模式', 100, 280);
+                    p.text('动态适应', 300, 280);
+                    
+                    time++;
+                };
+            });
+        }
+
+        // 性能对比动画
+        function setupPerformanceAnimation() {
+            performanceSketch = new p5((p) => {
+                let dataPoints = [];
+                let currentFrame = 0;
+                let maxFrames = 300;
+                
+                p.setup = () => {
+                    let canvas = p.createCanvas(400, 300);
+                    canvas.parent('performanceComparisonCanvas');
+                    
+                    // 手动绘制一帧
+                    p.background(245);
+                    p.textAlign(p.CENTER, p.CENTER);
+                    p.text('性能对比分析', p.width/2, p.height/2);
+                };
+                
+                p.draw = () => {
+                    if (!animations.performance.playing) return;
+                    
+                    p.background(245, 245, 250);
+                    
+                    // 绘制坐标轴
+                    p.stroke(100);
+                    p.line(50, 250, 350, 250); // x轴
+                    p.line(50, 250, 50, 50);   // y轴
+                    
+                    // 标签
+                    p.fill(60);
+                    p.noStroke();
+                    p.textAlign(p.CENTER);
+                    p.textSize(12);
+                    p.text('训练计算量', 200, 280);
+                    p.push();
+                    p.translate(20, 150);
+                    p.rotate(-p.HALF_PI);
+                    p.text('成功率 (%)', 0, 0);
+                    p.pop();
+                    
+                    // 任务类型显示
+                    p.textAlign(p.LEFT);
+                    p.textSize(14);
+                    p.fill(102, 126, 234);
+                    p.text(`当前任务: ${animations.performance.taskType}`, 60, 30);
+                    
+                    // 绘制数据线
+                    if (currentFrame < maxFrames) {
+                        let progress = currentFrame / maxFrames;
+                        let points = Math.floor(progress * 20);
+                        
+                        // SFT线 (分布内)
+                        p.stroke(255, 100, 100);
+                        p.strokeWeight(3);
+                        p.noFill();
+                        p.beginShape();
+                        for (let i = 0; i <= points; i++) {
+                            let x = p.map(i, 0, 20, 60, 340);
+                            let y = p.map(80 - i * 1.5, 0, 100, 240, 60); // 下降趋势
+                            p.vertex(x, y);
+                        }
+                        p.endShape();
+                        
+                        // RL线 (分布内)
+                        p.stroke(100, 255, 100);
+                        p.beginShape();
+                        for (let i = 0; i <= points; i++) {
+                            let x = p.map(i, 0, 20, 60, 340);
+                            let y = p.map(50 + i * 2, 0, 100, 240, 60); // 上升趋势
+                            p.vertex(x, y);
+                        }
+                        p.endShape();
+                        
+                        currentFrame++;
+                    }
+                    
+                    // 图例
+                    p.textAlign(p.LEFT);
+                    p.textSize(10);
+                    p.fill(255, 100, 100);
+                    p.text('■ SFT (分布外)', 60, 70);
+                    p.fill(100, 255, 100);
+                    p.text('■ RL (分布外)', 60, 85);
+                };
+            });
+        }
+
+        // 任务环境动画
+        function setupTaskEnvironmentAnimation() {
+            taskSketch = new p5((p) => {
+                let cardAnimation = 0;
+                let navigationStep = 0;
+                
+                p.setup = () => {
+                    let canvas = p.createCanvas(400, 300);
+                    canvas.parent('taskEnvironmentCanvas');
+                    
+                    // 手动绘制一帧
+                    p.background(245);
+                    p.textAlign(p.CENTER, p.CENTER);
+                    p.text('实验环境展示', p.width/2, p.height/2);
+                };
+                
+                p.draw = () => {
+                    if (!animations.task.playing) return;
+                    
+                    p.background(245, 245, 250);
+                    
+                    if (animations.task.environment === 'GeneralPoints') {
+                        drawGeneralPointsAnimation();
+                    } else {
+                        drawVIRLAnimation();
+                    }
+                };
+                
+                function drawGeneralPointsAnimation() {
+                    // 标题
+                    p.fill(102, 126, 234);
+                    p.textAlign(p.CENTER);
+                    p.textSize(16);
+                    p.text('GeneralPoints: 算术推理卡牌', 200, 30);
+                    
+                    // 绘制卡牌
+                    let cards = ['5', '4', '10', '7'];
+                    let cardW = 50, cardH = 70;
+                    
+                    for (let i = 0; i < 4; i++) {
+                        let x = 80 + i * 60;
+                        let y = 80;
+                        let bounce = 10 * p.sin(cardAnimation + i * 0.5);
+                        
+                        // 卡牌背景
+                        p.fill(255);
+                        p.stroke(100);
+                        p.rect(x, y + bounce, cardW, cardH, 5);
+                        
+                        // 卡牌数字
+                        p.fill(50);
+                        p.noStroke();
+                        p.textAlign(p.CENTER);
+                        p.textSize(20);
+                        p.text(cards[i], x + cardW/2, y + cardH/2 + bounce);
+                    }
+                    
+                    // 等式
+                    p.fill(60);
+                    p.textSize(14);
+                    p.text('目标: 构造等式 = 24', 200, 180);
+                    p.text('示例: (7-5)*10+4 = 24', 200, 200);
+                    
+                    // 规则变体说明
+                    p.textSize(12);
+                    p.fill(118, 75, 162);
+                    p.text('规则变体: J,Q,K → 10,10,10 vs 11,12,13', 200, 240);
+                    
+                    cardAnimation += 0.1;
+                }
+                
+                function drawVIRLAnimation() {
+                    // 标题
+                    p.fill(102, 126, 234);
+                    p.textAlign(p.CENTER);
+                    p.textSize(16);
+                    p.text('V-IRL: 视觉导航环境', 200, 30);
+                    
+                    // 绘制简化的导航场景
+                    p.fill(200, 255, 200);
+                    p.noStroke();
+                    p.rect(0, 60, 400, 180); // 地图背景
+                    
+                    // 建筑物
+                    p.fill(150, 150, 200);
+                    p.rect(50, 80, 40, 30);
+                    p.rect(150, 100, 35, 25);
+                    p.rect(250, 85, 45, 35);
+                    p.rect(320, 110, 30, 20);
+                    
+                    // 智能体位置
+                    let agentX = 70 + navigationStep * 2;
+                    let agentY = 150;
+                    
+                    p.fill(255, 100, 100);
+                    p.circle(agentX, agentY, 15);
+                    
+                    // 路径
+                    p.stroke(100, 100, 255);
+                    p.strokeWeight(2);
+                    p.line(70, 150, agentX, agentY);
+                    
+                    // 指令
+                    p.fill(60);
+                    p.noStroke();
+                    p.textAlign(p.CENTER);
+                    p.textSize(12);
+                    p.text('指令: 向东走到下一个路口...', 200, 260);
+                    
+                    navigationStep = (navigationStep + 1) % 100;
+                }
+            });
+        }
+
+        // 验证步数动画
+        function setupVerificationAnimation() {
+            verificationSketch = new p5((p) => {
+                let currentStep = 0;
+                let accuracy = 0;
+                
+                p.setup = () => {
+                    let canvas = p.createCanvas(400, 300);
+                    canvas.parent('verificationStepsCanvas');
+                    
+                    // 强制设置高度
+                    let container = document.getElementById('verificationStepsCanvas');
+                    container.style.height = '300px';
+                    
+                    // 手动绘制一帧
+                    p.background(245);
+                    p.textAlign(p.CENTER, p.CENTER);
+                    p.text('验证步数影响分析', p.width/2, p.height/2);
+                };
+                
+                p.draw = () => {
+                    if (!animations.verification.playing) return;
+                    
+                    p.background(245, 245, 250);
+                    
+                    // 标题
+                    p.fill(102, 126, 234);
+                    p.textAlign(p.CENTER);
+                    p.textSize(16);
+                    p.text(`验证步数: ${animations.verification.steps}`, 200, 30);
+                    
+                    // 绘制验证流程
+                    let stepWidth = 300 / animations.verification.steps;
+                    
+                    for (let i = 0; i < animations.verification.steps; i++) {
+                        let x = 50 + i * stepWidth;
+                        let y = 100;
+                        let isActive = currentStep >= i;
+                        
+                        // 步骤圆圈
+                        p.fill(isActive ? 100 : 200);
+                        p.stroke(60);
+                        p.circle(x + stepWidth/2, y, 30);
+                        
+                        // 步骤编号
+                        p.fill(255);
+                        p.noStroke();
+                        p.textAlign(p.CENTER);
+                        p.textSize(12);
+                        p.text(i + 1, x + stepWidth/2, y);
+                        
+                        // 连接线
+                        if (i < animations.verification.steps - 1) {
+                            p.stroke(isActive ? 100 : 200);
+                            p.line(x + stepWidth/2 + 15, y, x + stepWidth - 15, y);
+                        }
+                    }
+                    
+                    // 准确率显示
+                    accuracy = Math.min(50 + animations.verification.steps * 10, 95);
+                    p.fill(60);
+                    p.noStroke();
+                    p.textAlign(p.CENTER);
+                    p.textSize(14);
+                    p.text(`OOD准确率: ${accuracy.toFixed(1)}%`, 200, 180);
+                    
+                    // 准确率条
+                    p.fill(200);
+                    p.rect(100, 200, 200, 20);
+                    p.fill(100, 255, 100);
+                    p.rect(100, 200, accuracy * 2, 20);
+                    
+                    currentStep = (currentStep + 1) % (animations.verification.steps + 5);
+                };
+            });
+        }
+
+        // 视觉能力动画
+        function setupVisualCapabilityAnimation() {
+            visualSketch = new p5((p) => {
+                let recognitionAccuracy = 0;
+                let time = 0;
+                
+                p.setup = () => {
+                    let canvas = p.createCanvas(400, 300);
+                    canvas.parent('visualCapabilityCanvas');
+                    
+                    // 手动绘制一帧
+                    p.background(245);
+                    p.textAlign(p.CENTER, p.CENTER);
+                    p.text('视觉识别能力提升', p.width/2, p.height/2);
+                };
+                
+                p.draw = () => {
+                    if (!animations.visual.playing) return;
+                    
+                    p.background(245, 245, 250);
+                    
+                    // 标题
+                    p.fill(102, 126, 234);
+                    p.textAlign(p.CENTER);
+                    p.textSize(16);
+                    p.text('RL训练对视觉识别的耦合提升', 200, 30);
+                    
+                    // 模拟卡牌识别
+                    drawCardRecognition();
+                    
+                    // 识别准确率曲线
+                    drawAccuracyChart();
+                    
+                    time++;
+                };
+                
+                function drawCardRecognition() {
+                    // 模糊到清晰的卡牌
+                    let clarity = p.map(p.sin(time * 0.05), -1, 1, 0.3, 1);
+                    
+                    for (let i = 0; i < 4; i++) {
+                        let x = 80 + i * 60;
+                        let y = 80;
+                        
+                        // 卡牌
+                        p.fill(255, 255 * clarity);
+                        p.stroke(100, 255 * clarity);
+                        p.rect(x, y, 40, 55, 3);
+                        
+                        // 识别标记
+                        if (clarity > 0.7) {
+                            p.fill(100, 255, 100);
+                            p.noStroke();
+                            p.circle(x + 35, y + 5, 10);
+                            p.fill(255);
+                            p.textAlign(p.CENTER);
+                            p.textSize(8);
+                            p.text('✓', x + 35, y + 6);
+                        }
+                    }
+                    
+                    recognitionAccuracy = clarity * 100;
+                }
+                
+                function drawAccuracyChart() {
+                    // 准确率显示
+                    p.fill(60);
+                    p.noStroke();
+                    p.textAlign(p.CENTER);
+                    p.textSize(12);
+                    p.text(`识别准确率: ${recognitionAccuracy.toFixed(1)}%`, 200, 170);
+                    
+                    if (animations.visual.showDetails) {
+                        p.textSize(10);
+                        p.text('RL → 结果导向奖励 → 视觉-推理耦合', 200, 190);
+                        p.text('→ 识别能力意外提升', 200, 205);
+                    }
+                    
+                    // 时间序列图
+                    p.stroke(118, 75, 162);
+                    p.strokeWeight(2);
+                    p.noFill();
+                    p.beginShape();
+                    for (let t = 0; t < time && t < 100; t++) {
+                        let x = p.map(t, 0, 100, 50, 350);
+                        let acc = 50 + 30 * p.sin(t * 0.1) + t * 0.3;
+                        let y = p.map(acc, 0, 100, 260, 220);
+                        p.vertex(x, y);
+                    }
+                    p.endShape();
+                }
+            });
+        }
+
+        // 控制函数
+        function toggleLearningAnimation() {
+            animations.learning.playing = !animations.learning.playing;
+        }
+
+        function resetLearningAnimation() {
+            animations.learning.reset = true;
+            animations.learning.playing = true;
+        }
+
+        function togglePerformanceAnimation() {
+            animations.performance.playing = !animations.performance.playing;
+        }
+
+        function switchTaskType() {
+            const types = ['GP-L', 'GP-VL', 'V-IRL-L', 'V-IRL-VL'];
+            const currentIndex = types.indexOf(animations.performance.taskType);
+            animations.performance.taskType = types[(currentIndex + 1) % types.length];
+        }
+
+        function toggleTaskAnimation() {
+            animations.task.playing = !animations.task.playing;
+        }
+
+        function switchEnvironment() {
+            animations.task.environment = 
+                animations.task.environment === 'GeneralPoints' ? 'V-IRL' : 'GeneralPoints';
+        }
+
+        function toggleVerificationAnimation() {
+            animations.verification.playing = !animations.verification.playing;
+        }
+
+        function changeVerificationSteps() {
+            const steps = [1, 3, 5, 10];
+            const currentIndex = steps.indexOf(animations.verification.steps);
+            animations.verification.steps = steps[(currentIndex + 1) % steps.length];
+        }
+
+        function toggleVisualAnimation() {
+            animations.visual.playing = !animations.visual.playing;
+        }
+
+        function showRecognitionDetails() {
+            animations.visual.showDetails = !animations.visual.showDetails;
+        }
+
+        // 初始化所有动画
+        document.addEventListener('DOMContentLoaded', function() {
+            setupLearningModeAnimation();
+            setupPerformanceAnimation();
+            setupTaskEnvironmentAnimation();
+            setupVerificationAnimation();
+            setupVisualCapabilityAnimation();
+        });
+    </script>
+</body>
+</html>

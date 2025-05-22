@@ -1,0 +1,1161 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RISE方法解读：信任但验证的智能推理之路</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.2/p5.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
+    <style>
+        /* 基本重置和页面设置 */
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Noto Sans SC', sans-serif;
+            font-size: 18px;
+            line-height: 1.8;
+            background-color: #0d1117;
+            color: #c9d1d9;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* 背景动画容器 */
+        #backgroundCanvasContainer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        /* 内容容器 */
+        .container {
+            position: relative;
+            z-index: 1;
+            width: 90%;
+            max-width: 1000px;
+            margin: 40px auto;
+            padding: 30px 40px;
+            background-color: rgba(22, 27, 34, 0.9);
+            border: 1px solid #30363d;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+        }
+
+        /* 标题样式 */
+        h1, h2, h3 {
+            font-family: 'ZCOOL KuaiLe', cursive;
+            color: #58a6ff;
+            margin-bottom: 0.75em;
+            text-align: center;
+            letter-spacing: 1px;
+        }
+        h1 {
+            font-size: 2.6em;
+            color: #79c0ff;
+            border-bottom: 2px solid #388bfd;
+            padding-bottom: 15px;
+            margin-top: 0;
+        }
+        h2 {
+            font-size: 2.0em;
+            color: #f778ba;
+            margin-top: 2.2em;
+        }
+        h3 {
+            font-size: 1.5em;
+            color: #a371f7;
+            margin-top: 1.6em;
+            text-align: left;
+        }
+
+        /* 段落和文本样式 */
+        p, li {
+            margin-bottom: 1.2em;
+            text-align: justify;
+            color: #adbac7;
+        }
+        ul, ol {
+            padding-left: 30px;
+        }
+
+        /* 强调文字 */
+        strong, .highlight {
+            color: #ffa657;
+            font-weight: bold;
+        }
+        .concept {
+            font-weight: 500;
+            color: #7ee787;
+            padding: 3px 7px;
+            background-color: rgba(63, 185, 80, 0.15);
+            border-radius: 6px;
+            border: 1px solid rgba(63, 185, 80, 0.4);
+            font-family: 'Noto Sans SC', sans-serif;
+        }
+        .formula {
+            display: block;
+            text-align: center;
+            margin: 20px auto;
+            padding: 15px;
+            background-color: rgba(34, 39, 46, 0.8);
+            border-left: 4px solid #388bfd;
+            color: #c9d1d9;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 1.05em;
+            border-radius: 4px;
+            white-space: pre-wrap;
+        }
+
+        /* 动画容器 */
+        .animation-container {
+            width: 100%;
+            max-width: 580px;
+            height: 360px;
+            margin: 25px auto;
+            border: 1px solid #30363d;
+            border-radius: 10px;
+            overflow: hidden;
+            background-color: #010409;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: inset 0 0 12px rgba(0,0,0,0.5);
+        }
+        .animation-container canvas {
+            display: block;
+            width: 100% !important;
+            height: 100% !important;
+            border-radius: 8px;
+        }
+        
+        /* 交互按钮和控件样式 */
+        .controls {
+            text-align: center;
+            margin-bottom: 25px;
+            margin-top: 15px;
+        }
+        .controls button {
+            padding: 10px 22px;
+            font-size: 0.95em;
+            font-family: 'Noto Sans SC', sans-serif;
+            background-image: linear-gradient(to right, #388bfd, #58a6ff);
+            color: white;
+            border: none;
+            border-radius: 22px; 
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            letter-spacing: 0.5px;
+        }
+        .controls button:hover {
+            transform: translateY(-2px) scale(1.05);
+            box-shadow: 0 7px 18px rgba(56, 139, 253, 0.35);
+        }
+        .controls button:active {
+            transform: translateY(0px) scale(1);
+        }
+        .controls label {
+            color: #8b949e;
+            margin: 0 10px;
+            font-size: 0.9em;
+        }
+        .controls input[type="range"] {
+            vertical-align: middle;
+            cursor: grab;
+            width: 140px;
+        }
+
+        /* 作者信息 */
+        .author-info {
+            text-align: center;
+            margin: 20px 0 30px 0;
+            font-size: 0.95em;
+            color: #8b949e;
+        }
+        .author-info strong {
+            color: #79c0ff;
+        }
+
+        /* 页脚 */
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding: 25px;
+            background-color: #161b22;
+            color: #8b949e;
+            width: 100%;
+            font-size: 0.9em;
+            border-top: 1px solid #30363d;
+        }
+
+        /* 数据盒子样式 */
+        .data-box {
+            background-color: rgba(34, 39, 46, 0.8);
+            border: 1px solid #30363d;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+            text-align: center;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            body {
+                font-size: 17px;
+            }
+            .container {
+                width: 95%;
+                padding: 20px 25px;
+                margin: 20px auto;
+            }
+            h1 {
+                font-size: 2.1em;
+            }
+            h2 {
+                font-size: 1.7em;
+            }
+            h3 {
+                font-size: 1.3em;
+            }
+            .animation-container {
+                height: 310px;
+            }
+            .controls button {
+                padding: 9px 18px;
+                font-size: 0.85em;
+            }
+            .controls input[type="range"] {
+                width: 120px;
+            }
+            .formula {
+                font-size: 1em;
+                padding: 10px;
+            }
+        }
+        @media (max-width: 480px) {
+            body {
+                font-size: 16px;
+            }
+            h1 {
+                font-size: 1.7em;
+            }
+            h2 {
+                font-size: 1.4em;
+            }
+            h3 {
+                font-size: 1.15em;
+            }
+            .animation-container {
+                height: 270px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="backgroundCanvasContainer"></div>
+    <div class="container">
+        <header>
+            <h1>RISE方法解读：信任但验证的智能推理之路</h1>
+            <div class="author-info">
+                <p>基于论文 <strong>"Trust, But Verify: A Self-Verification Approach to Reinforcement Learning with Verifiable Rewards"</strong></p>
+                <p><strong>作者团队：</strong>Xiaoyuan Liu, Tian Liang, Zhiwei He, Jiahao Xu, Wenxuan Wang, Pinjia He, Zhaopeng Tu, Haitao Mi, Dong Yu</p>
+                <p><strong>机构：</strong>腾讯AI Lab & 香港中文大学（深圳）</p>
+            </div>
+        </header>
+
+        <main>
+            <article>
+                <section id="intro">
+                    <h2>引言：从"表面反思"到"真正验证"</h2>
+                    <p>在人工智能的发展历程中，<span class="concept">大型语言模型</span>（LLMs）已经展现出令人惊叹的复杂推理能力。然而，一个关键问题始终困扰着研究者：<strong class="highlight">模型如何才能可靠地验证自己的推理过程？</strong></p>
+                    <p>想象一下，一个学生在解数学题时，不仅要得出正确答案，还要能够检查自己的计算步骤是否合理。传统的强化学习方法往往只关注最终结果的正确性，而忽略了这种<span class="concept">自我验证能力</span>的培养。这就导致了所谓的"表面自反思"现象——模型看似在检查自己的工作，但实际上缺乏真正的验证能力。</p>
+                    <p>RISE（Reinforcing Reasoning with Self-Verification）方法的提出，正是为了解决这个根本性问题。它不仅训练模型解决问题，更重要的是<strong class="highlight">同时培养模型的自我验证能力</strong>，让AI真正学会"信任但验证"的智慧。</p>
+                </section>
+
+                <section id="rise-mechanism">
+                    <h2>第一章：RISE的双重训练机制</h2>
+                    <p>RISE的核心创新在于其<span class="concept">双重训练机制</span>：在每个训练迭代中，模型不仅要生成问题的解答，还要对自己生成的解答进行验证和评分。这种设计让模型在学习解决问题的同时，也在学习如何成为一个严格的"自我审查者"。</p>
+                    
+                    <div id="riseTrainingAnimation" class="animation-container"></div>
+                    <div class="controls">
+                        <button id="rtaPlayPause">开始/暂停训练过程</button>
+                        <label for="rtaSpeed">训练速度:</label>
+                        <input type="range" id="rtaSpeed" min="1" max="10" value="5" step="1">
+                    </div>
+                    <p>动画演示：RISE的训练流程。左侧显示问题生成过程，模型首先生成解答，然后对解答进行自我验证。右侧显示两种奖励信号同时更新模型参数：解答奖励和验证奖励。这种双重反馈机制确保了模型在提升解题能力的同时，也增强了自我检验的准确性。</p>
+
+                    <div class="formula">训练目标函数：
+J(θ) = E[R_solution(x,y) + R_verification(x,y,score)]
+其中 R_solution 为解答奖励，R_verification 为验证奖励</div>
+
+                    <p>与传统的<span class="concept">Zero-RL</span>方法相比，RISE的优势在于它创建了一个<strong class="highlight">自我强化的循环</strong>：更好的验证能力帮助模型识别错误的推理路径，而更准确的推理过程又为验证能力的提升提供了更好的训练样本。</p>
+                </section>
+
+                <section id="verification-process">
+                    <h2>第二章：自我验证的智慧之光</h2>
+                    <p>在RISE框架中，<span class="concept">自我验证</span>不是简单的"再算一遍"，而是一个复杂的认知过程。模型需要分析解答的逻辑结构、检查计算步骤、评估答案的合理性，并给出一个可靠的验证分数。</p>
+
+                    <div id="verificationProcessAnimation" class="animation-container"></div>
+                    <div class="controls">
+                        <button id="vpaStartDemo">演示验证过程</button>
+                        <button id="vpaToggleType">切换问题类型</button>
+                    </div>
+                    <p>动画演示：模型的自我验证过程。给定一个数学问题和解答，模型会分析解答的各个组成部分：逻辑推理、计算步骤、最终答案格式等。每个部分都会得到评分，最终形成综合的验证结果。正确的验证不仅看结果，更要看过程的合理性。</p>
+
+                    <p>验证过程的关键要素包括：</p>
+                    <ul>
+                        <li><strong>逻辑一致性检查</strong>：推理步骤是否前后一致，没有逻辑漏洞</li>
+                        <li><strong>计算准确性验证</strong>：数值计算是否正确，公式应用是否得当</li>
+                        <li><strong>答案格式评估</strong>：最终答案是否符合要求的格式和范围</li>
+                        <li><strong>方法合理性判断</strong>：所采用的解题方法是否适用于该类问题</li>
+                    </ul>
+
+                    <div class="data-box">
+                        <strong>验证准确率提升：</strong><br>
+                        RISE-1.5B: 74.5% (vs Zero-RL 26.8%)<br>
+                        RISE-3B: 74.3% (vs Zero-RL 35.8%)<br>
+                        RISE-7B: 69.2% (vs Zero-RL 46.6%)
+                    </div>
+                </section>
+
+                <section id="reward-comparison">
+                    <h2>第三章：奖励机制的革新</h2>
+                    <p>传统强化学习方法通常只使用<span class="concept">结果奖励</span>（outcome reward），即只有当最终答案正确时才给予正奖励。这种方法的问题在于它忽略了推理过程的质量，可能导致模型学会"蒙对答案"而不是真正理解问题。</p>
+
+                    <div id="rewardComparisonAnimation" class="animation-container"></div>
+                    <div class="controls">
+                        <button id="rcaToggleMethod">切换：传统RL vs RISE</button>
+                        <label for="rcaEpisode">训练轮次:</label>
+                        <input type="range" id="rcaEpisode" min="1" max="100" value="1" step="1">
+                    </div>
+                    <p>动画演示：传统RL与RISE的奖励分配机制对比。上方显示传统方法只在最终答案正确时给予奖励，下方显示RISE同时考虑解答质量和验证准确性。RISE的双重奖励机制能够更好地引导模型学习，避免只关注结果而忽略过程的问题。</p>
+
+                    <p>RISE的<span class="concept">混合奖励系统</span>包含三个层次：</p>
+                    <ul>
+                        <li><strong>格式奖励</strong>：答案是否采用了正确的格式（如用\boxed{}包围）</li>
+                        <li><strong>准确性奖励</strong>：最终答案是否与标准答案一致</li>
+                        <li><strong>验证奖励</strong>：模型对自己解答的验证是否准确</li>
+                    </ul>
+
+                    <div class="formula">奖励函数设计：
+r_outcome(y, y*) = {
+  1,    if boxed and matched
+  -0.5, if boxed but not matched  
+  -1,   if unboxed
+}</div>
+                </section>
+
+                <section id="performance-analysis">
+                    <h2>第四章：性能突破的数据说话</h2>
+                    <p>RISE方法在多个数学推理基准测试中都取得了显著的性能提升。这些提升不仅体现在<span class="concept">解题准确率</span>上，更重要的是在<span class="concept">自我验证能力</span>方面的跨越式进步。</p>
+
+                    <div id="performanceChartAnimation" class="animation-container"></div>
+                    <div class="controls">
+                        <button id="pcaShowReasoningAccuracy">显示推理准确率</button>
+                        <button id="pcaShowVerificationAccuracy">显示验证准确率</button>
+                        <button id="pcaShowBoth">显示对比图表</button>
+                    </div>
+                    <p>动画演示：不同模型在五个数学推理基准测试上的表现对比。包括MATH500、AIME24、AMC23、Minerva Math和OlympiadBench。可以清楚地看到RISE方法在各个测试中都显著优于基线方法，特别是在验证准确率方面的提升更为明显。</p>
+
+                    <div class="data-box">
+                        <strong>关键性能指标：</strong><br>
+                        • 平均推理准确率提升：2-3个百分点<br>
+                        • 验证准确率提升：高达47.7个百分点<br>
+                        • 测试时性能：k=4推理预算下提升0.2%-1.9%<br>
+                        • 超越GPT-4o和Math-Shepherd等专业验证器
+                    </div>
+
+                    <p>特别值得注意的是，RISE模型在<strong class="highlight">困难问题</strong>上的表现尤为出色。在AIME24和OlympiadBench这类极具挑战性的竞赛级数学问题上，RISE的自我验证能力显著提升，这表明该方法能够帮助模型更好地认识自己的能力边界。</p>
+                </section>
+
+                <section id="online-offline-comparison">
+                    <h2>第五章：在线验证的优势揭秘</h2>
+                    <p>RISE的另一个重要创新是采用<span class="concept">在线验证</span>机制，即模型在训练过程中实时验证自己当前生成的解答，而不是使用预先收集的离线数据进行验证训练。</p>
+
+                    <div id="onlineOfflineAnimation" class="animation-container"></div>
+                    <div class="controls">
+                        <button id="ooaToggleMode">切换：在线 vs 离线验证</button>
+                        <label for="ooaTrainingStep">训练步骤:</label>
+                        <input type="range" id="ooaTrainingStep" min="1" max="50" value="1" step="1">
+                    </div>
+                    <p>动画演示：在线验证与离线验证的对比。在线验证使用模型当前策略生成的解答进行验证训练，能够紧跟模型能力的发展。离线验证使用固定的历史数据，可能与当前模型状态不匹配。在线验证的实时性确保了验证能力与推理能力的协同进步。</p>
+
+                    <p>在线验证的优势包括：</p>
+                    <ul>
+                        <li><strong>实时适应性</strong>：验证训练数据与模型当前能力水平匹配</li>
+                        <li><strong>分布一致性</strong>：验证数据的分布与模型实际生成的分布一致</li>
+                        <li><strong>协同进化</strong>：推理能力和验证能力同步提升</li>
+                        <li><strong>避免过时信息</strong>：不会受到过时训练数据的负面影响</li>
+                    </ul>
+
+                    <p>实验结果显示，采用在线验证的RISE模型在验证准确率上比离线版本平均高出<strong class="highlight">8-25个百分点</strong>，充分证明了在线学习机制的有效性。</p>
+                </section>
+
+                <section id="technical-insights">
+                    <h2>第六章：技术洞察与未来展望</h2>
+                    <p>RISE方法的成功不仅在于其创新的双重训练机制，更在于它揭示了一个重要的AI发展原理：<strong class="highlight">自我认知能力与问题解决能力是相互促进的</strong>。</p>
+
+                    <p>从技术实现角度，RISE采用了以下关键设计：</p>
+                    <ul>
+                        <li><strong>统一的RL目标</strong>：将解答生成和验证任务整合在同一个优化框架中</li>
+                        <li><strong>共享的价值函数</strong>：使用同一个critic网络学习两种任务的价值估计</li>
+                        <li><strong>灵活的架构兼容性</strong>：可以与各种策略梯度算法（PPO、GRPO、RLOO等）结合</li>
+                        <li><strong>可扩展的领域应用</strong>：原理上可推广到其他具有可验证奖励的领域</li>
+                    </ul>
+
+                    <div class="data-box">
+                        <strong>验证行为分析：</strong><br>
+                        • RISE模型在推理过程中使用验证关键词的频率显著提高<br>
+                        • 自我验证推理准确率：RISE-7B比Zero-RL高6.5%<br>
+                        • 模型展现出更频繁和准确的内在验证行为
+                    </div>
+
+                    <p>未来的研究方向包括：</p>
+                    <ul>
+                        <li><strong>跨领域扩展</strong>：将RISE应用到代码生成、科学推理等其他领域</li>
+                        <li><strong>算法优化</strong>：探索更高效的验证策略和奖励设计</li>
+                        <li><strong>多模态整合</strong>：结合视觉、语言等多种模态的验证能力</li>
+                        <li><strong>人机协作</strong>：将自我验证与人类反馈相结合</li>
+                    </ul>
+                </section>
+
+                <section id="conclusion">
+                    <h2>结语：智能系统的自我完善之路</h2>
+                    <p>RISE方法为我们展示了一种全新的AI训练范式：不仅要教会机器解决问题，更要教会它们<span class="concept">质疑和验证自己的答案</span>。这种"信任但验证"的哲学，不仅提升了模型的性能，更重要的是增强了AI系统的<strong class="highlight">可靠性和可解释性</strong>。</p>
+
+                    <p>在人工智能快速发展的今天，RISE提醒我们：真正的智能不仅在于找到答案，更在于知道什么时候该怀疑这个答案。这种自我反思和验证的能力，或许正是通向更加可信、可靠的人工智能的关键所在。</p>
+
+                    <p>正如论文作者所展示的，当模型学会了真正的自我验证，它们不仅在数学推理任务上表现更好，更重要的是，它们开始展现出一种<strong class="highlight">自我认知的萌芽</strong>——知道自己的能力边界，理解何时应该相信自己的判断，何时应该保持谨慎。这或许就是通向真正智能的必经之路。</p>
+                </section>
+            </article>
+        </main>
+        <footer>
+            <p>&copy; 2025 RISE方法解读。内容基于腾讯AI Lab与香港中文大学（深圳）的最新研究成果。</p>
+            <p>本页面所有动画均为概念性演示，旨在辅助理解RISE方法的核心原理和技术细节。</p>
+        </footer>
+    </div>
+
+    <script>
+        // --- 全局背景粒子动画 ---
+        let sketchBackground = function(p) {
+            let particles = [];
+            const numParticles = 120;
+            p.setup = function() {
+                let canvas = p.createCanvas(p.windowWidth, p.windowHeight);
+                canvas.parent('backgroundCanvasContainer');
+                for (let i = 0; i < numParticles; i++) {
+                    particles.push({
+                        x: p.random(p.width),
+                        y: p.random(p.height),
+                        size: p.random(0.5, 2.5),
+                        alpha: p.random(30, 100),
+                        vx: p.random(-0.5, 0.5),
+                        vy: p.random(-0.5, 0.5)
+                    });
+                }
+                p.noStroke();
+            };
+            p.draw = function() {
+                p.clear(); 
+                for (let particle of particles) {
+                    p.fill(100, 150, 255, particle.alpha * (p.sin(p.frameCount * 0.01 + particle.x * 0.1) * 0.3 + 0.7));
+                    p.ellipse(particle.x, particle.y, particle.size, particle.size);
+                    particle.x += particle.vx;
+                    particle.y += particle.vy;
+                    if (particle.x > p.width) particle.x = 0;
+                    if (particle.x < 0) particle.x = p.width;
+                    if (particle.y > p.height) particle.y = 0;
+                    if (particle.y < 0) particle.y = p.height;
+                }
+            };
+            p.windowResized = function() {
+                p.resizeCanvas(p.windowWidth, p.windowHeight);
+                particles = [];
+                for (let i = 0; i < numParticles; i++) {
+                    particles.push({
+                        x: p.random(p.width),
+                        y: p.random(p.height),
+                        size: p.random(0.5, 2.5),
+                        alpha: p.random(30, 100),
+                        vx: p.random(-0.5, 0.5),
+                        vy: p.random(-0.5, 0.5)
+                    });
+                }
+            };
+        };
+        new p5(sketchBackground);
+
+        // --- 动画1: RISE训练过程 ---
+        let sketchRiseTraining = function(p) {
+            let isPlaying = false;
+            let speed = 5;
+            let step = 0;
+            let problems = [];
+            let solutions = [];
+            let verifications = [];
+            
+            p.setup = function() {
+                let container = p.select('#riseTrainingAnimation');
+                let canvas = p.createCanvas(container.width, container.height);
+                canvas.parent('riseTrainingAnimation');
+                
+                p.select('#rtaPlayPause').mousePressed(() => {
+                    isPlaying = !isPlaying;
+                    if(isPlaying) p.loop(); else p.noLoop();
+                });
+                
+                let speedSlider = p.select('#rtaSpeed');
+                speedSlider.input(() => {
+                    speed = parseInt(speedSlider.value());
+                });
+                
+                initializeProblems();
+                p.noLoop();
+                p.redraw();
+            };
+            
+            function initializeProblems() {
+                problems = [];
+                solutions = [];
+                verifications = [];
+                for(let i = 0; i < 5; i++) {
+                    problems.push({
+                        x: 50,
+                        y: 80 + i * 50,
+                        text: `问题 ${i+1}`,
+                        processed: false
+                    });
+                    solutions.push({
+                        x: 200,
+                        y: 80 + i * 50,
+                        progress: 0,
+                        reward: 0
+                    });
+                    verifications.push({
+                        x: 350,
+                        y: 80 + i * 50,
+                        progress: 0,
+                        reward: 0
+                    });
+                }
+            }
+            
+            p.draw = function() {
+                p.background(1, 4, 9);
+                
+                // 绘制流程标题
+                p.fill(150, 200, 255);
+                p.textAlign(p.CENTER);
+                p.textSize(14);
+                p.text("问题输入", 50, 40);
+                p.text("生成解答", 200, 40);
+                p.text("自我验证", 350, 40);
+                p.text("更新模型", 500, 40);
+                
+                // 绘制问题
+                for(let i = 0; i < problems.length; i++) {
+                    let prob = problems[i];
+                    p.fill(100, 255, 100);
+                    p.rect(prob.x - 30, prob.y - 10, 60, 20);
+                    p.fill(0);
+                    p.textAlign(p.CENTER);
+                    p.textSize(10);
+                    p.text(prob.text, prob.x, prob.y + 5);
+                }
+                
+                // 绘制解答生成
+                for(let i = 0; i < solutions.length; i++) {
+                    let sol = solutions[i];
+                    p.fill(255, 200, 100);
+                    p.rect(sol.x - 30, sol.y - 10, 60 * sol.progress, 20);
+                    if(sol.progress > 0.8) {
+                        p.fill(0);
+                        p.textAlign(p.CENTER);
+                        p.textSize(8);
+                        p.text(`奖励: ${sol.reward.toFixed(1)}`, sol.x, sol.y + 30);
+                    }
+                }
+                
+                // 绘制验证过程
+                for(let i = 0; i < verifications.length; i++) {
+                    let ver = verifications[i];
+                    p.fill(255, 100, 200);
+                    p.rect(ver.x - 30, ver.y - 10, 60 * ver.progress, 20);
+                    if(ver.progress > 0.8) {
+                        p.fill(0);
+                        p.textAlign(p.CENTER);
+                        p.textSize(8);
+                        p.text(`验证奖励: ${ver.reward.toFixed(1)}`, ver.x, ver.y + 30);
+                    }
+                }
+                
+                // 更新进度
+                if(isPlaying) {
+                    step += speed * 0.1;
+                    updateProgress();
+                }
+                
+                // 绘制连接线
+                p.stroke(100, 150, 200);
+                for(let i = 0; i < 4; i++) {
+                    let x1 = 80 + i * 150;
+                    let x2 = x1 + 120;
+                    p.line(x1, p.height/2, x2, p.height/2);
+                    // 箭头
+                    p.line(x2-10, p.height/2-5, x2, p.height/2);
+                    p.line(x2-10, p.height/2+5, x2, p.height/2);
+                }
+                
+                if(!isPlaying && step === 0) {
+                    p.fill(255, 255, 255, 150);
+                    p.textAlign(p.CENTER);
+                    p.textSize(16);
+                    p.text("点击开始按钮观看RISE训练过程", p.width/2, p.height - 30);
+                }
+            };
+            
+            function updateProgress() {
+                for(let i = 0; i < solutions.length; i++) {
+                    if(step > i * 10) {
+                        solutions[i].progress = p.min(1, (step - i * 10) / 20);
+                        if(solutions[i].progress > 0.8) {
+                            solutions[i].reward = p.random(0.5, 1.0);
+                        }
+                    }
+                    if(step > i * 10 + 30) {
+                        verifications[i].progress = p.min(1, (step - i * 10 - 30) / 20);
+                        if(verifications[i].progress > 0.8) {
+                            verifications[i].reward = p.random(0.6, 0.9);
+                        }
+                    }
+                }
+                if(step > 150) {
+                    step = 0;
+                    initializeProblems();
+                }
+            }
+        };
+        new p5(sketchRiseTraining);
+
+        // --- 动画2: 验证过程演示 ---
+        let sketchVerificationProcess = function(p) {
+            let currentProblem = "math";
+            let verificationSteps = [];
+            let stepIndex = 0;
+            let isRunning = false;
+            
+            p.setup = function() {
+                let container = p.select('#verificationProcessAnimation');
+                let canvas = p.createCanvas(container.width, container.height);
+                canvas.parent('verificationProcessAnimation');
+                
+                p.select('#vpaStartDemo').mousePressed(startDemo);
+                p.select('#vpaToggleType').mousePressed(toggleProblemType);
+                
+                initializeSteps();
+                p.noLoop();
+                p.redraw();
+            };
+            
+            function initializeSteps() {
+                verificationSteps = [
+                    {name: "分析问题类型", progress: 0, score: 0},
+                    {name: "检查逻辑步骤", progress: 0, score: 0},
+                    {name: "验证计算过程", progress: 0, score: 0},
+                    {name: "评估答案格式", progress: 0, score: 0},
+                    {name: "综合评分", progress: 0, score: 0}
+                ];
+                stepIndex = 0;
+                isRunning = false;
+            }
+            
+            function startDemo() {
+                initializeSteps();
+                isRunning = true;
+                stepIndex = 0;
+                p.loop();
+            }
+            
+            function toggleProblemType() {
+                currentProblem = currentProblem === "math" ? "logic" : "math";
+                p.redraw();
+            }
+            
+            p.draw = function() {
+                p.background(1, 4, 9);
+                
+                // 绘制问题类型
+                p.fill(100, 200, 255);
+                p.textAlign(p.CENTER);
+                p.textSize(16);
+                p.text(currentProblem === "math" ? "数学推理问题" : "逻辑推理问题", p.width/2, 30);
+                
+                // 绘制验证步骤
+                for(let i = 0; i < verificationSteps.length; i++) {
+                    let step = verificationSteps[i];
+                    let y = 80 + i * 50;
+                    
+                    // 步骤名称
+                    p.fill(200);
+                    p.textAlign(p.LEFT);
+                    p.textSize(12);
+                    p.text(step.name, 30, y);
+                    
+                    // 进度条
+                    p.stroke(100);
+                    p.noFill();
+                    p.rect(180, y - 10, 200, 15);
+                    
+                    if(step.progress > 0) {
+                        p.fill(100, 255, 100);
+                        p.noStroke();
+                        p.rect(180, y - 10, 200 * step.progress, 15);
+                    }
+                    
+                    // 分数
+                    if(step.progress > 0.8) {
+                        p.fill(255, 200, 100);
+                        p.textAlign(p.CENTER);
+                        p.text(`${step.score.toFixed(1)}`, 420, y);
+                    }
+                }
+                
+                // 更新进度
+                if(isRunning && stepIndex < verificationSteps.length) {
+                    verificationSteps[stepIndex].progress += 0.05;
+                    if(verificationSteps[stepIndex].progress >= 1.0) {
+                        verificationSteps[stepIndex].score = p.random(0.7, 1.0);
+                        stepIndex++;
+                        if(stepIndex >= verificationSteps.length) {
+                            isRunning = false;
+                            p.noLoop();
+                        }
+                    }
+                }
+                
+                // 最终结果
+                if(stepIndex >= verificationSteps.length) {
+                    let avgScore = verificationSteps.reduce((sum, step) => sum + step.score, 0) / verificationSteps.length;
+                    p.fill(255, 255, 100);
+                    p.textAlign(p.CENTER);
+                    p.textSize(18);
+                    p.text(`验证完成！综合评分: ${avgScore.toFixed(2)}`, p.width/2, p.height - 40);
+                }
+                
+                if(!isRunning && stepIndex === 0) {
+                    p.fill(255, 255, 255, 150);
+                    p.textAlign(p.CENTER);
+                    p.textSize(14);
+                    p.text("点击按钮开始验证演示", p.width/2, p.height - 20);
+                }
+            };
+        };
+        new p5(sketchVerificationProcess);
+
+        // --- 动画3: 奖励机制对比 ---
+        let sketchRewardComparison = function(p) {
+            let currentMethod = "traditional";
+            let episode = 1;
+            let rewards = {traditional: [], rise: []};
+            
+            p.setup = function() {
+                let container = p.select('#rewardComparisonAnimation');
+                let canvas = p.createCanvas(container.width, container.height);
+                canvas.parent('rewardComparisonAnimation');
+                
+                p.select('#rcaToggleMethod').mousePressed(toggleMethod);
+                let episodeSlider = p.select('#rcaEpisode');
+                episodeSlider.input(() => {
+                    episode = parseInt(episodeSlider.value());
+                    p.redraw();
+                });
+                
+                generateRewardData();
+                p.noLoop();
+                p.redraw();
+            };
+            
+            function generateRewardData() {
+                rewards.traditional = [];
+                rewards.rise = [];
+                for(let i = 1; i <= 100; i++) {
+                    // 传统RL：只有结果奖励
+                    let traditionalReward = p.random() > 0.7 ? 1 : 0;
+                    rewards.traditional.push(traditionalReward);
+                    
+                    // RISE：结果奖励 + 验证奖励
+                    let riseResultReward = p.random() > 0.6 ? 1 : 0;
+                    let riseVerificationReward = p.random(0.2, 0.8);
+                    rewards.rise.push(riseResultReward + riseVerificationReward);
+                }
+            }
+            
+            function toggleMethod() {
+                currentMethod = currentMethod === "traditional" ? "rise" : "traditional";
+                p.redraw();
+            }
+            
+            p.draw = function() {
+                p.background(1, 4, 9);
+                
+                // 标题
+                p.fill(100, 200, 255);
+                p.textAlign(p.CENTER);
+                p.textSize(16);
+                p.text(currentMethod === "traditional" ? "传统强化学习奖励机制" : "RISE奖励机制", p.width/2, 30);
+                
+                // 绘制奖励曲线
+                p.stroke(255, 200, 100);
+                p.strokeWeight(2);
+                p.noFill();
+                p.beginShape();
+                
+                let rewardData = currentMethod === "traditional" ? rewards.traditional : rewards.rise;
+                for(let i = 1; i <= episode; i++) {
+                    let x = p.map(i, 1, 100, 50, p.width - 50);
+                    let y = p.map(rewardData[i-1], 0, 2, p.height - 50, 100);
+                    p.vertex(x, y);
+                }
+                p.endShape();
+                
+                // 绘制当前点
+                if(episode > 0 && episode <= 100) {
+                    let x = p.map(episode, 1, 100, 50, p.width - 50);
+                    let y = p.map(rewardData[episode-1], 0, 2, p.height - 50, 100);
+                    p.fill(255, 100, 100);
+                    p.noStroke();
+                    p.ellipse(x, y, 8, 8);
+                }
+                
+                // 绘制坐标轴
+                p.stroke(150);
+                p.strokeWeight(1);
+                p.line(50, p.height - 50, p.width - 50, p.height - 50); // x轴
+                p.line(50, p.height - 50, 50, 50); // y轴
+                
+                // 标签
+                p.fill(200);
+                p.textAlign(p.CENTER);
+                p.textSize(12);
+                p.text("训练轮次", p.width/2, p.height - 20);
+                p.push();
+                p.translate(20, p.height/2);
+                p.rotate(-p.PI/2);
+                p.text("累积奖励", 0, 0);
+                p.pop();
+                
+                // 显示当前奖励值
+                if(episode > 0 && episode <= 100) {
+                    p.fill(255, 255, 100);
+                    p.textAlign(p.CENTER);
+                    p.textSize(14);
+                    p.text(`第${episode}轮奖励: ${rewardData[episode-1].toFixed(2)}`, p.width/2, p.height - 70);
+                }
+                
+                // 方法说明
+                p.fill(150, 200, 255);
+                p.textAlign(p.LEFT);
+                p.textSize(10);
+                if(currentMethod === "traditional") {
+                    p.text("只有最终答案正确时才给予奖励", 60, 70);
+                } else {
+                    p.text("结合解答质量和验证准确性给予奖励", 60, 70);
+                }
+            };
+        };
+        new p5(sketchRewardComparison);
+
+        // --- 动画4: 性能图表 ---
+        let sketchPerformanceChart = function(p) {
+            let chartType = "reasoning";
+            let datasets = {
+                reasoning: {
+                    "Zero-RL": [24.0, 32.5, 41.7],
+                    "RISE": [24.4, 33.5, 42.9],
+                    "Instruct": [15.5, 29.8, 41.2]
+                },
+                verification: {
+                    "Zero-RL": [26.8, 35.8, 46.6],
+                    "RISE": [74.5, 74.3, 69.2],
+                    "Instruct": [34.8, 40.9, 49.2]
+                }
+            };
+            let modelSizes = ["1.5B", "3B", "7B"];
+            let animationProgress = 0;
+            
+            p.setup = function() {
+                let container = p.select('#performanceChartAnimation');
+                let canvas = p.createCanvas(container.width, container.height);
+                canvas.parent('performanceChartAnimation');
+                
+                p.select('#pcaShowReasoningAccuracy').mousePressed(() => setChartType("reasoning"));
+                p.select('#pcaShowVerificationAccuracy').mousePressed(() => setChartType("verification"));
+                p.select('#pcaShowBoth').mousePressed(() => setChartType("both"));
+                
+                p.loop();
+            };
+            
+            function setChartType(type) {
+                chartType = type;
+                animationProgress = 0;
+            }
+            
+            p.draw = function() {
+                p.background(1, 4, 9);
+                
+                animationProgress = p.min(1, animationProgress + 0.02);
+                
+                if(chartType === "both") {
+                    drawBothCharts();
+                } else {
+                    drawSingleChart();
+                }
+            };
+            
+            function drawSingleChart() {
+                let data = datasets[chartType];
+                let title = chartType === "reasoning" ? "推理准确率 (%)" : "验证准确率 (%)";
+                
+                // 标题
+                p.fill(100, 200, 255);
+                p.textAlign(p.CENTER);
+                p.textSize(16);
+                p.text(title, p.width/2, 30);
+                
+                // 绘制柱状图
+                let barWidth = 40;
+                let barSpacing = 60;
+                let startX = 80;
+                
+                let methods = Object.keys(data);
+                let colors = [
+                    p.color(255, 100, 100),
+                    p.color(100, 255, 100),
+                    p.color(100, 100, 255)
+                ];
+                
+                for(let i = 0; i < modelSizes.length; i++) {
+                    let x = startX + i * (barWidth * methods.length + barSpacing);
+                    
+                    // 模型尺寸标签
+                    p.fill(200);
+                    p.textAlign(p.CENTER);
+                    p.textSize(12);
+                    p.text(modelSizes[i], x + barWidth * methods.length / 2, p.height - 20);
+                    
+                    for(let j = 0; j < methods.length; j++) {
+                        let barX = x + j * barWidth;
+                        let value = data[methods[j]][i];
+                        let maxValue = chartType === "reasoning" ? 50 : 80;
+                        let barHeight = p.map(value, 0, maxValue, 0, p.height - 150) * animationProgress;
+                        
+                        p.fill(colors[j]);
+                        p.rect(barX, p.height - 50 - barHeight, barWidth - 5, barHeight);
+                        
+                        // 数值标签
+                        if(animationProgress > 0.8) {
+                            p.fill(255);
+                            p.textAlign(p.CENTER);
+                            p.textSize(10);
+                            p.text(value.toFixed(1), barX + barWidth/2, p.height - 55 - barHeight);
+                        }
+                    }
+                }
+                
+                // 图例
+                for(let j = 0; j < methods.length; j++) {
+                    p.fill(colors[j]);
+                    p.rect(p.width - 150, 60 + j * 25, 15, 15);
+                    p.fill(200);
+                    p.textAlign(p.LEFT);
+                    p.textSize(12);
+                    p.text(methods[j], p.width - 130, 72 + j * 25);
+                }
+            }
+            
+            function drawBothCharts() {
+                // 绘制对比图表
+                p.fill(100, 200, 255);
+                p.textAlign(p.CENTER);
+                p.textSize(14);
+                p.text("RISE vs Zero-RL 性能对比", p.width/2, 25);
+                
+                let chartHeight = (p.height - 100) / 2;
+                
+                // 推理准确率图表
+                drawMiniChart("reasoning", 50, chartHeight/2, p.width - 100, chartHeight/2);
+                
+                // 验证准确率图表
+                drawMiniChart("verification", 50, chartHeight + 80, p.width - 100, chartHeight/2);
+            }
+            
+            function drawMiniChart(type, x, y, w, h) {
+                let data = datasets[type];
+                let title = type === "reasoning" ? "推理准确率" : "验证准确率";
+                
+                p.fill(150, 200, 255);
+                p.textAlign(p.LEFT);
+                p.textSize(12);
+                p.text(title, x, y - 10);
+                
+                // 简化的折线图
+                p.stroke(255, 100, 100);
+                p.strokeWeight(2);
+                p.noFill();
+                p.beginShape();
+                for(let i = 0; i < 3; i++) {
+                    let px = x + (i * w/2) * animationProgress;
+                    let py = y + h - (data["Zero-RL"][i] / (type === "reasoning" ? 50 : 80) * h);
+                    p.vertex(px, py);
+                }
+                p.endShape();
+                
+                p.stroke(100, 255, 100);
+                p.beginShape();
+                for(let i = 0; i < 3; i++) {
+                    let px = x + (i * w/2) * animationProgress;
+                    let py = y + h - (data["RISE"][i] / (type === "reasoning" ? 50 : 80) * h);
+                    p.vertex(px, py);
+                }
+                p.endShape();
+            }
+        };
+        new p5(sketchPerformanceChart);
+
+        // --- 动画5: 在线vs离线验证 ---
+        let sketchOnlineOffline = function(p) {
+            let mode = "online";
+            let trainingStep = 1;
+            let onlineData = [];
+            let offlineData = [];
+            
+            p.setup = function() {
+                let container = p.select('#onlineOfflineAnimation');
+                let canvas = p.createCanvas(container.width, container.height);
+                canvas.parent('onlineOfflineAnimation');
+                
+                p.select('#ooaToggleMode').mousePressed(toggleMode);
+                let stepSlider = p.select('#ooaTrainingStep');
+                stepSlider.input(() => {
+                    trainingStep = parseInt(stepSlider.value());
+                    p.redraw();
+                });
+                
+                generateData();
+                p.noLoop();
+                p.redraw();
+            };
+            
+            function generateData() {
+                onlineData = [];
+                offlineData = [];
+                for(let i = 1; i <= 50; i++) {
+                    // 在线验证：逐步提升的数据质量
+                    let onlineQuality = 0.3 + (i / 50) * 0.6 + p.random(-0.1, 0.1);
+                    onlineData.push(p.constrain(onlineQuality, 0, 1));
+                    
+                    // 离线验证：固定的历史数据质量
+                    let offlineQuality = 0.5 + p.random(-0.2, 0.2);
+                    offlineData.push(p.constrain(offlineQuality, 0, 1));
+                }
+            }
+            
+            function toggleMode() {
+                mode = mode === "online" ? "offline" : "online";
+                p.redraw();
+            }
+            
+            p.draw = function() {
+                p.background(1, 4, 9);
+                
+                // 标题
+                p.fill(100, 200, 255);
+                p.textAlign(p.CENTER);
+                p.textSize(16);
+                p.text(mode === "online" ? "在线验证机制" : "离线验证机制", p.width/2, 30);
+                
+                // 绘制模型策略演化
+                p.fill(150, 255, 150);
+                p.textAlign(p.LEFT);
+                p.textSize(12);
+                p.text("模型策略演化", 50, 70);
+                
+                // 模型能力曲线
+                p.stroke(100, 255, 100);
+                p.strokeWeight(2);
+                p.noFill();
+                p.beginShape();
+                for(let i = 1; i <= trainingStep; i++) {
+                    let x = p.map(i, 1, 50, 50, p.width - 50);
+                    let y = p.map(0.2 + (i / 50) * 0.7, 0, 1, p.height/2 + 50, p.height/2 - 50);
+                    p.vertex(x, y);
+                }
+                p.endShape();
+                
+                // 绘制验证数据质量
+                p.fill(255, 150, 150);
+                p.textAlign(p.LEFT);
+                p.textSize(12);
+                p.text("验证数据质量", 50, p.height/2 + 90);
+                
+                let dataQuality = mode === "online" ? onlineData : offlineData;
+                let dataColor = mode === "online" ? p.color(255, 200, 100) : p.color(200, 200, 200);
+                
+                p.stroke(dataColor);
+                p.strokeWeight(2);
+                p.noFill();
+                p.beginShape();
+                for(let i = 1; i <= trainingStep; i++) {
+                    let x = p.map(i, 1, 50, 50, p.width - 50);
+                    let y = p.map(dataQuality[i-1], 0, 1, p.height - 50, p.height/2 + 100);
+                    p.vertex(x, y);
+                }
+                p.endShape();
+                
+                // 绘制协同效应指示器
+                if(mode === "online" && trainingStep > 10) {
+                    p.fill(255, 255, 100, 150);
+                    p.textAlign(p.CENTER);
+                    p.textSize(10);
+                    p.text("协同进步", p.width/2, p.height/2 + 50);
+                    
+                    // 连接线显示协同关系
+                    p.stroke(255, 255, 100, 100);
+                    p.strokeWeight(1);
+                    for(let i = 0; i < 5; i++) {
+                        let x = p.width/2 + p.cos(p.frameCount * 0.1 + i) * 30;
+                        let y1 = p.height/2 - 20;
+                        let y2 = p.height/2 + 80;
+                        p.line(x, y1, x, y2);
+                    }
+                }
+                
+                // 性能指标显示
+                let currentOnlineQuality = onlineData[trainingStep-1] || 0;
+                let currentOfflineQuality = offlineData[trainingStep-1] || 0;
+                
+                p.fill(255, 255, 255);
+                p.textAlign(p.CENTER);
+                p.textSize(12);
+                p.text(`当前验证质量: ${(mode === "online" ? currentOnlineQuality : currentOfflineQuality).toFixed(2)}`, p.width/2, p.height - 30);
+                
+                // 绘制坐标轴
+                p.stroke(100);
+                p.strokeWeight(1);
+                p.line(50, p.height/2, p.width - 50, p.height/2); // 分界线
+                p.line(50, p.height - 50, p.width - 50, p.height - 50); // 底部x轴
+                p.line(50, 50, 50, p.height - 50); // y轴
+            };
+        };
+        new p5(sketchOnlineOffline);
+    </script>
+</body>
+</html>

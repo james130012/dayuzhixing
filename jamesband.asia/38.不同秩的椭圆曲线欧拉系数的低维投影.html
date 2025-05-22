@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>椭圆曲线欧拉系数的默观振荡之物理逻辑解读</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            font-size: 16pt; /* 模拟三号字体大小 */
+            line-height: 1.8;
+            background-color: #f0f4f8; /* 淡雅的背景色 */
+            color: #333;
+            display: flex;
+            justify-content: center;
+            padding-top: 20px;
+            padding-bottom: 20px;
+        }
+        .a3-page {
+            background-color: #ffffff;
+            width: 90%; /* 移动端友好 */
+            max-width: 1123px; /* A3宽度模拟 (297mm @ 96dpi), 考虑页边距 */
+            min-height: 1587px; /* A3高度模拟 (420mm @ 96dpi) */
+            padding: 40px 50px; /* 普通页边距模拟 */
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            border-radius: 8px;
+        }
+        h1, h2, h3 {
+            font-family: 'ZCOOL KuaiLe', cursive; /* 轻松活泼的标题字体 */
+            color: #2c5282; /* 深蓝标题 */
+            margin-bottom: 0.5em;
+        }
+        h1 {
+            font-size: 2.8em;
+            text-align: center;
+            border-bottom: 2px solid #63b3ed;
+            padding-bottom: 0.3em;
+            margin-bottom: 1em;
+        }
+        h2 {
+            font-size: 2em;
+            margin-top: 1.5em;
+            color: #2b6cb0;
+        }
+        h3 {
+            font-size: 1.5em;
+            margin-top: 1em;
+            color: #3182ce;
+        }
+        p {
+            margin-bottom: 1em;
+            text-indent: 2em; /*段首缩进*/
+        }
+        strong, .highlight {
+            color: #dd6b20; /* 突出强调的颜色 - 橙色 */
+            font-weight: 500;
+        }
+        .animation-container {
+            border: 2px solid #bee3f8; /* 淡蓝色边框 */
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            background-color: #ebf8ff; /* 更淡的背景 */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .animation-canvas {
+            width: 100%;
+            max-width: 600px; /* 限制动画最大宽度 */
+            height: 400px; /* 固定高度，P5.js会填充 */
+            border-radius: 6px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 10px;
+            overflow: hidden; /* 确保canvas在边界内 */
+        }
+        .controls button {
+            background-color: #4299e1; /* 蓝色按钮 */
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            font-family: 'Noto Sans SC', sans-serif;
+            font-size: 0.9em;
+            margin: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .controls button:hover {
+            background-color: #2b6cb0; /* 深蓝色悬停 */
+        }
+        .formula {
+            font-family: 'Courier New', Courier, monospace;
+            background-color: #e2e8f0;
+            padding: 8px;
+            border-radius: 4px;
+            color: #2d3748;
+            display: inline-block;
+        }
+
+        /* Specific P5 canvas styling */
+        #ellipticCurveCanvasContainer canvas,
+        #eulerSignalCanvasContainer canvas,
+        #projectionCanvasContainer canvas,
+        #murmurationCanvasContainer canvas,
+        #oscillationPlotCanvasContainer canvas {
+            width: 100% !important;
+            height: 100% !important;
+            display: block;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                font-size: 14pt;
+            }
+            .a3-page {
+                padding: 20px;
+                width: 95%;
+            }
+            h1 { font-size: 2em; }
+            h2 { font-size: 1.6em; }
+            h3 { font-size: 1.3em; }
+            .animation-canvas {
+                height: 300px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="a3-page">
+        <h1><span class="highlight">椭圆曲线的奇幻漂流</span>：欧拉系数的“鸟群”之舞</h1>
+
+        <p>数学，这门看似冰冷严谨的学科，有时会展现出令人惊叹的、如同生命般跃动的景象。今天，我们要一起探索一个奇妙的数学现象：<strong>不同“秩”的椭圆曲线，在“投影”到低维空间后，其“欧拉系数”的平均行为，竟然会呈现出一种类似鸟群飞舞（数学家们称之为“默观”，Murmuration）的振荡模式！</strong> 这听起来是不是像一段科幻小说的开头？别急，让我们用物理的逻辑和生动的动画，一步步揭开这层神秘的面纱。</p>
+
+        <h2>一、邂逅椭圆曲线：宇宙中的优雅舞者</h2>
+        <p>想象一下，在数学的宇宙中，漂浮着无数优雅的曲线，它们被称为“椭圆曲线”。虽然名字里有“椭圆”，但它们的样子可不是我们熟悉的操场跑道。更准确地说，它们是一类满足特定方程（通常形如 <span class="formula">y^2 = x^3 + ax + b</span>）的点的集合。这些曲线看似简单，却蕴含着深刻的数论奥秘，是现代密码学（比如比特币和以太坊用的加密技术）的基石之一。</p>
+        <p>每条椭圆曲线都有一个重要的属性，叫做<strong>“秩”（Rank）</strong>。你可以把它想象成衡量这条曲线上“有理点”（坐标都是有理数的点）丰富程度的指标。秩为0的曲线，有理点很稀疏；秩越高的曲线，有理点就越“多”（更准确地说是构成一个更复杂的群结构）。这就像有的星球荒芜贫瘠，有的星球则生机勃勃。</p>
+        <div class="animation-container">
+            <h3>动画1：椭圆曲线变形记</h3>
+            <p class="text-sm text-center mb-2">拖动滑块改变参数 a 和 b，观察曲线形态的变化。想象一下这些点就是有理点，它们的“多寡”与秩相关。</p>
+            <div id="ellipticCurveCanvasContainer" class="animation-canvas"></div>
+            <div class="controls">
+                <label for="paramA">参数 a: <span id="paramAValue">1</span></label>
+                <input type="range" id="paramA" min="-5" max="5" value="1" step="0.1" class="w-40">
+                <label for="paramB">参数 b: <span id="paramBValue">1</span></label>
+                <input type="range" id="paramB" min="-5" max="5" value="1" step="0.1" class="w-40">
+            </div>
+        </div>
+
+        <h2>二、欧拉系数：曲线发出的“心跳信号”</h2>
+        <p>现在，让我们给这些椭圆曲线装上一个“探测器”，用来测量它们在不同“环境”下的表现。这个探测器测量的就是<strong>“欧拉系数”（Euler Coefficients）</strong>，通常记为 <span class="formula">a_p</span>。这里的 <span class="formula">p</span> 是一个质数，代表一种特定的“有限域”环境（你可以粗略理解为一种模 <span class="formula">p</span> 的算术世界）。</p>
+        <p>欧拉系数 <span class="formula">a_p</span> 的计算方式是 <span class="formula">a_p = p + 1 - N_p</span>，其中 <span class="formula">N_p</span> 是椭圆曲线在模 <span class="formula">p</span> 的世界里有多少个点。所以，<span class="formula">a_p</span> 就像是曲线在每个质数 <span class="formula">p</span> 位置发出的一个“心跳信号”或“能量脉冲”。这些信号序列 <span class="formula">a_2, a_3, a_5, a_7, ...</span> 蕴含了曲线的深刻算术信息。</p>
+        <div class="animation-container">
+            <h3>动画2：捕捉欧拉信号 <span class="formula">a_p</span></h3>
+            <p class="text-sm text-center mb-2">点击按钮，模拟计算一个简单椭圆曲线在某个小质数 <span class="formula">p</span> 下的点数 <span class="formula">N_p</span>，并得到 <span class="formula">a_p</span>。</p>
+            <div id="eulerSignalCanvasContainer" class="animation-canvas"></div>
+            <div class="controls">
+                <button id="calculateApButton">计算下一个 a_p</button>
+            </div>
+        </div>
+
+        <h2>三、投影的魔力：从纷繁到有序</h2>
+        <p>我们拥有的椭圆曲线数据（比如它们的欧拉系数序列）可能非常复杂，就像一团乱麻。这时，数学家们会使用一种叫做<strong>“投影”（Projection）</strong>的技巧。想象一下，你有一个三维的物体，直接看可能看不出什么名堂。但如果你把它投影到一个二维平面上（比如看它的影子），某些隐藏的结构或规律就可能显现出来。</p>
+        <p>在我们的故事里，“投影到低维空间”意味着通过某种数学变换或筛选，将高维的、复杂的数据（比如所有椭圆曲线的欧拉系数）映射到一个更简单的空间中进行观察。这个过程可能会“丢失”一些信息，但它也可能像滤镜一样，<strong class="highlight">滤除噪音，凸显出本质的模式</strong>。</p>
+        <div class="animation-container">
+            <h3>动画3：投影的洞察力</h3>
+            <p class="text-sm text-center mb-2">观察一团三维点云，在投影到二维平面后，是否能发现隐藏的结构？点击按钮切换视角。</p>
+            <div id="projectionCanvasContainer" class="animation-canvas"></div>
+            <div class="controls">
+                <button id="toggleProjectionButton">切换投影/三维视角</button>
+            </div>
+        </div>
+
+        <h2>四、默观之舞：欧拉系数的集体智慧</h2>
+        <p>终于来到了最激动人心的部分！当我们把<strong class="highlight">不同秩的椭圆曲线</strong>的欧拉系数（经过适当归一化，比如 <span class="formula">a_p / sqrt(p)</span>），通过某种“投影”（例如，按照秩分类，然后对同一类曲线的 <span class="formula">a_p</span> 值进行平均），奇迹发生了！这些原本看似独立的、随机的 <span class="formula">a_p</span> 值，在平均之后，竟然展现出<strong class="highlight">高度协调的、如同鸟群（或鱼群）般集体飞舞的振荡模式</strong>。这就是所谓的“默观”（Murmuration）现象。</p>
+        <p>从物理逻辑的视角来看，这太迷人了！单个粒子（单个 <span class="formula">a_p</span> 值）的行为可能混乱无序，但当它们汇聚成一个集体（平均后的 <span class="formula">a_p</span> 序列），就展现出宏观的、有序的、动态的结构。这让人联想到物理学中的许多<strong class="highlight">“突现”（Emergent）现象</strong>：</p>
+        <ul>
+            <li><strong>鸟群的默观飞行</strong>：每只鸟只遵循简单的局部规则（与邻近的鸟保持距离、对齐方向、靠近群体中心），但整个鸟群却能做出复杂、同步、优美的飞行动作。</li>
+            <li><strong>相变</strong>：水分子在特定温度下会从无序的液态突然转变为有序的固态（冰）。</li>
+            <li><strong>磁性材料</strong>：单个原子的磁矩在无外场时随机排列，但在低温或强磁场下会自发对齐，形成宏观磁性。</li>
+        </ul>
+        <p>这些欧拉系数的“默观振荡”，似乎暗示着在椭圆曲线的算术世界深处，存在着某种未被完全理解的“相互作用力”或“隐藏的对称性”，使得它们在统计平均下表现出如此令人惊讶的集体行为。不同“秩”的曲线，可能对应着这个“系统”的不同“能量状态”或“相互作用强度”，从而导致了不同特征的振荡模式。</p>
+        <div class="animation-container">
+            <h3>动画4：“欧拉鸟群”的飞行表演</h3>
+            <p class="text-sm text-center mb-2">模拟大量“欧拉粒子”（代表归一化的 <span class="formula">a_p</span> 值）。点击“开始平均”，观察它们如何从无序变得有序，形成类似鸟群的流动振荡。尝试切换“秩”的类别，观察模式变化。</p>
+            <div id="murmurationCanvasContainer" class="animation-canvas"></div>
+            <div class="controls">
+                <button id="startAveragingButton">开始平均</button>
+                <button id="resetMurmurationButton">重置粒子</button>
+                <button id="changeRankGroupButton">切换秩类别 (影响行为)</button>
+            </div>
+        </div>
+
+        <h2>五、振荡的旋律：平均行为中的周期性</h2>
+        <p>这种“默观”行为不仅是动态的流动，更具体地表现为一种<strong class="highlight">“振荡模式”</strong>。也就是说，如果我们把平均后的欧拉系数值（比如，特定秩的曲线族在不同质数 <span class="formula">p</span> 上的平均 <span class="formula">a_p/sqrt(p)</span>）绘制成图表，我们会看到它们并非一条平坦的直线，也不是完全随机的噪声，而是呈现出类似波浪的起伏。这种振荡可能具有特定的频率和幅度，并且这些特征可能与椭圆曲线的“秩”或其他深层属性相关联。</p>
+        <p>从物理上看，振荡是自然界中最普遍的现象之一。从单摆的摆动、琴弦的振动，到电磁波的传播、量子力学中波函数的演化，都充满了振荡。一个系统产生振荡，通常意味着存在着某种“恢复力”（使其回到平衡位置的力）和“惯性”（使其越过平衡位置的趋势）。在椭圆曲线的欧拉系数平均行为中观察到振荡，不禁让我们思考：</p>
+        <ul>
+            <li>这种“恢复力”是什么？是某种算术结构在“约束”着 <span class="formula">a_p</span> 的取值范围吗？（著名的Hasse-Weil界限 <span class="formula">|a_p| <= 2*sqrt(p)</span> 就是一种约束）</li>
+            <li>这种“惯性”又是什么？是不同 <span class="formula">a_p</span> 之间的某种关联，使得它们倾向于同步变化吗？</li>
+        </ul>
+        <p>这些振荡模式的具体形态（例如，它们是否偏向某些特定值，即所谓的“偏差”现象，如Chebyshev偏差），是数论学家们非常感兴趣的研究课题。它们可能与更深层次的数学理论，如随机矩阵理论、L函数的性质等紧密相关。就好像物理学家通过分析原子光谱的谱线来推断原子内部结构一样，数学家也希望通过分析这些欧拉系数的振荡模式，来窥探椭圆曲线乃至整个数论世界的奥秘。</p>
+        <div class="animation-container">
+            <h3>动画5：平均欧拉系数的振荡波形</h3>
+            <p class="text-sm text-center mb-2">动态绘制平均后的欧拉系数值（示意）。观察其呈现的振荡模式。点击按钮模拟不同秩的曲线族，其振荡行为可能不同。</p>
+            <div id="oscillationPlotCanvasContainer" class="animation-canvas"></div>
+            <div class="controls">
+                <button id="playPausePlotButton">播放/暂停</button>
+                <button id="switchRankPlotButton">切换秩类别 (查看不同波形)</button>
+            </div>
+        </div>
+
+        <h2>六、结语：数学宇宙的未尽之舞</h2>
+        <p>椭圆曲线欧拉系数的“默观振荡”，是一个绝佳的例子，展示了数学世界中<strong class="highlight">从简单规则涌现出复杂行为</strong>的奇迹。它告诉我们，即使在最抽象的数学结构中，也可能隐藏着如同物理世界般生动、有序的集体现象。通过“投影”这一智慧的透镜，我们得以瞥见这些深藏的规律。</p>
+        <p>这种现象不仅本身令人着迷，更重要的是，它像一扇窗，让我们得以探究数论中一些最核心的问题，比如L函数的性质、不同数学对象之间的神秘联系（Langlands纲领所暗示的）。从物理的逻辑视角来看，我们似乎在观察一个由算术规则支配的“宇宙”中的“场”和“粒子”的行为，它们相互作用，形成宏观的、可观测的结构。</p>
+        <p>这支由欧拉系数跳起的“默观之舞”还在继续，数学家们正努力解读它的每一个舞步，期待从中发现更多关于数字宇宙的秘密。而我们，作为这场奇幻漂流的见证者，也感受到了数学那深邃而又灵动的魅力。</p>
+    </div>
+
+    <script>
+        // p5.js sketches will be defined here in instance mode
+
+        // Animation 1: Elliptic Curve Explorer
+        const ellipticCurveSketch = (p) => {
+            let sliderA, sliderB;
+            let valA = 1, valB = 1;
+            let spanA, spanB;
+
+            p.setup = () => {
+                const container = document.getElementById('ellipticCurveCanvasContainer');
+                let canvas = p.createCanvas(container.offsetWidth, container.offsetHeight);
+                canvas.parent('ellipticCurveCanvasContainer');
+                p.colorMode(p.HSB, 360, 100, 100);
+
+                sliderA = document.getElementById('paramA');
+                sliderB = document.getElementById('paramB');
+                spanA = document.getElementById('paramAValue');
+                spanB = document.getElementById('paramBValue');
+
+                sliderA.addEventListener('input', () => { valA = parseFloat(sliderA.value); spanA.textContent = valA; p.redraw(); });
+                sliderB.addEventListener('input', () => { valB = parseFloat(sliderB.value); spanB.textContent = valB; p.redraw(); });
+                
+                valA = parseFloat(sliderA.value);
+                valB = parseFloat(sliderB.value);
+                spanA.textContent = valA;
+                spanB.textContent = valB;
+                p.noLoop(); // Redraw only on slider change
+                p.redraw();
+            };
+
+            p.draw = () => {
+                p.background(55, 10, 95); // Light beige background
+                p.translate(p.width / 2, p.height / 2);
+                p.scale(1, -1); // Flip y-axis for standard math coordinates
+
+                const scaleFactor = p.width / 15;
+
+                // Draw axes
+                p.stroke(0, 0, 20); // Dark gray axes
+                p.strokeWeight(1);
+                p.line(-p.width / 2, 0, p.width / 2, 0); // X-axis
+                p.line(0, -p.height / 2, 0, p.height / 2); // Y-axis
+
+                // Draw curve y^2 = x^3 + ax + b
+                p.stroke(200, 80, 70); // Blue curve
+                p.strokeWeight(3);
+                p.noFill();
+
+                p.beginShape();
+                for (let x = -p.width / (2 * scaleFactor); x < p.width / (2 * scaleFactor); x += 0.05) {
+                    let ySquared = x*x*x + valA*x + valB;
+                    if (ySquared >= 0) {
+                        let y = p.sqrt(ySquared);
+                        p.vertex(x * scaleFactor, y * scaleFactor);
+                    }
+                }
+                p.endShape();
+
+                p.beginShape();
+                for (let x = -p.width / (2 * scaleFactor); x < p.width / (2 * scaleFactor); x += 0.05) {
+                    let ySquared = x*x*x + valA*x + valB;
+                    if (ySquared >= 0) {
+                        let y = -p.sqrt(ySquared);
+                        p.vertex(x * scaleFactor, y * scaleFactor);
+                    }
+                }
+                p.endShape();
+                
+                // Simulate some rational points (conceptual)
+                p.fill(0, 90, 80); // Red points
+                p.noStroke();
+                if (valA === 1 && valB === 1) { // Example points for a specific curve
+                    // These are not actual rational points, just for visual effect
+                    p.ellipse(0 * scaleFactor, 1 * scaleFactor, 8, 8);
+                    p.ellipse(-1 * scaleFactor, 1 * scaleFactor, 8, 8);
+                     p.ellipse(2 * scaleFactor, 3.31 * scaleFactor, 8, 8);
+                }
+            };
+            
+            p.windowResized = () => {
+                const container = document.getElementById('ellipticCurveCanvasContainer');
+                p.resizeCanvas(container.offsetWidth, container.offsetHeight);
+                p.redraw();
+            };
+        };
+        new p5(ellipticCurveSketch);
+
+        // Animation 2: Euler Signal
+        const eulerSignalSketch = (p) => {
+            let primeP = 5;
+            let Np = 0;
+            let ap = 0;
+            let phase = 0; // 0: initial, 1: counting, 2: showing ap
+            let points = [];
+            let counter = 0;
+            let curveA = -1, curveB = 1; // A simple curve y^2 = x^3 - x + 1
+
+            p.setup = () => {
+                const container = document.getElementById('eulerSignalCanvasContainer');
+                let canvas = p.createCanvas(container.offsetWidth, container.offsetHeight);
+                canvas.parent('eulerSignalCanvasContainer');
+                document.getElementById('calculateApButton').addEventListener('click', () => {
+                    phase = 1;
+                    counter = 0;
+                    points = [];
+                    primeP = p.random([5, 7, 11]); // Pick a new small prime
+                    // Simulate finding points for y^2 = x^3 + curveA*x + curveB (mod primeP)
+                    for (let x = 0; x < primeP; x++) {
+                        for (let y = 0; y < primeP; y++) {
+                            if ((y * y) % primeP === (x * x * x + curveA * x + curveB + primeP*10) % primeP) { // +primeP*10 to ensure positive before modulo
+                                points.push({x: x, y: y, found: false});
+                            }
+                        }
+                    }
+                    // Add point at infinity
+                    points.push({x: Infinity, y: Infinity, found: false}); 
+                    Np = points.length;
+                    ap = primeP + 1 - Np;
+                    p.loop(); 
+                });
+                p.noLoop();
+                p.redraw();
+            };
+
+            p.draw = () => {
+                p.background(210, 10, 95); // Light blue background
+                p.textAlign(p.CENTER, p.CENTER);
+                p.textSize(18);
+
+                if (phase === 0) {
+                    p.fill(0,0,20);
+                    p.text(`点击按钮模拟计算 a_p`, p.width / 2, p.height / 2);
+                    p.text(`椭圆曲线: y^2 = x^3 ${curveA < 0 ? '':'+'}${curveA}x ${curveB < 0 ? '':'+'}${curveB}`, p.width/2, p.height/2 + 30);
+                } else if (phase === 1) { // Counting points
+                    p.fill(0,0,20);
+                    p.text(`在 F_${primeP} (模 ${primeP} 世界) 中寻找点...`, p.width / 2, 30);
+                    let gridSpacing = p.min(p.width, p.height - 60) / (primeP + 1);
+                    for (let i = 0; i < primeP; i++) {
+                        for (let j = 0; j < primeP; j++) {
+                            p.stroke(0,0,80);
+                            p.fill(0,0,90);
+                            p.ellipse((i + 1) * gridSpacing, (j + 1) * gridSpacing + 40, 5, 5);
+                        }
+                    }
+
+                    if (counter < points.length) {
+                        points[counter].found = true;
+                        counter++;
+                    } else {
+                        phase = 2; // Done counting
+                    }
+                    
+                    for(let pt of points){
+                        if(pt.found && pt.x !== Infinity){
+                            p.fill(0, 80, 80); // Red for found points
+                            p.ellipse((pt.x + 1) * gridSpacing, (pt.y + 1) * gridSpacing + 40, 10, 10);
+                        }
+                    }
+                     p.text(`已找到 ${counter} / ${points.length} 个点 (包括无穷远点)`, p.width/2, p.height - 20);
+
+                } else if (phase === 2) { // Showing ap
+                    p.fill(0,0,20);
+                    p.textSize(24);
+                    p.text(`对于质数 p = ${primeP}`, p.width / 2, p.height / 2 - 60);
+                    p.text(`找到点数 N_p = ${Np}`, p.width / 2, p.height / 2 - 20);
+                    p.text(`欧拉系数 a_p = p + 1 - N_p`, p.width / 2, p.height / 2 + 20);
+                    p.textSize(32);
+                    p.fill(20, 80, 70); // Orange for ap
+                    p.text(`a_${primeP} = ${ap}`, p.width / 2, p.height / 2 + 70);
+                    p.noLoop(); // Stop after showing result
+                }
+            };
+            p.windowResized = () => {
+                const container = document.getElementById('eulerSignalCanvasContainer');
+                p.resizeCanvas(container.offsetWidth, container.offsetHeight);
+                if(phase !== 1) p.redraw(); // Avoid interrupting counting animation
+            };
+        };
+        new p5(eulerSignalSketch);
+
+        // Animation 3: Projection
+        const projectionSketch = (p) => {
+            let points3D = [];
+            let angle = 0;
+            let show3D = true;
+
+            p.setup = () => {
+                const container = document.getElementById('projectionCanvasContainer');
+                let canvas = p.createCanvas(container.offsetWidth, container.offsetHeight, p.WEBGL);
+                canvas.parent('projectionCanvasContainer');
+                for (let i = 0; i < 200; i++) {
+                    // Create points forming a sort of helix or spiral structure
+                    let r = p.map(i, 0, 200, 20, 150);
+                    let a = p.map(i, 0, 200, 0, p.PI * 4);
+                    let z = p.map(i, 0, 200, -100, 100);
+                    points3D.push(p.createVector(r * p.cos(a), r * p.sin(a), z + p.random(-20,20) ));
+                }
+                document.getElementById('toggleProjectionButton').addEventListener('click', () => {
+                    show3D = !show3D;
+                });
+            };
+
+            p.draw = () => {
+                p.background(30, 10, 95); // Light gray-blue background
+                p.orbitControl(); // Allows mouse interaction for 3D view
+
+                if (show3D) {
+                    p.rotateY(angle);
+                    p.stroke(0,0,20);
+                    p.strokeWeight(4);
+                    for (let pt of points3D) {
+                        p.point(pt.x, pt.y, pt.z);
+                    }
+                    angle += 0.005;
+                } else {
+                    // Projection onto XY plane (Z=0)
+                    // p.rotateY(p.PI/4); // Fixed view for projection
+                    // p.rotateX(p.PI/6);
+                    p.translate(0,0,-300); // Move camera back to see origin
+                    p.stroke(200, 80, 70); // Blue for projected points
+                    p.strokeWeight(5);
+                    for (let pt of points3D) {
+                        p.point(pt.x, pt.y, 0); // Project by setting z=0
+                    }
+                    // Draw a "projection plane"
+                    p.noStroke();
+                    p.fill(180, 20, 100, 20); // Semi-transparent plane
+                    p.push();
+                    p.translate(0,0, -1); // Slightly behind points
+                    p.box(p.width*0.8, p.height*0.8, 1);
+                    p.pop();
+                }
+            };
+             p.windowResized = () => {
+                const container = document.getElementById('projectionCanvasContainer');
+                p.resizeCanvas(container.offsetWidth, container.offsetHeight);
+            };
+        };
+        new p5(projectionSketch);
+
+        // Animation 4: Murmuration
+        const murmurationSketch = (p) => {
+            let boids = [];
+            let numBoids = 150;
+            let isAveraging = false;
+            let rankGroup = 1; // 1 or 2, affects behavior
+
+            class Boid {
+                constructor(x, y) {
+                    this.position = p.createVector(x, y);
+                    this.velocity = p5.Vector.random2D();
+                    this.velocity.setMag(p.random(0.5, 1.5));
+                    this.acceleration = p.createVector();
+                    this.maxForce = 0.05; // Lower for smoother flocking
+                    this.maxSpeed = (rankGroup === 1) ? 1.5 : 2.5; // Rank affects speed
+                    this.perceptionRadius = (rankGroup === 1) ? 40 : 50;
+                    this.color = p.color(p.random(180,220), 80, 70); // Bluish
+                }
+
+                edges() {
+                    if (this.position.x > p.width) this.position.x = 0;
+                    else if (this.position.x < 0) this.position.x = p.width;
+                    if (this.position.y > p.height) this.position.y = 0;
+                    else if (this.position.y < 0) this.position.y = p.height;
+                }
+
+                align(boids) {
+                    let steering = p.createVector();
+                    let total = 0;
+                    for (let other of boids) {
+                        let d = p.dist(this.position.x, this.position.y, other.position.x, other.position.y);
+                        if (other !== this && d < this.perceptionRadius) {
+                            steering.add(other.velocity);
+                            total++;
+                        }
+                    }
+                    if (total > 0) {
+                        steering.div(total);
+                        steering.setMag(this.maxSpeed);
+                        steering.sub(this.velocity);
+                        steering.limit(this.maxForce);
+                    }
+                    return steering;
+                }
+
+                cohesion(boids) {
+                    let steering = p.createVector();
+                    let total = 0;
+                    for (let other of boids) {
+                        let d = p.dist(this.position.x, this.position.y, other.position.x, other.position.y);
+                        if (other !== this && d < this.perceptionRadius) {
+                            steering.add(other.position);
+                            total++;
+                        }
+                    }
+                    if (total > 0) {
+                        steering.div(total);
+                        steering.sub(this.position);
+                        steering.setMag(this.maxSpeed);
+                        steering.sub(this.velocity);
+                        steering.limit(this.maxForce);
+                    }
+                    return steering;
+                }
+
+                separation(boids) {
+                    let steering = p.createVector();
+                    let total = 0;
+                    for (let other of boids) {
+                        let d = p.dist(this.position.x, this.position.y, other.position.x, other.position.y);
+                        if (other !== this && d < this.perceptionRadius / 1.5) { // Smaller radius for separation
+                            let diff = p5.Vector.sub(this.position, other.position);
+                            diff.div(d * d); // Weight by distance
+                            steering.add(diff);
+                            total++;
+                        }
+                    }
+                    if (total > 0) {
+                        steering.div(total);
+                        steering.setMag(this.maxSpeed);
+                        steering.sub(this.velocity);
+                        steering.limit(this.maxForce * 1.5); // Stronger separation
+                    }
+                    return steering;
+                }
+                
+                // Add a gentle pull towards center to prevent them drifting off too far in one direction
+                gravityWell() {
+                    let center = p.createVector(p.width / 2, p.height / 2);
+                    let force = p5.Vector.sub(center, this.position);
+                    let dist = force.mag();
+                    if (dist > p.width / 3) { // Only apply if far from center
+                        force.setMag(this.maxSpeed * 0.1); // Gentle pull
+                        force.sub(this.velocity);
+                        force.limit(this.maxForce * 0.2);
+                        return force;
+                    }
+                    return p.createVector(0,0);
+                }
+
+
+                flock(boids) {
+                    if (!isAveraging) { // If not averaging, move more randomly
+                        this.acceleration.add(p5.Vector.random2D().mult(0.1));
+                        return;
+                    }
+                    let alignment = this.align(boids);
+                    let cohesionForce = this.cohesion(boids);
+                    let separationForce = this.separation(boids);
+                    let gravity = this.gravityWell();
+
+                    this.acceleration.add(alignment.mult(1.0)); // Balance weights
+                    this.acceleration.add(cohesionForce.mult(0.8));
+                    this.acceleration.add(separationForce.mult(1.2));
+                    this.acceleration.add(gravity.mult(0.5));
+                }
+
+                update() {
+                    this.position.add(this.velocity);
+                    this.velocity.add(this.acceleration);
+                    this.velocity.limit(this.maxSpeed);
+                    this.acceleration.mult(0); // Reset acceleration
+                }
+
+                show() {
+                    p.strokeWeight(6);
+                    p.stroke(this.color);
+                    p.point(this.position.x, this.position.y);
+                }
+            }
+            
+            function resetBoids() {
+                boids = [];
+                for (let i = 0; i < numBoids; i++) {
+                    boids.push(new Boid(p.random(p.width), p.random(p.height)));
+                }
+            }
+
+            p.setup = () => {
+                const container = document.getElementById('murmurationCanvasContainer');
+                let canvas = p.createCanvas(container.offsetWidth, container.offsetHeight);
+                canvas.parent('murmurationCanvasContainer');
+                resetBoids();
+
+                document.getElementById('startAveragingButton').addEventListener('click', () => { isAveraging = true; });
+                document.getElementById('resetMurmurationButton').addEventListener('click', () => { 
+                    isAveraging = false; 
+                    resetBoids();
+                });
+                document.getElementById('changeRankGroupButton').addEventListener('click', () => {
+                    rankGroup = (rankGroup === 1) ? 2 : 1;
+                    // Update boid properties based on new rank group
+                    for(let b of boids) {
+                        b.maxSpeed = (rankGroup === 1) ? 1.5 : 2.5;
+                        b.perceptionRadius = (rankGroup === 1) ? 40 : 50;
+                    }
+                    // isAveraging = false; // Optionally reset averaging state
+                    // resetBoids();
+                });
+            };
+
+            p.draw = () => {
+                p.background(10, 5, 98, 0.8); // Very light, slightly transparent
+                for (let boid of boids) {
+                    boid.edges();
+                    boid.flock(boids);
+                    boid.update();
+                    boid.show();
+                }
+            };
+             p.windowResized = () => {
+                const container = document.getElementById('murmurationCanvasContainer');
+                p.resizeCanvas(container.offsetWidth, container.offsetHeight);
+                resetBoids(); // Re-initialize boids on resize to fit new canvas
+            };
+        };
+        new p5(murmurationSketch);
+
+        // Animation 5: Oscillation Plot
+        const oscillationPlotSketch = (p) => {
+            let dataPoints = [];
+            let time = 0;
+            let isPlaying = true;
+            let currentRankProfile = 1; // 1 or 2
+            let amplitude = 50;
+            let frequency = 0.02;
+            let noiseFactor = 10;
+
+            function generateDataPoint() {
+                let baseVal;
+                if (currentRankProfile === 1) { // Rank 1: smoother, lower frequency oscillation
+                    amplitude = p.height/6;
+                    frequency = 0.01;
+                    noiseFactor = 5;
+                    baseVal = amplitude * p.sin(time * frequency);
+                } else { // Rank 2: more erratic, higher frequency
+                    amplitude = p.height/5;
+                    frequency = 0.03;
+                    noiseFactor = 15;
+                    baseVal = amplitude * p.cos(time * frequency * 1.5) * p.sin(time * frequency * 0.5);
+                }
+                let noisyVal = baseVal + p.random(-noiseFactor, noiseFactor);
+                return p.constrain(noisyVal, -p.height/2 + 20, p.height/2 - 20);
+            }
+
+            p.setup = () => {
+                const container = document.getElementById('oscillationPlotCanvasContainer');
+                let canvas = p.createCanvas(container.offsetWidth, container.offsetHeight);
+                canvas.parent('oscillationPlotCanvasContainer');
+                p.strokeWeight(2);
+
+                document.getElementById('playPausePlotButton').addEventListener('click', () => { isPlaying = !isPlaying; });
+                document.getElementById('switchRankPlotButton').addEventListener('click', () => {
+                    currentRankProfile = (currentRankProfile === 1) ? 2 : 1;
+                    dataPoints = []; // Clear old data
+                    time = 0;
+                });
+            };
+
+            p.draw = () => {
+                p.background(220, 5, 98); // Very light blue
+                p.translate(0, p.height / 2); // Origin at center-left for y-axis
+
+                // Draw X-axis (time)
+                p.stroke(0,0,60);
+                p.line(0, 0, p.width, 0);
+
+                if (isPlaying && dataPoints.length < p.width / 2) { // Limit data points to canvas width
+                    dataPoints.push(generateDataPoint());
+                    time++;
+                }
+
+                p.stroke(30, 80, 70); // Plot color (e.g., a nice teal)
+                p.noFill();
+                p.beginShape();
+                for (let i = 0; i < dataPoints.length; i++) {
+                    p.vertex(i * 2, -dataPoints[i]); // Scale x and invert y for plotting
+                }
+                p.endShape();
+
+                // Display current rank profile
+                p.fill(0,0,20);
+                p.noStroke();
+                p.textAlign(p.LEFT, p.TOP);
+                p.textSize(14);
+                p.text(`模拟秩 ${currentRankProfile} 曲线族的平均欧拉系数行为`, 10, -p.height/2 + 10);
+            };
+             p.windowResized = () => {
+                const container = document.getElementById('oscillationPlotCanvasContainer');
+                p.resizeCanvas(container.offsetWidth, container.offsetHeight);
+                dataPoints = []; // Clear data on resize
+                time = 0;
+            };
+        };
+        new p5(oscillationPlotSketch);
+
+        // Ensure P5 canvases are redrawn once after setup to avoid blank canvases if noLoop() is used early.
+        // This is generally handled by p.redraw() in setup or by default loop.
+        // Force canvas to fill parent for P5.js
+        window.addEventListener('load', () => {
+            document.querySelectorAll('.animation-canvas').forEach(container => {
+                if (container.firstChild && container.firstChild.tagName === 'CANVAS') {
+                    // p5 already handles this with parent() and resizeCanvas.
+                    // This is more of a safeguard for other canvas libraries.
+                }
+            });
+        });
+
+    </script>
+</body>
+</html>

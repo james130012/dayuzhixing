@@ -1,0 +1,956 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>奖励推理模型：物理逻辑与动画深度解读</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.2/p5.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
+    <style>
+        /* 基本重置和页面设置 */
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Noto Sans SC', sans-serif;
+            font-size: 18px; /* 基础字号，参考“三号” */
+            line-height: 1.8;
+            background-color: #0d1117; /* GitHub 暗黑模式背景色 */
+            color: #c9d1d9; /* GitHub 暗黑模式文字颜色 */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        #backgroundCanvasContainer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            width: 90%;
+            max-width: 1100px; /* 优化阅读宽度，A3感觉 */
+            margin: 40px auto;
+            padding: 40px 50px;
+            background-color: rgba(22, 27, 34, 0.9); /* GitHub 暗黑模式内容区背景 */
+            border: 1px solid #30363d; /* GitHub 暗黑模式边框 */
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #30363d;
+        }
+
+        h1 {
+            font-family: 'ZCOOL KuaiLe', cursive;
+            color: #58a6ff; /* GitHub 蓝色 */
+            font-size: 2.8em;
+            margin-bottom: 0.3em;
+            letter-spacing: 1.5px;
+        }
+        
+        .subtitle {
+            font-family: 'ZCOOL KuaiLe', cursive;
+            color: #8b949e; /* GitHub 次要文字颜色 */
+            font-size: 1.5em;
+            margin-top: 0;
+            margin-bottom: 20px;
+        }
+
+        .authors, .institutions {
+            font-size: 0.9em;
+            color: #8b949e;
+            margin-bottom: 5px;
+        }
+        .authors strong {
+            color: #c9d1d9;
+        }
+
+        h2 {
+            font-family: 'ZCOOL KuaiLe', cursive;
+            color: #f778ba; /* 类似 GitHub 紫粉色 */
+            font-size: 2.2em;
+            margin-top: 2.5em;
+            margin-bottom: 1em;
+            padding-bottom: 10px;
+            border-bottom: 1px dashed #444c56;
+        }
+        
+        h3 {
+            font-family: 'ZCOOL KuaiLe', cursive;
+            color: #79c0ff; /* 浅蓝色 */
+            font-size: 1.6em;
+            margin-top: 1.8em;
+            margin-bottom: 0.8em;
+        }
+
+        p {
+            margin-bottom: 1.5em;
+            text-align: justify;
+            color: #c9d1d9;
+        }
+
+        strong, .highlight {
+            color: #a5d6ff; /* 亮蓝色强调 */
+            font-weight: 500;
+        }
+        .concept {
+            font-weight: bold;
+            color: #7ee787; /* GitHub 绿色 */
+            padding: 3px 7px;
+            background-color: rgba(56, 139, 253, 0.1);
+            border-radius: 5px;
+            border: 1px solid rgba(56, 139, 253, 0.3);
+        }
+        
+        .formula {
+            display: block;
+            text-align: center;
+            margin: 20px auto;
+            padding: 15px;
+            background-color: rgba(34,39,46,0.8);
+            border-left: 3px solid #58a6ff;
+            color: #e6edf3;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 1.1em;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .animation-container {
+            width: 100%;
+            max-width: 600px; /* 动画区域宽度 */
+            height: 400px;    /* 动画区域高度 */
+            margin: 30px auto;
+            border: 1px solid #30363d;
+            border-radius: 10px;
+            overflow: hidden;
+            background-color: #010409; /* 更深的背景，突出动画 */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: inset 0 0 15px rgba(0,0,0,0.5);
+        }
+        .animation-container canvas {
+            display: block;
+            max-width: 100%;
+            max-height: 100%;
+            border-radius: 8px;
+        }
+        
+        .controls {
+            text-align: center;
+            margin-bottom: 30px;
+            margin-top: 15px;
+        }
+        .controls button {
+            padding: 12px 25px;
+            font-size: 1em;
+            font-family: 'Noto Sans SC', sans-serif;
+            background-image: linear-gradient(to right, #58a6ff, #316dca); /* GitHub 风格渐变 */
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
+            letter-spacing: 0.5px;
+        }
+        .controls button:hover {
+            transform: translateY(-3px) scale(1.03);
+            box-shadow: 0 8px 20px rgba(88, 166, 255, 0.4);
+        }
+        .controls button:active {
+            transform: translateY(0px) scale(1);
+        }
+        .controls label {
+            color: #8b949e;
+            margin: 0 10px;
+            font-size: 0.95em;
+        }
+        .controls input[type="range"] {
+            vertical-align: middle;
+            cursor: grab;
+            width: 180px;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 50px;
+            padding: 30px;
+            background-color: #161b22;
+            color: #8b949e;
+            width: 100%;
+            font-size: 0.9em;
+            border-top: 1px solid #30363d;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                font-size: 16px;
+            }
+            .container {
+                width: 95%;
+                padding: 20px 25px;
+                margin: 20px auto;
+            }
+            h1 {
+                font-size: 2.2em;
+            }
+            h2 {
+                font-size: 1.8em;
+            }
+            h3 {
+                font-size: 1.4em;
+            }
+            .animation-container {
+                height: 320px;
+            }
+            .controls button {
+                padding: 10px 20px;
+                font-size: 0.9em;
+            }
+            .controls input[type="range"] {
+                width: 140px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="backgroundCanvasContainer"></div>
+    <div class="container">
+        <header>
+            <h1>奖励推理模型 (RRM)</h1>
+            <p class="subtitle">物理逻辑视角下的深度解读与动画演示</p>
+            <p class="authors"><strong>论文作者:</strong> Jiaxin Guo, Zewen Chi, Li Dong, Qingxiu Dong, Xun Wu, Shaohan Huang, Furu Wei</p>
+            <p class="institutions"><strong>所属机构:</strong> Microsoft Research, Tsinghua University, Peking University</p>
+        </header>
+
+        <main>
+            <article>
+                <section id="intro">
+                    <h2>引言：AI裁判的“深思熟虑”</h2>
+                    <p>在人工智能飞速发展的今天，如何让大型语言模型（LLM）的回答更符合人类的期望与价值观，成为了一个核心挑战。微软研究院、清华大学和北京大学的学者们联手提出了一种新颖的<span class="concept">奖励推理模型（Reward Reasoning Models, RRMs）</span>，旨在通过模拟人类的“深思熟虑”过程，来更精准地评估和指导LLM的行为。这不仅仅是一个技术上的突破，更蕴含着一种有趣的“物理逻辑”——系统如何在约束下进行计算、学习和演化。让我们一同探索RRM背后的机制和动态之美。</p>
+                    <p>传统的奖励模型往往直接给出一个评分，而RRM则独辟蹊径，它在给出最终奖励之前，会进行一番<strong class="highlight">“链式思考”（Chain-of-Thought）</strong>的推理过程。这就像一个经验丰富的裁判，在判罚前会仔细回顾规则、分析细节，而不是仅凭直觉。这种机制使得RRM能够更灵活地利用<span class="concept">测试时计算资源</span>，对于复杂问题投入更多“精力”去分析，从而提升判断的准确性。</p>
+                </section>
+
+                <section id="rrm-core">
+                    <h2>核心机制：RRM的“思维引擎”是如何运转的？</h2>
+                    <p>从物理逻辑的视角看，RRM可以被视为一个信息处理系统。它的输入是用户的<strong class="highlight">提问（Query）</strong>以及两个或多个待评估的<strong class="highlight">候选回答（Responses）</strong>。RRM的目标是判断哪个回答更优。其核心的“引擎”是一个基于Transformer解码器的模型结构，但其特殊之处在于输出的“动力学”过程。</p>
+                    <p>RRM并非一步到位给出评分，而是首先生成一段<span class="concept">“内心独白”式的推理文本</span>，这可以看作是系统内部状态的演化和信息流动的轨迹。这个推理过程遵循特定的评估标准，如指令遵循度、帮助性、准确性、无害性和详细程度。最后，基于这段推理，模型输出其判断——例如，“回答A优于回答B”。这个过程可以类比为一个物理系统从初始态（输入）经过一系列中间态（推理步骤）最终达到一个稳定态（判断结果）。</p>
+                    <div id="rrmCoreAnimationContainer" class="animation-container"></div>
+                    <div class="controls">
+                        <button id="rrmCorePlayPause">启动/暂停 RRM 运作模拟</button>
+                    </div>
+                    <p class="animation-caption"><strong>动画1：RRM核心运作。</strong> 输入问题和两个候选答案，RRM内部的“思维齿轮”开始转动（模拟链式思考），对信息进行加工和推理，最终输出对更优答案的判断。点击按钮观察这一动态过程。</p>
+                </section>
+
+                <section id="rrm-training">
+                    <h2>学习与进化：RRM的“自我修炼”之道</h2>
+                    <p>RRM是如何学会这种复杂的“思考”能力的呢？研究者们设计了一套巧妙的<span class="concept">强化学习框架</span>，称为“通过强化学习进行奖励推理”。有趣的是，这个框架并不需要人类专家预先写好大量的“标准推理过程”作为教材。相反，RRM在一种<strong class="highlight">基于规则的奖励环境</strong>中“自我进化”。</p>
+                    <p>在这个环境中，RRM对一对回答做出判断后，系统会根据一个简单的规则（例如，RRM选择的答案是否是已知的“正确”或“更优”答案）给予一个反馈信号（比如+1代表正确，-1代表错误）。这个反馈信号就像物理系统受到的外部“作用力”，驱动RRM调整其内部参数（“状态”），使其后续的“推理路径”和“判断结果”更倾向于获得正反馈。这个过程不断迭代，RRM的推理能力便逐步增强，仿佛一个智能体在不断试错和学习中变得越来越“聪明”。这体现了系统在环境压力和反馈驱动下的自适应演化。</p>
+                    <div id="rrmTrainingAnimationContainer" class="animation-container"></div>
+                    <div class="controls">
+                        <button id="rrmTrainingPlayPause">启动/暂停 RRM 学习周期</button>
+                    </div>
+                    <p class="animation-caption"><strong>动画2：RRM强化学习。</strong> RRM（智能体）对输入进行判断，环境根据预设规则给予奖励或惩罚。这个反馈信号驱动RRM内部“策略网络”的调整和优化，使其决策能力不断提升。观察学习循环如何促进模型进化。</p>
+                </section>
+
+                <section id="multi-response">
+                    <h2>“群雄逐鹿”：RRM如何处理多个候选回答？</h2>
+                    <p>在实际应用中，一个问题往往有多个可能的回答。RRM虽然其核心输入是比较两个回答，但通过精巧的策略，它也能够有效地处理多个候选者，选出最优的那个。这就像组织一场“比赛”，让各个回答一较高下。论文中介绍了两种主要的<span class="concept">多响应奖励策略</span>：</p>
+                    
+                    <h3>ELO评分系统：构建“排行榜”</h3>
+                    <p>借鉴于国际象棋等竞技排名，<strong class="highlight">ELO评分系统</strong>被引入。RRM会对所有候选回答进行两两比较（或者抽样比较）。每次比较的结果（胜/负）都会用来更新参与比较的两个回答的ELO分数。经过多轮比较，每个回答都会获得一个相对稳定的ELO分数，从而形成一个“排行榜”，高分者胜出。这可以看作是一个动态平衡系统，通过多次局部相互作用（两两比较）来确定全局的相对优劣序。</p>
+                    <div id="eloAnimationContainer" class="animation-container"></div>
+                    <div class="controls">
+                        <button id="eloRunRound">进行一轮ELO比较</button>
+                        <button id="eloReset">重置ELO分数</button>
+                    </div>
+                    <p class="animation-caption"><strong>动画3：ELO评分系统。</strong> 多个候选答案（圆点）进行两两PK，RRM作为裁判。每次PK后，胜者ELO分数上升，败者下降。多次PK后，形成动态的排行榜。点击按钮模拟比较过程。</p>
+
+                    <h3>淘汰赛机制：高效决出“冠军”</h3>
+                    <p>另一种策略是<span class="concept">淘汰赛（Knockout Tournament）</span>。候选回答们被随机分入一个“比赛支架”中，两两对决，胜者进入下一轮，败者淘汰，直至决出最终的“冠军”回答。这种方式的比较次数相对较少（对于n个回答，需要n-1次比较），计算效率较高。这好比一个能量逐级集中的过程，通过一系列筛选，最终将“最优解”凸显出来。</p>
+                    <div id="knockoutAnimationContainer" class="animation-container"></div>
+                    <div class="controls">
+                        <button id="knockoutNextRound">进行下一轮淘汰赛</button>
+                        <button id="knockoutReset">重置淘汰赛</button>
+                    </div>
+                    <p class="animation-caption"><strong>动画4：淘汰赛机制。</strong> 候选答案进入淘汰赛支架，RRM在每场对决中选出胜者。胜者晋级，直至产生最终的优胜者。观察“优胜劣汰”的动态筛选。</p>
+                    <p>这两种策略还可以结合<strong class="highlight">多数投票法</strong>，即对每一次两两比较，让RRM进行多次独立的判断，然后取多数意见作为该次比较的结果，以增强判断的鲁棒性。这相当于对系统的某个“测量”过程进行多次重复，以减少随机误差。</p>
+                </section>
+
+                <section id="test-time-compute">
+                    <h2>计算的“魔力”：测试时计算资源的灵活运用</h2>
+                    <p>RRM的一大亮点在于其能够有效利用<span class="concept">测试时计算资源</span>。这意味着在面对一个判断任务时，如果给予RRM更多的“思考时间”或“计算步骤”，它的表现通常会更好。这就像人类在解决难题时，多花点时间琢磨，往往能得到更优的答案。</p>
+                    <p>论文中探讨了两种主要的计算扩展方式：</p>
+                    <ul>
+                        <li><strong class="highlight">并行扩展（Parallel Scaling）</strong>：例如，在ELO或淘汰赛中进行更多组的比较，或者在多数投票时增加投票次数。这相当于从多个角度或多次重复来审视问题。</li>
+                        <li><strong class="highlight">序贯扩展（Sequential Scaling）</strong>：即允许RRM在生成其“链式思考”的推理过程时，产生更长、更深入的思考链条。这可以理解为增加系统的“计算深度”。</li>
+                    </ul>
+                    <p>实验表明，无论是增加比较的“广度”（并行）还是思考的“深度”（序贯），RRM的性能都能得到提升。这体现了系统对可用资源的敏感性和适应性，其性能与投入的计算量呈现正相关，这在物理系统中也常常见到（例如，更精密的仪器或更长的观测时间能带来更准确的结果）。</p>
+                    <div id="computeScalingAnimationContainer" class="animation-container"></div>
+                    <div class="controls">
+                        <button id="computeScalingPlayPause">启动/暂停模拟</button>
+                        <label for="thinkingBudgetSlider">思考预算: <span id="thinkingBudgetValueDisplay">中</span></label>
+                        <input type="range" id="thinkingBudgetSlider" min="1" max="3" value="2" step="1">
+                    </div>
+                    <p class="animation-caption"><strong>动画5：序贯计算扩展。</strong> 模拟RRM在不同“思考预算”（短、中、长链式思考）下的表现。预算越高，推理步骤越多（动画中路径更长或更复杂），最终判断的准确率也随之提升。通过滑块调整预算，观察效果。</p>
+                </section>
+                
+                <section id="reasoning-patterns">
+                    <h2>“思维画像”：RRM的独特推理模式</h2>
+                    <p>更有趣的是，通过对RRM生成的推理文本进行分析，研究者们发现，经过强化学习训练的RRM，其“思考模式”与未经训练的基础模型有所不同。RRM更倾向于使用某些特定的<span class="concept">推理模式</span>，例如：</p>
+                    <ul>
+                        <li><strong class="highlight">转换（Transition）</strong>：如“换个角度看…”、“另一种方法是…”</li>
+                        <li><strong class="highlight">反思（Reflection）</strong>：如“等等，我再检查一下…”、“这个似乎不对…”</li>
+                        <li><strong class="highlight">比较（Comparison）</strong>：更细致地对比两个回答的优劣。</li>
+                        <li><strong class="highlight">分解（Breakdown）</strong>：将复杂问题拆解成小部分分析。</li>
+                    </ul>
+                    <p>相比之下，RRM在<strong class="highlight">转换、反思和比较</strong>等模式上表现得更为活跃，这意味着它在做判断时，会进行更多视角的切换、自我审视和细致对比。这就像一个经验丰富的思考者，其思维路径更加灵活和辩证。这种推理模式的偏好，正是其强化学习训练结果的体现，是系统为了最大化奖励信号而“进化”出的有效策略。</p>
+                     <div id="reasoningPatternsAnimationContainer" class="animation-container"></div>
+                    <div class="controls">
+                        <button id="reasoningPatternsToggle">切换显示 RRM / 基线模型</button>
+                    </div>
+                    <p class="animation-caption"><strong>动画6：推理模式对比。</strong> 以动态条形图展示RRM与基线模型（如R1-distilled）在不同推理模式（转换、反思、比较、分解）上的使用频率。点击按钮切换，直观感受RRM在特定推理策略上的增强。</p>
+                </section>
+
+                <section id="conclusion">
+                    <h2>结语：迈向更“懂”人类的AI裁判</h2>
+                    <p>奖励推理模型（RRM）的提出，为我们揭示了一条提升大型语言模型对齐能力的新路径。它不仅仅是一个模型，更像一个被精心设计和训练的<span class="concept">智能决策系统</span>。从物理逻辑的视角来看，RRM的运作、学习和适应过程，充满了动态演化的美感：</p>
+                    <ul>
+                        <li>它是一个<strong class="highlight">开放系统</strong>，接收外部输入（问题、回答），并产生输出（判断）。</li>
+                        <li>它内部有明确的<strong class="highlight">信息处理流程</strong>（链式思考）。</li>
+                        <li>它通过<strong class="highlight">反馈机制</strong>（强化学习）进行自我优化和状态调整。</li>
+                        <li>它能根据可用的<strong class="highlight">“能量”或“资源”</strong>（测试时计算量）调整其行为复杂度和性能。</li>
+                        <li>它演化出了特定的<strong class="highlight">行为模式</strong>（推理策略）以适应其“生存环境”（奖励规则）。</li>
+                    </ul>
+                    <p>RRM的成功不仅在于其优异的性能，更在于它启发我们思考：如何构建出能进行更复杂、更接近人类思考过程的AI系统。未来的AI“裁判”，或许真的能够像人类专家一样，进行深思熟虑、权衡利弊，做出既准确又富有洞察力的判断。这场探索“机器智能边界”的旅程，依然充满未知与惊喜。</p>
+                </section>
+            </article>
+        </main>
+        <footer>
+            <p>&copy; 2025 奖励推理模型物理逻辑解读。基于论文 arXiv:2505.14674v1 [cs.CL]。</p>
+        </footer>
+    </div>
+
+    <script>
+        // --- 全局背景动画 ---
+        let sketchBackground = function(p) {
+            let particles = [];
+            const numParticles = 80; // Reduced for performance on complex pages
+
+            p.setup = function() {
+                let canvas = p.createCanvas(p.windowWidth, p.windowHeight);
+                canvas.parent('backgroundCanvasContainer');
+                for (let i = 0; i < numParticles; i++) {
+                    particles.push(new Particle());
+                }
+                p.noStroke();
+            };
+
+            p.draw = function() {
+                p.clear(); 
+                for (let particle of particles) {
+                    particle.update();
+                    particle.display();
+                }
+            };
+
+            p.windowResized = function() {
+                p.resizeCanvas(p.windowWidth, p.windowHeight);
+            };
+
+            class Particle {
+                constructor() {
+                    this.pos = p.createVector(p.random(p.width), p.random(p.height));
+                    this.vel = p.createVector(p.random(-0.2, 0.2), p.random(-0.2, 0.2));
+                    this.size = p.random(1, 2.5);
+                    this.color = p.color(p.random(50, 120), p.random(80, 150), p.random(180, 255), p.random(30, 100)); // Cooler, darker blues
+                }
+                update() {
+                    this.pos.add(this.vel);
+                    if (this.pos.x < 0 || this.pos.x > p.width) this.vel.x *= -1;
+                    if (this.pos.y < 0 || this.pos.y > p.height) this.vel.y *= -1;
+                }
+                display() {
+                    p.fill(this.color);
+                    p.ellipse(this.pos.x, this.pos.y, this.size, this.size);
+                }
+            }
+        };
+        new p5(sketchBackground);
+
+        // --- 动画1: RRM核心运作 ---
+        let sketchRrmCore = function(p) {
+            let state = 'input'; // input, thinking, output
+            let progress = 0;
+            let playing = false;
+            let inputNode, rrmNode, outputNode;
+            let cogAngle = 0;
+
+            p.setup = function() {
+                let container = p.select('#rrmCoreAnimationContainer');
+                let canvas = p.createCanvas(container.width, container.height);
+                canvas.parent('rrmCoreAnimationContainer');
+                p.select('#rrmCorePlayPause').mousePressed(() => { 
+                    playing = !playing; 
+                    if (playing && state === 'output') { // Restart if ended
+                        state = 'input'; progress = 0; cogAngle = 0;
+                    }
+                });
+                inputNode = { x: p.width * 0.15, y: p.height / 2, label: "输入\n(问题+回答A/B)" };
+                rrmNode = { x: p.width * 0.5, y: p.height / 2, label: "RRM 推理引擎" };
+                outputNode = { x: p.width * 0.85, y: p.height / 2, label: "输出\n(判断+理由)" };
+                p.textAlign(p.CENTER, p.CENTER);
+                p.textSize(14);
+                p.frameRate(30);
+                drawStatic(); // Initial draw
+            };
+            
+            function drawStatic(){
+                 p.background(1, 4, 9);
+                // Draw nodes
+                p.fill(88, 166, 255, 150); p.ellipse(inputNode.x, inputNode.y, 100, 70); p.fill(255); p.text(inputNode.label, inputNode.x, inputNode.y);
+                p.fill(247, 120, 186, 150); p.ellipse(rrmNode.x, rrmNode.y, 120, 80); p.fill(255); p.text(rrmNode.label, rrmNode.x, rrmNode.y);
+                p.fill(126, 231, 135, 150); p.ellipse(outputNode.x, outputNode.y, 100, 70); p.fill(255); p.text(outputNode.label, outputNode.x, outputNode.y);
+
+                // Draw static arrows
+                p.stroke(100); p.line(inputNode.x + 50, inputNode.y, rrmNode.x - 60, rrmNode.y);
+                p.line(rrmNode.x + 60, rrmNode.y, outputNode.x - 50, outputNode.y);
+                
+                if (!playing && state === 'input') {
+                    p.fill(255, 200); p.textSize(20); p.text("点击启动", p.width/2, p.height * 0.8); p.textSize(14);
+                }
+            }
+
+            p.draw = function() {
+                if (!playing && state !== 'output') {
+                     drawStatic(); // Keep drawing static if paused and not finished
+                     if (state === 'input') {
+                        p.fill(255, 200); p.textSize(20); p.text("点击启动", p.width/2, p.height * 0.8); p.textSize(14);
+                     }
+                     return;
+                }
+                if (!playing && state === 'output') { // If finished and paused, show final state
+                    drawStatic();
+                    p.stroke(126, 231, 135); p.strokeWeight(3);
+                    p.line(rrmNode.x + 60, rrmNode.y, outputNode.x - 50, outputNode.y); // Highlight output arrow
+                    p.noStroke(); p.strokeWeight(1);
+                    p.fill(255, 200); p.textSize(20); p.text("处理完成", p.width/2, p.height * 0.8); p.textSize(14);
+                    return;
+                }
+
+
+                p.background(1, 4, 9);
+                drawStatic(); // Redraw base elements
+
+                if (state === 'input') {
+                    progress += 0.05;
+                    p.stroke(88, 166, 255); p.strokeWeight(3);
+                    let currentX = p.lerp(inputNode.x + 50, rrmNode.x - 60, progress);
+                    p.line(inputNode.x + 50, inputNode.y, currentX, rrmNode.y);
+                    if (progress >= 1) { state = 'thinking'; progress = 0; }
+                } else if (state === 'thinking') {
+                    progress += 0.02;
+                    cogAngle += 0.1;
+                    // Draw cogs in RRM
+                    p.push();
+                    p.translate(rrmNode.x, rrmNode.y);
+                    p.rotate(cogAngle);
+                    drawCog(0, 0, 30, 8, p.color(255,200,0));
+                    p.rotate(p.PI/8); // Offset second cog
+                    drawCog(15, -15, 20, 6, p.color(200,255,0));
+                    p.pop();
+                    if (progress >= 1) { state = 'output'; progress = 0; }
+                } else if (state === 'output') {
+                    progress += 0.05;
+                    p.stroke(126, 231, 135); p.strokeWeight(3);
+                    let currentX = p.lerp(rrmNode.x + 60, outputNode.x - 50, progress);
+                    p.line(rrmNode.x + 60, rrmNode.y, currentX, outputNode.y);
+                    if (progress >= 1) { 
+                        playing = false; // Auto-pause at the end
+                        p.fill(255, 200); p.textSize(20); p.text("处理完成", p.width/2, p.height * 0.8); p.textSize(14);
+                    }
+                }
+                p.noStroke();p.strokeWeight(1);
+            };
+
+            function drawCog(x, y, radius, teeth, clr) {
+                p.fill(clr);
+                p.stroke(50);
+                let angleStep = p.TWO_PI / (teeth * 2);
+                p.beginShape();
+                for (let i = 0; i < teeth * 2; i++) {
+                    let r = (i % 2 === 0) ? radius : radius * 0.7;
+                    p.vertex(x + r * p.cos(i * angleStep), y + r * p.sin(i * angleStep));
+                }
+                p.endShape(p.CLOSE);
+                p.fill(1,4,9); p.ellipse(x,y,radius*0.5, radius*0.5); // Center hole
+            }
+        };
+        new p5(sketchRrmCore);
+
+        // --- 动画2: RRM强化学习 ---
+        let sketchRrmTraining = function(p) {
+            let rrmPos, envPos, feedbackPos;
+            let cycleProgress = 0;
+            let playing = true;
+            let rrmKnowledge = 50; // 0-100
+
+            p.setup = function() {
+                let container = p.select('#rrmTrainingAnimationContainer');
+                let canvas = p.createCanvas(container.width, container.height);
+                canvas.parent('rrmTrainingAnimationContainer');
+                p.select('#rrmTrainingPlayPause').mousePressed(() => { playing = !playing; });
+                
+                rrmPos = { x: p.width * 0.25, y: p.height / 2 };
+                envPos = { x: p.width * 0.75, y: p.height * 0.3 };
+                feedbackPos = { x: p.width * 0.75, y: p.height * 0.7 };
+                p.textAlign(p.CENTER, p.CENTER);
+                p.textSize(13);
+                drawStaticTraining();
+            };
+            
+            function drawStaticTraining(){
+                p.background(1, 4, 9);
+                // RRM
+                p.fill(247, 120, 186, 150 + rrmKnowledge/2); p.ellipse(rrmPos.x, rrmPos.y, 80 + rrmKnowledge/3, 80+rrmKnowledge/3);
+                p.fill(255); p.text("RRM\n(智能体)", rrmPos.x, rrmPos.y);
+                // Environment
+                p.fill(88, 166, 255, 150); p.rectMode(p.CENTER); p.rect(envPos.x, envPos.y, 120, 60, 10);
+                p.fill(255); p.text("规则环境\n(判断对错)", envPos.x, envPos.y);
+                // Feedback
+                p.fill(126, 231, 135, 150); p.ellipse(feedbackPos.x, feedbackPos.y, 100, 50);
+                p.fill(255); p.text("反馈\n(+1 / -1)", feedbackPos.x, feedbackPos.y);
+
+                if(!playing){
+                    p.fill(255,200); p.textSize(20); p.text("学习暂停", p.width/2, p.height * 0.1); p.textSize(13);
+                }
+            }
+
+            p.draw = function() {
+                drawStaticTraining();
+                if (!playing) return;
+
+                cycleProgress += 0.01;
+                if (cycleProgress > 1) {
+                    cycleProgress = 0;
+                    // Simulate knowledge gain/loss
+                    if (p.random() > 0.3) rrmKnowledge = p.min(100, rrmKnowledge + 5); // More often gain
+                    else rrmKnowledge = p.max(0, rrmKnowledge - 2);
+                }
+
+                // Animate flow
+                p.strokeWeight(2);
+                // RRM to Env (Action)
+                if (cycleProgress < 0.4) {
+                    let currentX = p.lerp(rrmPos.x, envPos.x, cycleProgress / 0.4);
+                    let currentY = p.lerp(rrmPos.y, envPos.y, cycleProgress / 0.4);
+                    p.stroke(255, 223, 0); p.line(rrmPos.x, rrmPos.y, currentX, currentY);
+                    p.ellipse(currentX, currentY, 10,10); // Action packet
+                } else {
+                     p.stroke(255, 223, 0, 100); p.line(rrmPos.x, rrmPos.y, envPos.x, envPos.y);
+                }
+                // Env to Feedback
+                if (cycleProgress > 0.3 && cycleProgress < 0.7) {
+                    let prog = (cycleProgress - 0.3) / 0.4;
+                    let currentX = p.lerp(envPos.x, feedbackPos.x, prog);
+                    let currentY = p.lerp(envPos.y, feedbackPos.y, prog);
+                    p.stroke(0, 200, 255); p.line(envPos.x, envPos.y, currentX, currentY);
+                     p.ellipse(currentX, currentY, 10,10); // Evaluation packet
+                } else if (cycleProgress >= 0.7) {
+                    p.stroke(0, 200, 255, 100); p.line(envPos.x, envPos.y, feedbackPos.x, feedbackPos.y);
+                }
+                // Feedback to RRM
+                if (cycleProgress > 0.6) {
+                    let prog = (cycleProgress - 0.6) / 0.4;
+                    let currentX = p.lerp(feedbackPos.x, rrmPos.x, prog);
+                    let currentY = p.lerp(feedbackPos.y, rrmPos.y, prog);
+                    p.stroke(126, 231, 135); p.line(feedbackPos.x, feedbackPos.y, currentX, currentY);
+                     p.ellipse(currentX, currentY, 10,10); // Reward packet
+                }
+                p.noStroke();p.strokeWeight(1);
+            };
+        };
+        new p5(sketchRrmTraining);
+
+        // --- 动画3: ELO评分系统 ---
+        let sketchElo = function(p) {
+            let candidates = [];
+            const numCandidates = 5;
+            let comparisons = []; // Store pairs being compared
+            let comparisonProgress = 0;
+            let runButton, resetButton;
+
+            p.setup = function() {
+                let container = p.select('#eloAnimationContainer');
+                let canvas = p.createCanvas(container.width, container.height);
+                canvas.parent('eloAnimationContainer');
+                runButton = p.select('#eloRunRound');
+                resetButton = p.select('#eloReset');
+                runButton.mousePressed(runEloRound);
+                resetButton.mousePressed(resetElo);
+                p.textAlign(p.CENTER, p.CENTER);
+                resetElo();
+                drawEloStatic();
+            };
+            
+            function resetElo() {
+                candidates = [];
+                let angleStep = p.TWO_PI / numCandidates;
+                for (let i = 0; i < numCandidates; i++) {
+                    candidates.push({
+                        id: i,
+                        x: p.width / 2 + p.width * 0.35 * p.cos(i * angleStep - p.PI/2),
+                        y: p.height / 2 + p.height * 0.35 * p.sin(i * angleStep - p.PI/2),
+                        elo: 1200,
+                        radius: 20,
+                        color: p.color(p.random(100,200),p.random(100,200),255)
+                    });
+                }
+                comparisons = [];
+                comparisonProgress = 0;
+                drawEloStatic();
+            }
+
+            function runEloRound() {
+                if (comparisonProgress > 0 && comparisonProgress < 1) return; // Mid-animation
+                comparisonProgress = 0.01; // Start animation
+                
+                // Pick two different random candidates
+                let idx1 = p.floor(p.random(numCandidates));
+                let idx2 = p.floor(p.random(numCandidates));
+                while (idx1 === idx2) {
+                    idx2 = p.floor(p.random(numCandidates));
+                }
+                comparisons = [{c1: candidates[idx1], c2: candidates[idx2]}];
+
+                // Simulate RRM decision and ELO update (simplified)
+                // This happens at the end of the animation in draw()
+            }
+            
+            function drawEloStatic() {
+                 p.background(1, 4, 9);
+                for (let c of candidates) {
+                    p.fill(c.color);
+                    p.ellipse(c.x, c.y, c.radius * 2, c.radius * 2);
+                    p.fill(0); p.textSize(12);
+                    p.text(`ID:${c.id}\nELO:${c.elo}`, c.x, c.y);
+                }
+            }
+
+            p.draw = function() {
+                drawEloStatic();
+
+                if (comparisons.length > 0 && comparisonProgress > 0 && comparisonProgress < 1) {
+                    let c1 = comparisons[0].c1;
+                    let c2 = comparisons[0].c2;
+                    
+                    // Animate comparison line
+                    p.stroke(255, 223, 0, 150); p.strokeWeight(3);
+                    let midX = p.lerp(c1.x, c2.x, 0.5);
+                    let midY = p.lerp(c1.y, c2.y, 0.5);
+                    
+                    let particleX = p.lerp(c1.x, midX, comparisonProgress * 2);
+                    let particleY = p.lerp(c1.y, midY, comparisonProgress * 2);
+                    if(comparisonProgress > 0.5) {
+                        particleX = p.lerp(midX, c2.x, (comparisonProgress - 0.5) * 2);
+                        particleY = p.lerp(midY, c2.y, (comparisonProgress - 0.5) * 2);
+                    }
+                    p.line(c1.x, c1.y, c2.x, c2.y);
+                    p.fill(255,0,0); p.ellipse(particleX, particleY, 10,10); // RRM "judging particle"
+                    
+                    comparisonProgress += 0.02;
+
+                    if (comparisonProgress >= 1) {
+                        // Simulate ELO update
+                        let winner = (p.random() > 0.5) ? c1 : c2;
+                        let loser = (winner === c1) ? c2 : c1;
+                        let eloChange = p.floor(p.random(10, 30));
+                        winner.elo += eloChange;
+                        loser.elo -= eloChange;
+                        loser.elo = p.max(800, loser.elo); // Min ELO
+                        comparisons = []; // Clear comparison
+                        comparisonProgress = 0; // Reset for next
+                    }
+                }
+                 p.noStroke(); p.strokeWeight(1);
+            };
+        };
+        new p5(sketchElo);
+
+        // --- 动画4: 淘汰赛机制 ---
+        let sketchKnockout = function(p) {
+            let numInitialCandidates = 8;
+            let rounds = [];
+            let currentRound = 0;
+            let nextRoundButton, resetButtonKO;
+
+            p.setup = function() {
+                let container = p.select('#knockoutAnimationContainer');
+                let canvas = p.createCanvas(container.width, container.height);
+                canvas.parent('knockoutAnimationContainer');
+                nextRoundButton = p.select('#knockoutNextRound');
+                resetButtonKO = p.select('#knockoutReset');
+                nextRoundButton.mousePressed(runNextKnockoutRound);
+                resetButtonKO.mousePressed(resetKnockout);
+                p.textAlign(p.CENTER, p.CENTER);
+                resetKnockout();
+            };
+
+            function resetKnockout() {
+                rounds = [];
+                currentRound = 0;
+                let initialCandidates = [];
+                for (let i = 0; i < numInitialCandidates; i++) {
+                    initialCandidates.push({ id: `C${i+1}`, color: p.color(p.random(100,255), p.random(100,255), p.random(100,255)) });
+                }
+                rounds.push(initialCandidates);
+                drawKnockout();
+            }
+
+            function runNextKnockoutRound() {
+                if (rounds[currentRound].length <= 1) return; // Tournament ended or only one left
+
+                let currentParticipants = rounds[currentRound];
+                let winners = [];
+                for (let i = 0; i < currentParticipants.length; i += 2) {
+                    if (i + 1 < currentParticipants.length) {
+                        // Simulate RRM choosing a winner
+                        let winner = (p.random() > 0.5) ? currentParticipants[i] : currentParticipants[i+1];
+                        winners.push(winner);
+                    } else {
+                        winners.push(currentParticipants[i]); // Odd one out advances
+                    }
+                }
+                rounds.push(winners);
+                currentRound++;
+                drawKnockout();
+            }
+            
+            function drawKnockout(){
+                p.background(1,4,9);
+                let roundSpacingY = p.height / (Math.log2(numInitialCandidates) + 2); // Dynamic spacing
+                // Corrected: Define startX and endX with let before use
+                let startX = p.width * 0.1;
+                let endX = p.width * 0.9;
+
+                for (let r = 0; r < rounds.length; r++) {
+                    let participants = rounds[r];
+                    let numInRound = participants.length;
+                    let posY = roundSpacingY * (r + 1);
+                    
+                    for (let i = 0; i < numInRound; i++) {
+                        let posX = p.map(i, 0, numInRound -1, startX, endX);
+                        if(numInRound === 1) posX = p.width/2; // Center winner
+
+                        p.fill(participants[i].color);
+                        p.ellipse(posX, posY, 30, 30);
+                        p.fill(0); p.textSize(10);
+                        p.text(participants[i].id, posX, posY);
+
+                        // Draw lines to previous round
+                        if (r > 0) {
+                            let prevParticipants = rounds[r-1];
+                            // Find parent(s) - simplified: assumes pairing
+                            let parentIndex1 = i * 2;
+                            let parentIndex2 = i * 2 + 1;
+
+                            if(parentIndex1 < prevParticipants.length){
+                                let prevPosX1 = p.map(parentIndex1, 0, prevParticipants.length -1, startX, endX);
+                                if(prevParticipants.length === 1) prevPosX1 = p.width/2;
+                                p.stroke(100); p.line(posX, posY - 15, prevPosX1, rounds[r-1][0].y ? rounds[r-1][0].y + 15 : roundSpacingY * r + 15);
+                            }
+                             if(parentIndex2 < prevParticipants.length){
+                                let prevPosX2 = p.map(parentIndex2, 0, prevParticipants.length -1, startX, endX);
+                                 if(prevParticipants.length === 1) prevPosX2 = p.width/2;
+                                p.stroke(100); p.line(posX, posY - 15, prevPosX2, rounds[r-1][0].y ? rounds[r-1][0].y + 15 : roundSpacingY * r + 15);
+                            }
+                        }
+                         participants[i].x = posX; // Store for line drawing
+                         participants[i].y = posY;
+                    }
+                }
+                if(rounds[currentRound].length === 1){
+                    p.fill(255,223,0); p.textSize(20);
+                    p.text(`冠军: ${rounds[currentRound][0].id}`, p.width/2, p.height - 30);
+                }
+                 p.noStroke();
+            }
+            // p5.js doesn't call draw() automatically if noLoop() is used or if it's event-driven.
+            // We call drawKnockout initially in setup and after each event.
+        };
+        new p5(sketchKnockout);
+
+
+        // --- 动画5: 序贯计算扩展 ---
+        let sketchComputeScaling = function(p) {
+            let budgetLevel = 2; // 1:low, 2:medium, 3:high
+            let thinkingProgress = 0;
+            let accuracy = 0;
+            let playing = false;
+            let slider;
+
+            p.setup = function() {
+                let container = p.select('#computeScalingAnimationContainer');
+                let canvas = p.createCanvas(container.width, container.height);
+                canvas.parent('computeScalingAnimationContainer');
+                p.select('#computeScalingPlayPause').mousePressed(() => {
+                    playing = !playing;
+                    if(playing) thinkingProgress = 0;
+                });
+                slider = p.select('#thinkingBudgetSlider');
+                slider.input(() => {
+                    budgetLevel = parseInt(slider.value());
+                    p.select('#thinkingBudgetValueDisplay').html(['低','中','高'][budgetLevel-1]);
+                    if(!playing) drawScalingStatic(); // Update static view if paused
+                });
+                p.textAlign(p.CENTER, p.CENTER);
+                p.frameRate(30);
+                drawScalingStatic();
+            };
+            
+            function drawScalingStatic(){
+                p.background(1, 4, 9);
+                // Query
+                p.fill(88, 166, 255, 150); p.rect(p.width*0.2, p.height*0.3, 80, 40, 5);
+                p.fill(255); p.textSize(14); p.text("复杂问题", p.width*0.2, p.height*0.3);
+
+                // RRM
+                p.fill(247, 120, 186, 150); p.ellipse(p.width*0.5, p.height*0.5, 100, 100);
+                p.fill(255); p.text("RRM", p.width*0.5, p.height*0.5);
+
+                // Accuracy Gauge
+                p.fill(100); p.rectMode(p.CORNER);
+                p.rect(p.width*0.8 - 50, p.height*0.8 - 100, 100, 20, 5); // Gauge background
+                p.fill(126, 231, 135);
+                p.rect(p.width*0.8 - 50, p.height*0.8 - 100, accuracy * 100, 20, 5); // Accuracy fill
+                p.fill(255); p.text(`准确率: ${p.floor(accuracy*100)}%`, p.width*0.8, p.height*0.8 - 120);
+                
+                if(!playing && thinkingProgress === 0){
+                    p.fill(255,200);p.textSize(18);p.text("调整预算, 点击启动", p.width/2, p.height*0.15);
+                } else if (!playing && thinkingProgress > 0){
+                     p.fill(255,200);p.textSize(18);p.text("模拟暂停", p.width/2, p.height*0.15);
+                }
+                 p.rectMode(p.CENTER); // Reset rect mode
+            }
+
+            p.draw = function() {
+                drawScalingStatic();
+                if (!playing) return;
+
+                let maxProgress = budgetLevel * 30; // More steps for higher budget
+                thinkingProgress++;
+
+                // Animate thinking process (e.g., particles flowing, path drawing)
+                p.stroke(255, 223, 0, 100); p.strokeWeight(2);
+                let numPaths = budgetLevel;
+                for(let i=0; i<numPaths; i++){
+                    let pathLength = p.map(thinkingProgress, 0, maxProgress, 0, p.width*0.2);
+                    let startX = p.width*0.2 + 40;
+                    let startY = p.height*0.3;
+                    let endX = p.width*0.5 - 50;
+                    let endY = p.height*0.5 + p.sin(i*0.5 + thinkingProgress*0.05) * 30; // Wavy paths
+                    
+                    let currentX = p.lerp(startX, endX, thinkingProgress/maxProgress);
+                    let currentY = p.lerp(startY, endY, thinkingProgress/maxProgress);
+                    if(pathLength > 0) p.line(startX, startY, currentX, currentY);
+                }
+                p.noStroke();
+
+                if (thinkingProgress >= maxProgress) {
+                    accuracy = 0.6 + budgetLevel * 0.1; // Higher budget = higher accuracy
+                    accuracy = p.min(accuracy, 0.95); // Cap accuracy
+                    playing = false; // Auto-pause
+                    thinkingProgress = 0; // Reset for next play
+                } else {
+                    // Temporary accuracy during thinking
+                    accuracy = (0.6 + budgetLevel * 0.1) * (thinkingProgress / maxProgress);
+                }
+            };
+        };
+        new p5(sketchComputeScaling);
+        
+        // --- 动画6: 推理模式对比 ---
+        let sketchReasoningPatterns = function(p) {
+            let showRRM = true;
+            // Data from PDF Figure 8 (approximate percentages)
+            // R1-distilled: Transition 34, Reflection 53, Comparison 85, Breakdown 17
+            // RRM: Transition 41, Reflection 63, Comparison 90, Breakdown 8
+            let patterns = [
+                { name: "转换", r1: 34, rrm: 41, color: p.color(255, 159, 64) }, // Orange
+                { name: "反思", r1: 53, rrm: 63, color: p.color(255, 205, 86) }, // Yellow
+                { name: "比较", r1: 85, rrm: 90, color: p.color(75, 192, 192) }, // Teal
+                { name: "分解", r1: 17, rrm: 8,  color: p.color(54, 162, 235) }  // Blue
+            ];
+            let barHeights = [0,0,0,0]; // For animation
+            let targetHeights = [0,0,0,0];
+
+            p.setup = function() {
+                let container = p.select('#reasoningPatternsAnimationContainer');
+                let canvas = p.createCanvas(container.width, container.height);
+                canvas.parent('reasoningPatternsAnimationContainer');
+                p.select('#reasoningPatternsToggle').mousePressed(() => {
+                    showRRM = !showRRM;
+                    updateTargetHeights();
+                });
+                p.textAlign(p.LEFT, p.BOTTOM);
+                p.frameRate(30);
+                updateTargetHeights(); // Initial setup
+            };
+            
+            function updateTargetHeights(){
+                 for(let i=0; i<patterns.length; i++){
+                    targetHeights[i] = showRRM ? patterns[i].rrm : patterns[i].r1;
+                }
+            }
+
+            p.draw = function() {
+                p.background(1, 4, 9);
+                let barWidth = p.width / (patterns.length * 2);
+                let maxVal = 100; // Percentage
+                
+                p.fill(255); p.textSize(16); p.textAlign(p.CENTER);
+                p.text(showRRM ? "RRM 推理模式频率" : "基线模型 推理模式频率", p.width/2, 30);
+
+                for (let i = 0; i < patterns.length; i++) {
+                    // Animate bar height
+                    barHeights[i] = p.lerp(barHeights[i], targetHeights[i], 0.1);
+
+                    let x = p.map(i, 0, patterns.length, p.width * 0.15, p.width * 0.85);
+                    let h = p.map(barHeights[i], 0, maxVal, 0, p.height * 0.6);
+                    
+                    p.fill(patterns[i].color);
+                    p.rectMode(p.CORNER);
+                    p.rect(x - barWidth/2, p.height * 0.8 - h, barWidth, h);
+                    
+                    p.fill(255); p.textSize(12); p.textAlign(p.CENTER);
+                    p.text(patterns[i].name, x, p.height * 0.8 + 20);
+                    p.text(p.round(barHeights[i]) + "%", x, p.height * 0.8 - h - 5);
+                }
+                 p.stroke(100); // Y-axis line
+                 p.line(p.width*0.1, p.height*0.2, p.width*0.1, p.height*0.8);
+                 p.line(p.width*0.1, p.height*0.8, p.width*0.9, p.height*0.8); // X-axis line
+                 p.noStroke();
+                 p.textAlign(p.LEFT, p.BOTTOM); // Reset
+            };
+        };
+        new p5(sketchReasoningPatterns);
+
+    </script>
+</body>
+</html>
+

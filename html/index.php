@@ -467,7 +467,7 @@
     </script>
 
     <script>
-        // Starfield animation script (remains the same as before)
+        // Starfield animation script
         const canvas = document.getElementById('starfield');
         const ctx = canvas.getContext('2d');
 
@@ -476,6 +476,14 @@
         const connectionDistance = 40;
         const mouseInteractionRadius = 150;
         let mouse = { x: null, y: null };
+
+        // Spaceship specific variables
+        let spaceships = [];
+        const numSpaceships = 3;
+        // const spaceshipEmoji = "🚀"; // No longer used for SVG spaceship
+        const spaceshipSize = 40; // Base size for spaceships (height for SVG)
+        const SVG_SPACESHIP_STRING = '<svg width="40" height="60" viewBox="0 0 40 60" xmlns="http://www.w3.org/2000/svg"><path d="M20,0 L10,25 L10,50 Q20,60 30,50 L30,25 Z" fill="#cccccc" stroke="#999999" stroke-width="1"/><path d="M20,0 L15,10 L25,10 Z" fill="#aaaaaa"/><path d="M10,40 L5,55 L10,50 Z" fill="#bbbbbb"/><path d="M30,40 L35,55 L30,50 Z" fill="#bbbbbb"/></svg>';
+
 
         function resizeCanvas() {
             canvas.width = window.innerWidth;
@@ -638,6 +646,107 @@
             }
         }
 
+        class Spaceship {
+            constructor(x, y, size) { // Removed emoji parameter
+                this.pos = new Vector(x, y);
+                this.vel = new Vector(Math.random() * 2 - 1, Math.random() * 2 - 1);
+                this.vel.setMagnitude(Math.random() * 1 + 0.5);
+                this.size = size; // Represents target height for SVG on canvas
+                
+                this.svgImage = new Image();
+                this.svgLoaded = false;
+                this.rotation = 0; // To store the ship's rotation angle
+
+                // Preload the SVG
+                const svgDataUri = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(SVG_SPACESHIP_STRING);
+                this.svgImage.onload = () => {
+                    this.svgLoaded = true;
+                };
+                this.svgImage.src = svgDataUri;
+
+                // Flame properties remain
+                this.flameBaseLength = this.size * 0.8; // Flame length relative to ship size
+                this.flameAnimationTimer = Math.random() * 100;
+                this.flameColor1 = 'rgba(255, 220, 180, 0.7)';
+                this.flameColor2 = 'rgba(255, 165, 0, 0.6)';
+                this.flameColor3 = 'rgba(255, 69, 0, 0.4)';
+            }
+
+            update(canvas) {
+                this.pos.add(this.vel);
+                if (this.pos.x > canvas.width + this.size) this.pos.x = -this.size;
+                if (this.pos.x < -this.size) this.pos.x = canvas.width + this.size;
+                if (this.pos.y > canvas.height + this.size) this.pos.y = -this.size;
+                if (this.pos.y < -this.size) this.pos.y = canvas.height + this.size;
+                
+                this.rotation = Math.atan2(this.vel.y, this.vel.x) + Math.PI / 2; // Update rotation based on velocity
+                this.flameAnimationTimer += 0.2;
+            }
+
+            draw(ctx) {
+                const aspectRatio = 40 / 60; // Intrinsic width / height of SVG
+                const drawHeight = this.size; 
+                const drawWidth = drawHeight * aspectRatio;
+
+                // Draw SVG Spaceship
+                if (this.svgLoaded) {
+                    ctx.save();
+                    ctx.translate(this.pos.x, this.pos.y);
+                    ctx.rotate(this.rotation);
+                    ctx.drawImage(this.svgImage, -drawWidth / 2, -drawHeight / 2, drawWidth, drawHeight);
+                    ctx.restore();
+                } else {
+                    // Optional placeholder:
+                    // ctx.fillStyle = 'grey';
+                    // ctx.fillRect(this.pos.x - drawWidth / 2, this.pos.y - drawHeight / 2, drawWidth, drawHeight);
+                }
+
+                // Procedural Flame Drawing
+                ctx.save();
+                ctx.translate(this.pos.x, this.pos.y);
+                ctx.rotate(this.rotation); // Use the same rotation for the flame
+
+                // Adjust flameBaseYOffset to align with the bottom of the SVG
+                // SVG's (0,0) is top-left. After centering and rotating, bottom center is at (0, drawHeight / 2)
+                let flameBaseYOffset = drawHeight * 0.5; 
+
+                let currentFlameLength = this.flameBaseLength + Math.sin(this.flameAnimationTimer) * this.flameBaseLength * 0.2;
+                let flickerWidthFactor = 0.3 + (Math.sin(this.flameAnimationTimer * 1.5) + 1) * 0.15;
+
+                ctx.fillStyle = this.flameColor3;
+                ctx.beginPath();
+                ctx.moveTo(0, flameBaseYOffset);
+                let outerWidth = drawWidth * flickerWidthFactor * 0.8; // Make flame width relative to ship width
+                let outerLength = currentFlameLength * 0.9;
+                ctx.lineTo(-outerWidth / 2, flameBaseYOffset + outerLength);
+                ctx.lineTo(outerWidth / 2, flameBaseYOffset + outerLength);
+                ctx.closePath();
+                ctx.fill();
+
+                ctx.fillStyle = this.flameColor2;
+                ctx.beginPath();
+                ctx.moveTo(0, flameBaseYOffset);
+                let midWidth = outerWidth * 0.75;
+                let midLength = currentFlameLength;
+                ctx.lineTo(-midWidth / 2, flameBaseYOffset + midLength);
+                ctx.lineTo(midWidth / 2, flameBaseYOffset + midLength);
+                ctx.closePath();
+                ctx.fill();
+
+                ctx.fillStyle = this.flameColor1;
+                ctx.beginPath();
+                ctx.moveTo(0, flameBaseYOffset);
+                let coreWidth = outerWidth * 0.5;
+                let coreLength = currentFlameLength * 0.8;
+                ctx.lineTo(-coreWidth / 2, flameBaseYOffset + coreLength);
+                ctx.lineTo(coreWidth / 2, flameBaseYOffset + coreLength);
+                ctx.closePath();
+                ctx.fill();
+
+                ctx.restore();
+            }
+        }
+
         function resolveCollision(s1, s2) {
             const xVelDiff = s1.vel.x - s2.vel.x;
             const yVelDiff = s1.vel.y - s2.vel.y;
@@ -691,7 +800,18 @@
                 stars.push(new Star());
             }
         }
+        
+        function initSpaceships() {
+            spaceships = [];
+            for (let i = 0; i < numSpaceships; i++) {
+                let x = Math.random() * canvas.width;
+                let y = Math.random() * canvas.height;
+                spaceships.push(new Spaceship(x, y, spaceshipSize)); // Updated constructor call
+            }
+        }
+
         initStars();
+        initSpaceships();
 
         function animate() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -728,6 +848,13 @@
             stars.forEach(star => {
                 star.update();
             });
+
+            // Update and draw spaceships
+            spaceships.forEach(ship => {
+                ship.update(canvas); 
+                ship.draw(ctx);
+            });
+
             requestAnimationFrame(animate);
         }
         animate();
@@ -735,6 +862,7 @@
         window.addEventListener('resize', () => {
             resizeCanvas();
             initStars();
+            initSpaceships(); 
         });
     </script>
 </body>

@@ -349,16 +349,34 @@
     </div>
 
     <script>
-        // 动画绘制函数 (此处为静态占位符的增强版，旨在更清晰地展示概念)
+        // Animation states and request IDs
+        let animationStates = {
+            vacuumProperty: { requestId: null, progress: 0, lastTime: 0, duration: 2500 }, // Increased duration slightly
+            concept: { requestId: null, phase: 0, lastTime: 0, duration: 5000 }, // Added duration
+            conflict: { requestId: null, progress: 0, lastTime: 0, duration: 3500 }, // Increased duration slightly
+            experiment: { requestId: null, progress: 0, lastTime: 0, duration: 4500 }, // Increased duration slightly
+            timeline: { requestId: null, progress: 0, lastTime: 0, duration: 5500 }, // Increased duration slightly
+            resolution: { requestId: null, progress: 0, lastTime: 0, duration: 4500 } // Increased duration slightly
+        };
+
+        // Generic function to stop a running animation
+        function stopAnimation(animationName) {
+            if (animationStates[animationName] && animationStates[animationName].requestId) {
+                cancelAnimationFrame(animationStates[animationName].requestId);
+                animationStates[animationName].requestId = null;
+            }
+        }
+
 
         // 通用绘制函数：绘制带背景和边框的文本框
-        function drawTextBox(ctx, text, x, y, width, padding, font, textColor, bgColor, borderColor = '#555', textAlign = 'center') {
+        function drawTextBox(ctx, text, x, y, width, padding, font, textColor, bgColor, borderColor = '#555', textAlign = 'center', alpha = 1) {
+            ctx.save();
+            ctx.globalAlpha = alpha;
             ctx.font = font;
             const lines = [];
             let currentLine = '';
             const words = text.split(' ');
 
-            // 简单的自动换行逻辑 (基于空格)
             for (const word of words) {
                 const testLine = currentLine + word + ' ';
                 const metrics = ctx.measureText(testLine);
@@ -371,20 +389,18 @@
             }
             lines.push(currentLine.trim());
 
-            const lineHeight = parseInt(font, 10) * 1.4;
+            const lineHeight = parseInt(font, 10) * 1.15; // Further reduced line height
             const boxHeight = lines.length * lineHeight + 2 * padding;
             const boxY = y - boxHeight / 2;
 
-            // 绘制背景和边框
             ctx.fillStyle = bgColor;
             ctx.strokeStyle = borderColor;
-            ctx.lineWidth = 1;
+            ctx.lineWidth = 0.5; // Thinner border
             ctx.beginPath();
-            ctx.roundRect(x - width / 2, boxY, width, boxHeight, 5); // 使用 roundRect
+            ctx.roundRect(x - width / 2, boxY, width, boxHeight, 3); // Smaller radius
             ctx.fill();
             ctx.stroke();
             
-            // 绘制文本
             ctx.fillStyle = textColor;
             ctx.textAlign = textAlign;
             let textX = x;
@@ -392,13 +408,16 @@
             if (textAlign === 'right') textX = x + width / 2 - padding;
 
             for (let i = 0; i < lines.length; i++) {
-                ctx.fillText(lines[i], textX, boxY + padding + lineHeight * (i + 0.7));
+                ctx.fillText(lines[i], textX, boxY + padding + lineHeight * (i + 0.6) - (lineHeight*0.1)); // Fine-tuned Y centering
             }
+            ctx.restore();
         }
         
         // 通用绘制箭头
-        function drawArrow(ctx, fromX, fromY, toX, toY, color = '#333', lineWidth = 2) {
-            const headlen = 10; // length of head in pixels
+        function drawArrow(ctx, fromX, fromY, toX, toY, color = '#333', lineWidth = 1.5, alpha = 1) { // Reduced lineWidth
+            ctx.save();
+            ctx.globalAlpha = alpha;
+            const headlen = 6; // Further reduced arrowhead size
             const dx = toX - fromX;
             const dy = toY - fromY;
             const angle = Math.atan2(dy, dx);
@@ -411,341 +430,674 @@
             ctx.stroke();
             ctx.beginPath();
             ctx.moveTo(toX, toY);
-            ctx.lineTo(toX - headlen * Math.cos(angle - Math.PI / 6), toY - headlen * Math.sin(angle - Math.PI / 6));
-            ctx.lineTo(toX - headlen * Math.cos(angle + Math.PI / 6), toY - headlen * Math.sin(angle + Math.PI / 6));
+            ctx.lineTo(toX - headlen * Math.cos(angle - Math.PI / 7), toY - headlen * Math.sin(angle - Math.PI / 7)); // Narrower arrowhead
+            ctx.lineTo(toX - headlen * Math.cos(angle + Math.PI / 7), toY - headlen * Math.sin(angle + Math.PI / 7));
             ctx.closePath();
             ctx.fill();
+            ctx.restore();
         }
 
 
         // 动画: 真空属性与光速
         const vacuumPropertyCanvas = document.getElementById('vacuumPropertyCanvas');
         const vacuumPropertyCtx = vacuumPropertyCanvas.getContext('2d');
-        function drawVacuumPropertyAnimation() {
+        
+        function animateVacuumProperty(timestamp) {
+            const state = animationStates.vacuumProperty;
+            if (!state.lastTime) state.lastTime = timestamp;
+            const deltaTime = timestamp - state.lastTime;
+            state.lastTime = timestamp;
+            state.progress += deltaTime;
+
             vacuumPropertyCtx.clearRect(0, 0, vacuumPropertyCanvas.width, vacuumPropertyCanvas.height);
             vacuumPropertyCtx.textAlign = 'center';
-            vacuumPropertyCtx.font = '16px Arial';
             
             const centerX = vacuumPropertyCanvas.width / 2;
-            const startY = 60;
-            const boxWidth = 220;
+            const startY = 50; // Adjusted start Y
+            const boxWidth = 180; 
+            const defaultFontSize = '11px Arial'; 
+            const boldFontSize = 'bold 12px Arial'; 
+            const italicFontSize = 'italic 10px Arial'; 
 
-            drawTextBox(vacuumPropertyCtx, '真空介电常数 ε₀ (Permittivity)\n~8.854e-12 F/m\n决定真空对电场的响应', centerX - boxWidth/1.5, startY, boxWidth, 10, '15px Arial', '#1a237e', '#c5cae9');
-            drawTextBox(vacuumPropertyCtx, '真空磁导率 μ₀ (Permeability)\n~4πe-7 H/m\n决定真空对磁场的响应', centerX + boxWidth/1.5, startY, boxWidth, 10, '15px Arial', '#004d40', '#b2dfdb');
 
-            drawArrow(vacuumPropertyCtx, centerX - boxWidth/1.5 + boxWidth/2 , startY + 40, centerX - 30, startY + 120, '#7b1fa2');
-            drawArrow(vacuumPropertyCtx, centerX + boxWidth/1.5 - boxWidth/2, startY + 40, centerX + 30, startY + 120, '#7b1fa2');
+            const stepDuration = state.duration / 5; 
 
+            let alpha1 = Math.min(1, state.progress / stepDuration);
+            drawTextBox(vacuumPropertyCtx, '真空介电常数 ε₀\n~8.85e-12 F/m\n影响电场', centerX - boxWidth/1.3, startY, boxWidth, 6, defaultFontSize, '#1a237e', '#d1d9ff', '#1a237e', 'center', alpha1); // Lighter bg
+
+            let alpha2 = 0;
+            if (state.progress > stepDuration) {
+                alpha2 = Math.min(1, (state.progress - stepDuration) / stepDuration);
+            }
+            drawTextBox(vacuumPropertyCtx, '真空磁导率 μ₀\n~4πe-7 H/m\n影响磁场', centerX + boxWidth/1.3, startY, boxWidth, 6, defaultFontSize, '#004d40', '#c8e6c9', '#004d40', 'center', alpha2); // Lighter bg
+
+            let alpha3 = 0;
+            if (state.progress > 2 * stepDuration) {
+                alpha3 = Math.min(1, (state.progress - 2 * stepDuration) / stepDuration);
+            }
+            drawArrow(vacuumPropertyCtx, centerX - boxWidth/1.3 + boxWidth/2 , startY + 30, centerX - 20, startY + 95, '#7b1fa2', 1.5, alpha3); 
+            drawArrow(vacuumPropertyCtx, centerX + boxWidth/1.3 - boxWidth/2, startY + 30, centerX + 20, startY + 95, '#7b1fa2', 1.5, alpha3);
+            
+            vacuumPropertyCtx.save();
+            vacuumPropertyCtx.globalAlpha = alpha3;
             vacuumPropertyCtx.fillStyle = '#333';
-            vacuumPropertyCtx.font = 'bold 20px Arial';
-            vacuumPropertyCtx.fillText('共同决定', centerX, startY + 140);
+            vacuumPropertyCtx.font = 'bold 13px Arial'; 
+            vacuumPropertyCtx.fillText('共同决定', centerX, startY + 115);
+            vacuumPropertyCtx.restore();
             
-            drawArrow(vacuumPropertyCtx, centerX, startY + 155, centerX, startY + 200, '#d32f2f');
+            let alpha4 = 0;
+            if (state.progress > 3 * stepDuration) {
+                alpha4 = Math.min(1, (state.progress - 3 * stepDuration) / stepDuration);
+            }
+            drawArrow(vacuumPropertyCtx, centerX, startY + 130, centerX, startY + 175, '#d32f2f', 1.5, alpha4);
 
-            drawTextBox(vacuumPropertyCtx, '光速 c = 1 / √(μ₀ε₀)\n约 299,792,458 m/s\n真空内禀属性，宇宙常数', centerX, startY + 240, 300, 15, 'bold 18px Arial', '#fff', '#f44336');
+            let alpha5 = 0;
+            if (state.progress > 4 * stepDuration) {
+                alpha5 = Math.min(1, (state.progress - 4 * stepDuration) / stepDuration);
+            }
+            drawTextBox(vacuumPropertyCtx, '光速 c = 1 / √(μ₀ε₀)\n≈ 3.0×10⁸ m/s\n真空内禀属性', centerX, startY + 210, 260, 10, boldFontSize, '#fff', '#f44336', '#f44336', 'center', alpha5);
             
-            vacuumPropertyCtx.fillStyle = '#555';
-            vacuumPropertyCtx.font = 'italic 14px Arial';
-            vacuumPropertyCtx.fillText('真空并非“虚无”，而是具有可测量的电磁特性！', centerX, vacuumPropertyCanvas.height - 20);
+            vacuumPropertyCtx.save();
+            vacuumPropertyCtx.globalAlpha = alpha5; 
+            vacuumPropertyCtx.fillStyle = '#444'; 
+            vacuumPropertyCtx.font = italicFontSize;
+            vacuumPropertyCtx.fillText('真空并非“虚无”，而是具有可测量的电磁特性！', centerX, vacuumPropertyCanvas.height - 30); // Adjusted Y
+            vacuumPropertyCtx.restore();
+
+            if (state.progress < state.duration) {
+                state.requestId = requestAnimationFrame(animateVacuumProperty);
+            } else {
+                state.requestId = null; 
+            }
         }
         function playVacuumPropertyAnimation() {
-            alert('播放动画: 真空属性与光速 (概念演示)');
-            drawVacuumPropertyAnimation();
+            stopAnimation('vacuumProperty');
+            animationStates.vacuumProperty.progress = 0;
+            animationStates.vacuumProperty.lastTime = 0;
+            animationStates.vacuumProperty.requestId = requestAnimationFrame(animateVacuumProperty);
         }
 
 
         // 动画1: 电磁波的产生与传播
         const conceptCanvas = document.getElementById('conceptCanvas');
         const conceptCtx = conceptCanvas.getContext('2d');
-        function drawConceptAnimation() {
+        function drawConceptFrame(phase) { 
             conceptCtx.clearRect(0, 0, conceptCanvas.width, conceptCanvas.height);
             conceptCtx.fillStyle = '#263238'; 
-            conceptCtx.font = '16px Arial';
+            conceptCtx.font = '12px Arial'; // Reduced font size
             conceptCtx.textAlign = 'center';
             
             const w = conceptCanvas.width;
             const h = conceptCanvas.height;
             const midY = h / 2;
-            const amplitude = 60;
-            const wavelength = 200;
-            const propagationX = w * 0.8; // Where the wave front is shown
+            const amplitude = 40; 
+            const wavelength = 160; 
+            const propagationXEnd = w * 0.85; // Extended propagation slightly
+            const startXOffset = 30; 
 
-            conceptCtx.fillText('变化的电场 (E) 激发 变化的磁场 (B)', w / 2, 30);
-            conceptCtx.fillText('变化的磁场 (B) 激发 变化的电场 (E)', w / 2, 60);
+            conceptCtx.fillText('变化的电场 (E) -> 磁场 (B)', w / 2, 20); 
+            conceptCtx.fillText('变化的磁场 (B) -> 电场 (E)', w / 2, 40); 
 
-            // Draw E field (e.g., vertical oscillation)
-            conceptCtx.strokeStyle = '#d32f2f'; // Red for E
-            conceptCtx.lineWidth = 3;
+            conceptCtx.strokeStyle = '#d32f2f'; 
+            conceptCtx.lineWidth = 2; 
             conceptCtx.beginPath();
-            for (let x = 0; x <= propagationX; x++) {
-                const y = midY + amplitude * Math.sin((x / wavelength) * 2 * Math.PI - Math.PI/2); // Shifted to start at trough for visual
-                if (x === 0) conceptCtx.moveTo(x + 50, y);
-                else conceptCtx.lineTo(x + 50, y);
+            for (let x_rel = 0; x_rel <= propagationXEnd - startXOffset; x_rel++) {
+                const y = midY + amplitude * Math.sin((x_rel / wavelength) * 2 * Math.PI - phase); 
+                if (x_rel === 0) conceptCtx.moveTo(x_rel + startXOffset, y);
+                else conceptCtx.lineTo(x_rel + startXOffset, y);
             }
             conceptCtx.stroke();
             conceptCtx.fillStyle = '#d32f2f';
-            conceptCtx.fillText('E场 (电场)', propagationX + 30, midY - amplitude - 10);
+            conceptCtx.fillText('E场', propagationXEnd + 10, midY - amplitude - 5); 
 
-            // Draw B field (e.g., horizontal oscillation, shown as into/out of page or perpendicular plane)
-            // Simplified: draw B field oscillating perpendicularly in perspective
-            conceptCtx.strokeStyle = '#1976d2'; // Blue for B
-            conceptCtx.lineWidth = 3;
+            conceptCtx.strokeStyle = '#1976d2'; 
+            conceptCtx.lineWidth = 2;
             conceptCtx.beginPath();
-            for (let x = 0; x <= propagationX; x++) {
-                // Simulating perspective for B field perpendicular to E and propagation
-                const z_amplitude_factor = Math.cos((x / wavelength) * 2 * Math.PI - Math.PI/2);
-                const y_offset_perspective = 20 * z_amplitude_factor; // Small y offset for perspective
-                const x_width_perspective = amplitude * z_amplitude_factor * 0.5; // Width change for perspective
+            for (let x_rel = 0; x_rel <= propagationXEnd - startXOffset; x_rel++) {
+                const z_amplitude_factor = Math.cos((x_rel / wavelength) * 2 * Math.PI - phase);
+                const y_offset_perspective = 12 * z_amplitude_factor; 
+                const x_width_perspective = amplitude * z_amplitude_factor * 0.35; 
                 
-                conceptCtx.moveTo(x + 50 - x_width_perspective, midY + y_offset_perspective - amplitude * 0.3);
-                conceptCtx.lineTo(x + 50 + x_width_perspective, midY + y_offset_perspective + amplitude * 0.3);
+                conceptCtx.moveTo(x_rel + startXOffset - x_width_perspective, midY + y_offset_perspective - amplitude * 0.2);
+                conceptCtx.lineTo(x_rel + startXOffset + x_width_perspective, midY + y_offset_perspective + amplitude * 0.2);
             }
             conceptCtx.stroke();
             conceptCtx.fillStyle = '#1976d2';
-            conceptCtx.fillText('B场 (磁场)', propagationX + 30, midY + amplitude + 25);
+            conceptCtx.fillText('B场', propagationXEnd + 10, midY + amplitude + 15); 
             
-            // Propagation direction arrow
-            drawArrow(conceptCtx, 50, midY + amplitude + 50, propagationX + 50, midY + amplitude + 50, '#2e7d32', 3);
+            drawArrow(conceptCtx, startXOffset, midY + amplitude + 30, propagationXEnd - 10, midY + amplitude + 30, '#2e7d32', 2); // Adjusted Y and end point
             conceptCtx.fillStyle = '#2e7d32';
-            conceptCtx.fillText('传播方向 (速度 c)', w / 2, midY + amplitude + 75);
+            conceptCtx.fillText('传播 (c)', w / 2, midY + amplitude + 50); 
             
             conceptCtx.fillStyle = '#263238';
-            conceptCtx.fillText('=> 电磁波以光速 c 传播 (E ⊥ B ⊥ c)', w / 2, h - 20);
+            conceptCtx.font = '11px Arial'; 
+            conceptCtx.fillText('电磁波: E ⊥ B ⊥ 传播方向', w / 2, h - 30); 
+        }
+        function animateConcept(timestamp) {
+            const state = animationStates.concept;
+            if(!state.lastTime) state.lastTime = timestamp;
+            state.lastTime = timestamp;
+
+            state.phase += 0.035; 
+            drawConceptFrame(state.phase);
+            
+            if (state.progress < state.duration) { // Use duration now
+                 state.progress += 16; // Approximate 60fps increment
+                 state.requestId = requestAnimationFrame(animateConcept);
+            } else {
+                state.requestId = null; 
+            }
         }
         function playConceptAnimation() {
-            alert('播放动画1: 电磁波的产生与传播 (概念演示)');
-            drawConceptAnimation(); 
+            stopAnimation('concept');
+            animationStates.concept.phase = 0;
+            animationStates.concept.lastTime = 0;
+            animationStates.concept.progress = 0; // Reset progress
+            animationStates.concept.requestId = requestAnimationFrame(animateConcept);
         }
 
         // 动画2: 伽利略变换下的光速
         const conflictCanvas = document.getElementById('conflictCanvas');
         const conflictCtx = conflictCanvas.getContext('2d');
-        function drawConflictAnimation() {
+        function animateConflict(timestamp) {
+            const state = animationStates.conflict;
+            if (!state.lastTime) state.lastTime = timestamp;
+            const deltaTime = timestamp - state.lastTime;
+            state.lastTime = timestamp;
+            state.progress += deltaTime;
+
             conflictCtx.clearRect(0, 0, conflictCanvas.width, conflictCanvas.height);
             conflictCtx.fillStyle = '#263238';
-            conflictCtx.font = '15px Arial';
+            conflictCtx.font = '11px Arial'; // Reduced font size
             conflictCtx.textAlign = 'center';
             const w = conflictCanvas.width;
             const h = conflictCanvas.height;
+            const stepDuration = state.duration / 6; 
 
-            conflictCtx.fillText('场景：光源S发光，观测者O₁静止，观测者O₂以速度u向右运动', w / 2, 30);
+            let alphaScene = Math.min(1, state.progress / (stepDuration*0.5));
+            conflictCtx.save();
+            conflictCtx.globalAlpha = alphaScene;
+            conflictCtx.fillText('场景：光源S发光，O₁静止，O₂以速度u向右运动', w / 2, 20); 
+            conflictCtx.restore();
 
-            // Light source
+            let currentStep = 1;
+            let alphaSource = 0;
+            if (state.progress > stepDuration * (currentStep-1) * 0.5) { 
+                 alphaSource = Math.min(1, (state.progress - stepDuration * (currentStep-1)*0.5) / (stepDuration*0.5));
+            }
+            conflictCtx.save();
+            conflictCtx.globalAlpha = alphaSource;
             conflictCtx.fillStyle = 'yellow';
             conflictCtx.beginPath();
-            conflictCtx.arc(w * 0.15, h * 0.4, 20, 0, 2 * Math.PI);
+            conflictCtx.arc(w * 0.15, h * 0.35, 15, 0, 2 * Math.PI); // Smaller 
             conflictCtx.fill();
             conflictCtx.fillStyle = '#263238';
-            conflictCtx.fillText('光源S', w * 0.15, h * 0.4 + 40);
+            conflictCtx.font = '10px Arial'; 
+            conflictCtx.fillText('光源S', w * 0.15, h * 0.35 + 28);
+            conflictCtx.restore();
+            conflictCtx.font = '11px Arial'; 
 
-            // Light beam
-            drawArrow(conflictCtx, w * 0.15 + 20, h*0.4, w * 0.8, h*0.4, '#ffeb3b', 3);
-            conflictCtx.fillText('光 (速度c)', w*0.5, h*0.4 - 15);
+            currentStep = 2;
+            let beamProgress = 0;
+            if (state.progress > stepDuration * (currentStep-1)*0.5) {
+                beamProgress = Math.min(1, (state.progress - stepDuration * (currentStep-1)*0.5) / stepDuration);
+            }
+            if (alphaSource > 0.5) { 
+                drawArrow(conflictCtx, w * 0.15 + 15, h*0.35, w * 0.15 + 15 + (w * 0.8 - (w*0.15+15)) * beamProgress , h*0.35, '#ffda00', 2, alphaSource); 
+                if (beamProgress > 0.5) {
+                     conflictCtx.save(); conflictCtx.globalAlpha = beamProgress;
+                     conflictCtx.font = '10px Arial';
+                     conflictCtx.fillText('光 (c)', w*0.45, h*0.35 - 10); // Adjusted position
+                     conflictCtx.restore();
+                }
+            }
 
-            // Observer O1 (static)
-            conflictCtx.fillRect(w * 0.8 - 10, h * 0.4 - 25, 20, 50); // Observer icon
-            conflictCtx.fillText('O₁ (静止)', w * 0.8, h * 0.4 + 45);
+            currentStep = 3;
+            let alphaO1 = 0;
+            if (state.progress > stepDuration * currentStep * 0.8) { 
+                 alphaO1 = Math.min(1, (state.progress - stepDuration * currentStep*0.8) / stepDuration);
+            }
+            conflictCtx.save(); conflictCtx.globalAlpha = alphaO1;
+            conflictCtx.fillRect(w * 0.8 - 7, h * 0.35 - 18, 14, 36); 
+            conflictCtx.font = '10px Arial';
+            conflictCtx.fillText('O₁ (静止)', w * 0.8, h * 0.35 + 30);
+            conflictCtx.restore();
+            conflictCtx.font = '11px Arial'; 
 
-            // Observer O2 (moving)
-            conflictCtx.fillRect(w * 0.5 - 10, h * 0.7 - 25, 20, 50); // Observer icon
-            drawArrow(conflictCtx, w * 0.5 + 20, h * 0.7, w*0.5 + 70, h*0.7, '#1976d2', 2); // Velocity u
-            conflictCtx.fillText('u', w*0.5 + 45, h*0.7 - 10);
-            conflictCtx.fillText('O₂ (以u运动)', w * 0.5, h * 0.7 + 45);
+            currentStep = 4;
+            let alphaO2 = 0;
+            if (state.progress > stepDuration * currentStep * 0.8) {
+                 alphaO2 = Math.min(1, (state.progress - stepDuration * currentStep*0.8) / stepDuration);
+            }
+            conflictCtx.save(); conflictCtx.globalAlpha = alphaO2;
+            conflictCtx.fillRect(w * 0.5 - 7, h * 0.65 - 18, 14, 36); 
+            drawArrow(conflictCtx, w * 0.5 + 12, h * 0.65, w*0.5 + 50, h*0.65, '#1976d2', 1.2, alphaO2); 
+            conflictCtx.font = '10px Arial';
+            conflictCtx.fillText('u', w*0.5 + 30, h*0.65 - 7);
+            conflictCtx.fillText('O₂ (运动)', w * 0.5, h * 0.65 + 30);
+            conflictCtx.restore();
+            conflictCtx.font = '11px Arial'; 
 
-
-            // Predictions
-            drawTextBox(conflictCtx, '麦克斯韦理论:\nO₁ 测得光速: c\nO₂ 测得光速: c', w / 4, h*0.55, 200, 10, 'bold 16px Arial', '#fff', '#4caf50');
-            drawTextBox(conflictCtx, '伽利略变换:\nO₁ 测得光速: c\nO₂ 测得光速: c - u', 3 * w / 4, h*0.55, 200, 10, 'bold 16px Arial', '#fff', '#f44336');
+            currentStep = 5;
+            let alphaMaxwellBox = 0;
+            if (state.progress > stepDuration * currentStep * 0.9) {
+                 alphaMaxwellBox = Math.min(1, (state.progress - stepDuration * currentStep*0.9) / stepDuration);
+            }
+            drawTextBox(conflictCtx, '麦克斯韦:\nO₁测: c\nO₂测: c', w / 4, h*0.62, 140, 6, 'bold 11px Arial', '#fff', '#4caf50', '#4caf50', 'center', alphaMaxwellBox); 
             
-            conflictCtx.font = 'bold 22px Arial';
+            let alphaGalileoBox = 0;
+            if (state.progress > stepDuration * (currentStep + 0.5) * 0.9) { 
+                 alphaGalileoBox = Math.min(1, (state.progress - stepDuration * (currentStep+0.5)*0.9) / stepDuration);
+            }
+            drawTextBox(conflictCtx, '伽利略:\nO₁测: c\nO₂测: c-u', 3 * w / 4, h*0.62, 140, 6, 'bold 11px Arial', '#fff', '#f44336', '#f44336', 'center', alphaGalileoBox); 
+            
+            currentStep = 6;
+            let alphaConflictText = 0;
+            if (state.progress > stepDuration * currentStep) {
+                 alphaConflictText = Math.min(1, (state.progress - stepDuration * currentStep) / (stepDuration*0.5));
+            }
+            conflictCtx.save(); conflictCtx.globalAlpha = alphaConflictText;
+            conflictCtx.font = 'bold 16px Arial'; 
             conflictCtx.fillStyle = '#e53935';
-            conflictCtx.fillText('世纪大矛盾!', w / 2, h - 30);
+            conflictCtx.fillText('矛 盾 !', w / 2, h - 40); 
+            conflictCtx.restore();
+
+            if (state.progress < state.duration + 2*stepDuration) { 
+                state.requestId = requestAnimationFrame(animateConflict);
+            } else {
+                state.requestId = null; 
+            }
         }
         function playConflictAnimation() {
-            alert('播放动画2: 伽利略变换 vs 光速不变 (概念演示)');
-            drawConflictAnimation();
+            stopAnimation('conflict');
+            animationStates.conflict.progress = 0;
+            animationStates.conflict.lastTime = 0;
+            animationStates.conflict.requestId = requestAnimationFrame(animateConflict);
         }
 
         // 动画3: 迈克尔逊-莫雷实验原理
         const experimentCanvas = document.getElementById('experimentCanvas');
         const experimentCtx = experimentCanvas.getContext('2d');
-        function drawExperimentAnimation() {
+        function animateExperiment(timestamp) {
+            const state = animationStates.experiment;
+            if(!state.lastTime) state.lastTime = timestamp;
+            const deltaTime = timestamp - state.lastTime;
+            state.lastTime = timestamp;
+            state.progress += deltaTime;
+
             experimentCtx.clearRect(0, 0, experimentCanvas.width, experimentCanvas.height);
             experimentCtx.fillStyle = '#263238';
-            experimentCtx.font = '14px Arial';
+            experimentCtx.font = '11px Arial'; 
             experimentCtx.textAlign = 'center';
             const w = experimentCanvas.width;
             const h = experimentCanvas.height;
+            const stepDuration = state.duration / 7; 
 
-            experimentCtx.fillText('迈克尔逊干涉仪 与 以太风探测', w / 2, 30);
+            let currentAlpha = Math.min(1, state.progress / stepDuration);
+            experimentCtx.save(); experimentCtx.globalAlpha = currentAlpha;
+            experimentCtx.fillText('迈克尔逊干涉仪与以太风探测', w / 2, 20); 
+            experimentCtx.restore();
             
             const centerX = w / 2;
-            const centerY = h / 2 - 30; // Shift up for text below
-            const armLength = Math.min(w,h) * 0.25;
+            const centerY = h / 2 - 45; 
+            const armLength = Math.min(w,h) * 0.20; 
 
-            // Components
-            experimentCtx.fillStyle = 'yellow'; // Light Source
-            experimentCtx.fillRect(centerX - armLength - 30, centerY - 10, 20, 20);
-            experimentCtx.fillStyle = '#263238';
-            experimentCtx.fillText('光源', centerX - armLength - 20, centerY + 25);
+            const drawComponent = (drawFunc, step) => { /* ... (drawComponent remains the same) ... */ 
+                let alpha = 0;
+                if (state.progress > stepDuration * step) {
+                    alpha = Math.min(1, (state.progress - stepDuration * step) / stepDuration);
+                }
+                experimentCtx.save(); experimentCtx.globalAlpha = alpha;
+                drawFunc();
+                experimentCtx.restore();
+                return alpha; 
+            };
 
-            experimentCtx.fillStyle = '#78909c'; // Beam Splitter
-            experimentCtx.save();
-            experimentCtx.translate(centerX, centerY);
-            experimentCtx.rotate(Math.PI / 4);
-            experimentCtx.fillRect(-15, -5, 30, 10);
-            experimentCtx.restore();
-            experimentCtx.fillText('分束镜', centerX, centerY + 25);
+            let sourceAlpha = drawComponent(() => {
+                experimentCtx.fillStyle = 'yellow'; 
+                experimentCtx.fillRect(centerX - armLength - 20, centerY - 6, 12, 12); 
+                experimentCtx.fillStyle = '#263238';
+                experimentCtx.font = '10px Arial';
+                experimentCtx.fillText('光源', centerX - armLength - 14, centerY + 18);
+            }, 0.5);
 
-            experimentCtx.fillStyle = '#bdbdbd'; // Mirrors
-            experimentCtx.fillRect(centerX - 5, centerY - armLength - 20, 10, 20); // Mirror 1 (Top)
-            experimentCtx.fillText('M₁', centerX, centerY - armLength - 25);
-            experimentCtx.fillRect(centerX + armLength, centerY - 10, 20, 10);   // Mirror 2 (Right)
-            experimentCtx.fillText('M₂', centerX + armLength + 25, centerY);
+            let splitterAlpha = 0;
+            if(sourceAlpha > 0.5) { 
+                splitterAlpha = drawComponent(() => {
+                    experimentCtx.fillStyle = '#78909c'; 
+                    experimentCtx.save();
+                    experimentCtx.translate(centerX, centerY);
+                    experimentCtx.rotate(Math.PI / 4);
+                    experimentCtx.fillRect(-10, -3, 20, 6); 
+                    experimentCtx.restore();
+                    experimentCtx.font = '10px Arial';
+                    experimentCtx.fillText('分束镜', centerX, centerY + 18);
+                }, 1);
+            }
+            
+            let m1Alpha = 0, m2Alpha = 0, detectorAlpha = 0;
+            if(splitterAlpha > 0.5) {
+                 m1Alpha = drawComponent(() => {
+                    experimentCtx.fillStyle = '#bdbdbd'; 
+                    experimentCtx.fillRect(centerX - 3, centerY - armLength - 12, 6, 12); 
+                    experimentCtx.font = '10px Arial';
+                    experimentCtx.fillText('M₁', centerX, centerY - armLength - 15);
+                }, 1.5);
+                 m2Alpha = drawComponent(() => {
+                    experimentCtx.fillStyle = '#bdbdbd';
+                    experimentCtx.fillRect(centerX + armLength, centerY - 3, 12, 6);   
+                    experimentCtx.font = '10px Arial';
+                    experimentCtx.fillText('M₂', centerX + armLength + 15, centerY);
+                }, 1.5); 
+            }
 
-            experimentCtx.fillStyle = '#546e7a'; // Detector
-            experimentCtx.fillRect(centerX - 15, centerY + armLength + 10, 30, 20);
-            experimentCtx.fillText('探测器', centerX, centerY + armLength + 45);
+            if(m1Alpha > 0.5 && m2Alpha > 0.5) {
+                detectorAlpha = drawComponent(() => {
+                    experimentCtx.fillStyle = '#546e7a'; 
+                    experimentCtx.fillRect(centerX - 10, centerY + armLength + 6, 20, 12); 
+                    experimentCtx.font = '10px Arial';
+                    experimentCtx.fillText('探测器', centerX, centerY + armLength + 28);
+                }, 2);
+            }
+            experimentCtx.font = '11px Arial'; // Reset font
 
-            // Light paths
-            experimentCtx.strokeStyle = '#ff9800'; experimentCtx.lineWidth = 1.5;
-            // Path 1 (to M1 and detector)
-            experimentCtx.beginPath(); experimentCtx.moveTo(centerX - armLength -10, centerY); experimentCtx.lineTo(centerX, centerY); // Source to splitter
-            experimentCtx.lineTo(centerX, centerY - armLength); // Splitter to M1
-            experimentCtx.lineTo(centerX, centerY); // M1 to splitter
-            experimentCtx.lineTo(centerX, centerY + armLength +10); // Splitter to Detector
-            experimentCtx.stroke();
-            // Path 2 (to M2 and detector)
-            experimentCtx.beginPath(); experimentCtx.moveTo(centerX, centerY); // Splitter (already from source)
-            experimentCtx.lineTo(centerX + armLength, centerY); // Splitter to M2
-            experimentCtx.lineTo(centerX, centerY); // M2 to splitter
-            // (Path to detector is common, already drawn for Path 1)
-            experimentCtx.stroke();
+            if (detectorAlpha > 0.1) { 
+                experimentCtx.strokeStyle = '#ff9800'; experimentCtx.lineWidth = 0.8; 
+                let pathProgress = 0;
+                if (state.progress > stepDuration * 2.5) {
+                     pathProgress = Math.min(1, (state.progress - stepDuration * 2.5) / (stepDuration*1.5) );
+                }
 
-            // Ether wind (conceptual)
-            drawArrow(experimentCtx, w*0.1, h*0.2, w*0.4, h*0.2, '#81d4fa', 2);
+                const tracePath = (points) => { /* ... (tracePath remains the same) ... */ 
+                    experimentCtx.beginPath();
+                    experimentCtx.moveTo(points[0][0], points[0][1]);
+                    const totalPathLen = points.length -1;
+                    const currentPathLen = totalPathLen * pathProgress;
+                    for(let i=0; i < Math.floor(currentPathLen); i++) {
+                        experimentCtx.lineTo(points[i+1][0], points[i+1][1]);
+                    }
+                    if (currentPathLen < totalPathLen && currentPathLen > 0) { 
+                        const lastFullPoint = points[Math.floor(currentPathLen)];
+                        const nextPoint = points[Math.ceil(currentPathLen)];
+                        const segmentProgress = currentPathLen - Math.floor(currentPathLen);
+                        experimentCtx.lineTo(
+                            lastFullPoint[0] + (nextPoint[0] - lastFullPoint[0]) * segmentProgress,
+                            lastFullPoint[1] + (nextPoint[1] - lastFullPoint[1]) * segmentProgress
+                        );
+                    }
+                    experimentCtx.stroke();
+                };
+                
+                const path1 = [
+                    [centerX - armLength -8, centerY], [centerX, centerY], 
+                    [centerX, centerY - armLength], 
+                    [centerX, centerY], 
+                    [centerX, centerY + armLength +6] 
+                ];
+                const path2 = [
+                    [centerX, centerY], 
+                    [centerX + armLength, centerY], 
+                    [centerX, centerY], 
+                ];
+                tracePath(path1);
+                experimentCtx.beginPath(); experimentCtx.moveTo(path2[0][0], path2[0][1]);
+                const totalPathLen2 = path2.length -1; 
+                const currentPathLen2 = totalPathLen2 * pathProgress;
+                 for(let i=0; i < Math.floor(currentPathLen2); i++) {
+                        experimentCtx.lineTo(path2[i+1][0], path2[i+1][1]);
+                    }
+                if (currentPathLen2 < totalPathLen2 && currentPathLen2 > 0) { 
+                    const lastFullPoint = path2[Math.floor(currentPathLen2)];
+                    const nextPoint = path2[Math.ceil(currentPathLen2)];
+                    const segmentProgress = currentPathLen2 - Math.floor(currentPathLen2);
+                    experimentCtx.lineTo(
+                        lastFullPoint[0] + (nextPoint[0] - lastFullPoint[0]) * segmentProgress,
+                        lastFullPoint[1] + (nextPoint[1] - lastFullPoint[1]) * segmentProgress
+                    );
+                }
+                experimentCtx.stroke();
+            }
+            
+            let etherAlpha = 0;
+            if (state.progress > stepDuration * 4) {
+                 etherAlpha = Math.min(1, (state.progress - stepDuration * 4) / stepDuration);
+            }
+            drawArrow(experimentCtx, w*0.1, h*0.3, w*0.3, h*0.3, '#81d4fa', 1.2, etherAlpha); 
+            experimentCtx.save(); experimentCtx.globalAlpha = etherAlpha;
             experimentCtx.fillStyle = '#0277bd';
-            experimentCtx.fillText('假设的以太风 ->', w*0.25, h*0.2 - 10);
+            experimentCtx.font = '10px Arial'; 
+            experimentCtx.fillText('假设以太风 ->', w*0.2, h*0.3 - 7);
+            experimentCtx.restore();
 
-            drawTextBox(experimentCtx, '预期：若有以太风，旋转装置，两光路光程差改变，干涉条纹移动。', w/2, h - 90, w*0.8, 10, 'bold 15px Arial', '#fff', '#ef6c00');
-            drawTextBox(experimentCtx, '实际观测：零结果！干涉条纹无任何可观测的移动。', w/2, h - 35, w*0.8, 10, 'bold 16px Arial', '#fff', '#2e7d32');
+            let text1Alpha = 0;
+            if (state.progress > stepDuration * 5) {
+                text1Alpha = Math.min(1, (state.progress - stepDuration * 5) / stepDuration);
+            }
+            drawTextBox(experimentCtx, '预期：若有以太风，旋转装置，干涉条纹移动。', w/2, h - 75, w*0.7, 7, 'bold 12px Arial', '#fff', '#ef6c00', '#ef6c00', 'center', text1Alpha); 
+            
+            let text2Alpha = 0;
+            if (state.progress > stepDuration * 6) {
+                 text2Alpha = Math.min(1, (state.progress - stepDuration * 6) / stepDuration);
+            }
+            drawTextBox(experimentCtx, '实际：零结果！条纹无移动。', w/2, h - 30, w*0.7, 7, 'bold 13px Arial', '#fff', '#2e7d32', '#2e7d32', 'center', text2Alpha); 
+
+
+            if (state.progress < state.duration + stepDuration) { 
+                state.requestId = requestAnimationFrame(animateExperiment);
+            } else {
+                state.requestId = null;
+            }
         }
         function playExperimentAnimation() {
-            alert('播放动画3: 迈克尔逊-莫雷实验原理与“零结果” (概念演示)');
-            drawExperimentAnimation();
+            stopAnimation('experiment');
+            animationStates.experiment.progress = 0;
+            animationStates.experiment.lastTime = 0;
+            animationStates.experiment.requestId = requestAnimationFrame(animateExperiment);
         }
 
         // 动画4: 理论发展时间轴
         const timelineCanvas = document.getElementById('timelineCanvas');
         const timelineCtx = timelineCanvas.getContext('2d');
-        function drawTimelineAnimation() {
+        const timelineEvents = [
+            { year: '~1865', text: '麦克斯韦方程组\n预言光速c', color: '#ff8a65', xPos: 0.15 }, 
+            { year: '1887', text: 'M-M实验\n“零结果”', color: '#ba68c8', xPos: 0.4 },
+            { year: '~1890s', text: '洛伦兹等探索', color: '#4fc3f7', xPos: 0.65 },
+            { year: '1905', text: '爱因斯坦\n狭义相对论!', color: '#a5d6a7', xPos: 0.9 }
+        ];
+
+        function animateTimeline(timestamp) {
+            const state = animationStates.timeline;
+            if(!state.lastTime) state.lastTime = timestamp;
+            const deltaTime = timestamp - state.lastTime;
+            state.lastTime = timestamp;
+            state.progress += deltaTime;
+
             timelineCtx.clearRect(0, 0, timelineCanvas.width, timelineCanvas.height);
             timelineCtx.fillStyle = '#263238';
-            timelineCtx.font = '13px Arial'; // Slightly smaller for more text
+            timelineCtx.font = '10px Arial'; 
             timelineCtx.textAlign = 'left';
             const w = timelineCanvas.width;
             const h = timelineCanvas.height;
 
-            const startX = 40;
-            const endX = w - 40;
+            const startX = 25; 
+            const endX = w - 25; 
             const midY = h / 2;
+            const stepDuration = state.duration / (timelineEvents.length + 1); 
 
-            // Timeline
-            timelineCtx.strokeStyle = '#9fa8da'; timelineCtx.lineWidth = 4;
-            timelineCtx.beginPath(); timelineCtx.moveTo(startX, midY); timelineCtx.lineTo(endX, midY); timelineCtx.stroke();
+            let timelineProgress = Math.min(1, state.progress / stepDuration);
+            timelineCtx.strokeStyle = '#9fa8da'; timelineCtx.lineWidth = 2.5; 
+            timelineCtx.beginPath(); 
+            timelineCtx.moveTo(startX, midY); 
+            timelineCtx.lineTo(startX + (endX - startX) * timelineProgress, midY); 
+            timelineCtx.stroke();
 
-            const events = [
-                { year: '~1865', text: '麦克斯韦方程组\n预言光速c，挑战经典', color: '#ff8a65', xPos: 0.15 },
-                { year: '1887', text: '迈克尔逊-莫雷实验\n“零结果”，以太危机', color: '#ba68c8', xPos: 0.4 },
-                { year: '~1890s', text: '洛伦兹、彭加莱等\n探索变换、时空概念', color: '#4fc3f7', xPos: 0.65 },
-                { year: '1905', text: '爱因斯坦\n狭义相对论诞生！', color: '#a5d6a7', xPos: 0.9 }
-            ];
+            state.eventsToShow = Math.floor((state.progress - stepDuration) / stepDuration);
 
-            events.forEach((event, index) => {
-                const eventX = startX + (endX - startX) * event.xPos;
+            for(let i=0; i < timelineEvents.length; i++) {
+                const event = timelineEvents[i];
+                let eventAlpha = 0;
+                if (state.progress > stepDuration * (i + 1)) { 
+                    eventAlpha = Math.min(1, (state.progress - stepDuration * (i+1)) / stepDuration);
+                }
                 
-                // Event marker
-                timelineCtx.fillStyle = event.color;
-                timelineCtx.beginPath(); timelineCtx.arc(eventX, midY, 10, 0, 2 * Math.PI); timelineCtx.fill();
-                timelineCtx.strokeStyle = '#fff'; timelineCtx.lineWidth = 2; timelineCtx.stroke(); // White border for marker
+                if (eventAlpha > 0) { 
+                    const eventX = startX + (endX - startX) * event.xPos;
+                    
+                    timelineCtx.save();
+                    timelineCtx.globalAlpha = eventAlpha;
 
-                // Event text box
-                const textY = (index % 2 === 0) ? midY - 70 : midY + 70; // Alternate above/below
-                drawTextBox(timelineCtx, `${event.year}\n${event.text}`, eventX, textY, 150, 8, '12px Arial', '#263238', event.color+'aa', event.color, 'center');
-                // Line to timeline
-                timelineCtx.strokeStyle = event.color; timelineCtx.lineWidth = 1.5;
-                timelineCtx.beginPath();
-                timelineCtx.moveTo(eventX, midY + ( (index % 2 === 0) ? -10 : 10) ); // from marker edge
-                timelineCtx.lineTo(eventX, textY + ( (index % 2 === 0) ? 30 : -30) ); // to box edge
-                timelineCtx.stroke();
-            });
+                    timelineCtx.fillStyle = event.color;
+                    timelineCtx.beginPath(); timelineCtx.arc(eventX, midY, 6, 0, 2 * Math.PI); timelineCtx.fill(); 
+                    timelineCtx.strokeStyle = '#fff'; timelineCtx.lineWidth = 1; timelineCtx.stroke(); 
+
+                    const textY = (i % 2 === 0) ? midY - 55 : midY + 55; 
+                    drawTextBox(timelineCtx, `${event.year}\n${event.text}`, eventX, textY, 100, 5, '9px Arial', '#263238', event.color+'88', event.color, 'center', eventAlpha); 
+                    
+                    timelineCtx.strokeStyle = event.color; timelineCtx.lineWidth = 0.8; 
+                    timelineCtx.beginPath();
+                    timelineCtx.moveTo(eventX, midY + ( (i % 2 === 0) ? -6 : 6) ); 
+                    timelineCtx.lineTo(eventX, textY + ( (i % 2 === 0) ? 20 : -20) ); 
+                    timelineCtx.stroke();
+                    timelineCtx.restore();
+                }
+            }
+
+            if (state.progress < state.duration + stepDuration) {
+                state.requestId = requestAnimationFrame(animateTimeline);
+            } else {
+                state.requestId = null;
+            }
         }
         function playTimelineAnimation() {
-            alert('播放动画4: 关键理论发展时间轴 (概念演示)');
-            drawTimelineAnimation();
+            stopAnimation('timeline');
+            animationStates.timeline.progress = 0;
+            animationStates.timeline.lastTime = 0;
+            animationStates.timeline.eventsToShow = 0;
+            animationStates.timeline.requestId = requestAnimationFrame(animateTimeline);
         }
 
         // 动画5: 矛盾的解决与新理论的诞生
         const resolutionCanvas = document.getElementById('resolutionCanvas');
         const resolutionCtx = resolutionCanvas.getContext('2d');
-        function drawResolutionAnimation() {
+        const resolutionElements = [
+            { type: 'box', text: '麦克斯韦: 光速c恒定', color: '#ffcc80', textColor: '#111'}, 
+            { type: 'arrow'},
+            { type: 'box', text: '经典物理: 速度相对', color: '#ef9a9a', textColor: '#111'},
+            { type: 'conflictText', text: 'VS', text2: '=> 矛盾!', color: '#f44336'},
+            { type: 'arrow'},
+            { type: 'box', text: '实验探索 (M-M等)\n“零结果”', color: '#81d4fa', textColor: '#111'},
+            { type: 'arrow'},
+            { type: 'box', text: '爱因斯坦: 光速不变\n狭义相对论', color: '#66bb6a', textColor: '#fff', widthModifier: 10} 
+        ];
+
+        function animateResolution(timestamp) {
+            const state = animationStates.resolution;
+            if(!state.lastTime) state.lastTime = timestamp;
+            const deltaTime = timestamp - state.lastTime;
+            state.lastTime = timestamp;
+            state.progress += deltaTime;
+
             resolutionCtx.clearRect(0, 0, resolutionCanvas.width, resolutionCanvas.height);
             resolutionCtx.fillStyle = '#263238';
-            resolutionCtx.font = '15px Arial';
+            resolutionCtx.font = '12px Arial'; 
             resolutionCtx.textAlign = 'center';
             const w = resolutionCanvas.width;
             const h = resolutionCanvas.height;
 
-            const boxW = 220;
-            const boxH = 60; // Increased height for more text
-            const spacingY = 85;
+            const boxWBase = 160; 
+            const boxH = 45; 
+            const spacingYBase = 70; 
             const centerX = w / 2;
+            let currentY = 35; 
+            const stepDuration = state.duration / resolutionElements.length;
 
-            let currentY = 50;
-            drawTextBox(resolutionCtx, '麦克斯韦理论:\n真空光速c是常数', centerX, currentY, boxW, 10, '14px Arial', '#111', '#ffcc80');
+            for(let i=0; i < resolutionElements.length; i++) {
+                const element = resolutionElements[i];
+                let elementAlpha = 0;
+                if (state.progress > stepDuration * i) {
+                    elementAlpha = Math.min(1, (state.progress - stepDuration * i) / stepDuration);
+                }
+
+                if (elementAlpha <= 0) continue; 
+
+                if (element.type === 'box') {
+                    const boxW = boxWBase + (element.widthModifier || 0);
+                    drawTextBox(resolutionCtx, element.text, centerX, currentY, boxW, 6, '11px Arial', element.textColor, element.color, element.color, 'center', elementAlpha); 
+                    if (i < resolutionElements.length -1 && resolutionElements[i+1].type === 'arrow') { 
+                        currentY += spacingYBase;
+                    }
+                } else if (element.type === 'arrow') {
+                    const fromY = currentY - spacingYBase + boxH/2 - 3; 
+                    const toY = currentY - boxH/2; 
+                    drawArrow(resolutionCtx, centerX, fromY, centerX, toY, '#90a4ae', 1.2, elementAlpha); 
+                } else if (element.type === 'conflictText') {
+                    currentY -= spacingYBase * 0.5; // Adjusted for tighter spacing
+                    resolutionCtx.save();
+                    resolutionCtx.globalAlpha = elementAlpha;
+                    resolutionCtx.font = 'bold 14px Arial'; 
+                    resolutionCtx.fillStyle = element.color;
+                    resolutionCtx.fillText(element.text, centerX - 60, currentY -2); 
+                    resolutionCtx.fillText(element.text2, centerX + 25, currentY);
+                    resolutionCtx.restore();
+                    currentY += spacingYBase * 0.3; 
+                }
+            }
             
-            currentY += spacingY;
-            drawArrow(resolutionCtx, centerX, currentY - spacingY + boxH/2 -5, centerX, currentY - boxH/2, '#90a4ae', 2);
-            drawTextBox(resolutionCtx, '经典物理 (伽利略变换):\n速度是相对的', centerX, currentY, boxW, 10, '14px Arial', '#111', '#ef9a9a');
-            
-            currentY += spacingY * 0.6; // Shorter space for conflict text
-            // Conflict Text (no box, just text)
-            resolutionCtx.font = 'bold 18px Arial';
-            resolutionCtx.fillStyle = '#f44336';
-            resolutionCtx.fillText('VS', centerX - 80, currentY -5);
-            resolutionCtx.fillText('=> 尖锐矛盾!', centerX + 40, currentY);
-            resolutionCtx.font = '15px Arial'; // Reset font
-
-            currentY += spacingY * 0.8;
-            drawArrow(resolutionCtx, centerX, currentY - spacingY*0.8 + 5, centerX, currentY - boxH/2, '#90a4ae', 2);
-            drawTextBox(resolutionCtx, '实验探索:\nM-M实验等“零结果”\n以太说被否定', centerX, currentY, boxW, 10, '14px Arial', '#111', '#81d4fa');
-
-            currentY += spacingY;
-            drawArrow(resolutionCtx, centerX, currentY - spacingY + boxH/2 -5, centerX, currentY - boxH/2, '#90a4ae', 2);
-            drawTextBox(resolutionCtx, '爱因斯坦的洞察:\n光速不变 & 相对性原理\n=> 狭义相对论诞生!', centerX, currentY, boxW + 40, 10, 'bold 14px Arial', '#fff', '#66bb6a');
+            if (state.progress < state.duration + stepDuration) { 
+                state.requestId = requestAnimationFrame(animateResolution);
+            } else {
+                state.requestId = null;
+            }
         }
         function playResolutionAnimation() {
-            alert('播放动画5: 矛盾的提出、探索与解决 (概念演示)');
-            drawResolutionAnimation();
+            stopAnimation('resolution');
+            animationStates.resolution.progress = 0;
+            animationStates.resolution.lastTime = 0;
+            animationStates.resolution.elementsToShow = 0;
+            animationStates.resolution.requestId = requestAnimationFrame(animateResolution);
         }
 
 
         // 页面加载时绘制所有动画的初始静态帧
-        window.onload = function() {
-            // 确保canvas尺寸在绘制前已设定 (CSS已处理大部分情况)
-            drawVacuumPropertyAnimation();
-            drawConceptAnimation();
-            drawConflictAnimation();
-            drawExperimentAnimation();
-            drawTimelineAnimation();
-            drawResolutionAnimation();
+        function drawInitialStaticFrames() {
+            const now = performance.now();
+            // Temporarily set progress to max to draw final static state for all animations
+            const originalStates = JSON.parse(JSON.stringify(animationStates)); // Deep copy to restore later
 
-            // Add resize listener to redraw canvases if needed (optional, for better responsiveness if canvas content scales)
-            // window.addEventListener('resize', function() {
-            //     drawVacuumPropertyAnimation();
-            //     drawConceptAnimation();
-            //     // ... redraw all others
-            // });
+            Object.keys(animationStates).forEach(key => {
+                animationStates[key].progress = animationStates[key].duration; // Force to end state
+                animationStates[key].lastTime = now;
+                 if(animationStates[key].hasOwnProperty('phase') && animationStates[key].duration) { // For concept animation
+                    animationStates[key].phase = (animationStates[key].duration / 16) * 0.035; // Approximate end phase
+                 }
+            });
+
+            animateVacuumProperty(now); 
+            drawConceptFrame(animationStates.concept.phase); // Use calculated end phase
+            animateConflict(now); 
+            animateExperiment(now); 
+            animateTimeline(now); 
+            animateResolution(now);
+
+            // Restore animation states for actual play
+             Object.keys(animationStates).forEach(key => {
+                animationStates[key].progress = originalStates[key].progress;
+                animationStates[key].lastTime = originalStates[key].lastTime;
+                 if(animationStates[key].hasOwnProperty('phase')) animationStates[key].phase = originalStates[key].phase;
+                if(animationStates[key].requestId) cancelAnimationFrame(animationStates[key].requestId); // Cancel any auto-started frame
+                animationStates[key].requestId = null;
+            });
+        }
+
+        window.onload = function() {
+            Object.keys(animationStates).forEach(key => {
+                animationStates[key].progress = 0;
+                animationStates[key].lastTime = 0; 
+                if(animationStates[key].hasOwnProperty('phase')) animationStates[key].phase = 0;
+                if(animationStates[key].hasOwnProperty('eventsToShow')) animationStates[key].eventsToShow = 0;
+                if(animationStates[key].hasOwnProperty('elementsToShow')) animationStates[key].elementsToShow = 0;
+            });
+            drawInitialStaticFrames();
         };
     </script>
 </body>

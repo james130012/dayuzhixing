@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>交大新论文：PC Agent-E 深度解析：高效计算机操作智能代理</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.2/p5.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            font-size: 16pt; /* 三号字体 (16 points) */
+            line-height: 1.7;
+            background-color: #f3f4f6; /* Tailwind gray-100 */
+            color: #1f2937; /* Tailwind gray-800 */
+        }
+
+        /* Simulating A3 paper feel with normal margins */
+        .a3-paper {
+            max-width: 1123px; /* Approximate width for A3 feel on typical screens, can be adjusted */
+            margin-left: auto;
+            margin-right: auto;
+            padding: 2.5cm; /* Normal A3 margins (approx 1 inch) */
+            background-color: #ffffff;
+        }
+
+        h1, h2, h3, h4 {
+            font-family: 'ZCOOL KuaiLe', cursive; /* 轻松活泼的字体 for headings */
+        }
+
+        h1 {
+            font-size: 2.8em; /* Tailwind text-5xl or 6xl equivalent */
+            color: #2563eb; /* Tailwind blue-600 */
+            border-bottom: 3px solid #2563eb;
+            padding-bottom: 0.5em;
+            margin-bottom: 1em;
+        }
+
+        h2 {
+            font-size: 2.2em; /* Tailwind text-3xl or 4xl */
+            color: #db2777; /* Tailwind pink-600 */
+            margin-top: 1.5em;
+            margin-bottom: 0.75em;
+        }
+
+        h3 {
+            font-size: 1.8em; /* Tailwind text-2xl */
+            color: #f59e0b; /* Tailwind amber-500 */
+            margin-top: 1em;
+            margin-bottom: 0.5em;
+        }
+        
+        strong, .highlight {
+            color: #dc2626; /* Tailwind red-600 */
+            font-weight: 700; /* bold */
+        }
+
+        .concept {
+            font-weight: 500; /* medium */
+            color: #16a34a; /* Tailwind green-600 */
+            padding: 2px 6px;
+            background-color: #f0fdf4; /* Tailwind green-50 */
+            border-radius: 6px;
+            border: 1px solid #bbf7d0; /* Tailwind green-200 */
+        }
+
+        .github-link {
+            display: inline-block;
+            background-color: #2563eb;
+            color: white;
+            padding: 0.5em 1em;
+            border-radius: 8px;
+            text-decoration: none;
+            font-family: 'Noto Sans SC', sans-serif;
+            font-size: 0.8em;
+            transition: background-color 0.3s ease;
+        }
+        .github-link:hover {
+            background-color: #1d4ed8; /* Darker blue */
+        }
+
+        .animation-container {
+            width: 100%;
+            min-height: 350px; /* Default height, will be overridden for specific anims if needed */
+            margin: 1.5em auto;
+            border: 2px solid #9ca3af; /* Tailwind gray-400 */
+            border-radius: 8px;
+            overflow: hidden;
+            background-color: #f9fafb; /* Tailwind gray-50 */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 1em;
+        }
+        .animation-canvas-container { /* Specific container for the canvas element */
+            width: 100%;
+            height: 300px; /* CSS forced height for canvas parent */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 0.5em;
+        }
+         .animation-container canvas {
+            display: block;
+            max-width: 100%;
+            max-height: 100%;
+            border-radius: 6px;
+        }
+        .controls {
+            text-align: center;
+            margin-top: 0.5em;
+        }
+        .controls button, .controls input[type="range"], .controls label {
+            padding: 8px 15px;
+            font-size: 0.9em; /* Slightly smaller for controls */
+            font-family: 'Noto Sans SC', sans-serif;
+            background-color: #2563eb; /* Tailwind blue-600 */
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            margin: 5px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .controls button:hover {
+            background-color: #1d4ed8; /* Darker blue */
+            transform: translateY(-1px);
+        }
+        .controls input[type="range"] {
+            vertical-align: middle;
+            cursor: grab;
+            accent-color: #2563eb;
+        }
+        .controls label {
+            background-color: transparent;
+            color: #374151; /* Tailwind gray-700 */
+            box-shadow: none;
+            font-size: 0.85em;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            body {
+                font-size: 14pt; /* Smaller font on mobile */
+            }
+            .a3-paper {
+                padding: 1cm;
+            }
+            h1 { font-size: 2.2em; }
+            h2 { font-size: 1.8em; }
+            h3 { font-size: 1.5em; }
+            .animation-container {
+                min-height: 250px;
+            }
+            .animation-canvas-container {
+                height: 200px;
+            }
+        }
+        figcaption {
+            font-size: 0.8em;
+            color: #6b7280; /* Tailwind gray-500 */
+            text-align: center;
+            margin-top: 0.5em;
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+
+    <div class="a3-paper my-8 shadow-xl rounded-lg">
+        <header class="text-center mb-12">
+            <h1>PC Agent-E: 让人机交互迈入新境界的智能代理训练框架</h1>
+            <p class="text-xl text-gray-600 mt-2">仅需少量人工数据，即可炼成强大的桌面操作助手</p>
+            <a href="https://github.com/GAIR-NLP/PC-Agent-E" target="_blank" class="github-link mt-4">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="w-5 h-5 inline-block mr-2">
+                    <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"></path>
+                </svg>
+                访问 GitHub 仓库
+            </a>
+        </header>
+
+        <main>
+            <section id="abstract">
+                <h2>摘要：智能代理的“数据破局”之路</h2>
+                <p>在追求能像人类一样熟练操作计算机的通用智能代理（Agent）的道路上，高质量、大规模的训练数据一直是稀缺资源，严重制约了其发展。论文《Efficient Agent Training for Computer Use》(arXiv:2505.13909v1) 提出了一种名为 <strong class="highlight">PC Agent-E</strong> 的高效智能代理训练框架。该框架的核心思想是，通过精妙的方法，从极少量（仅312条）人类标注的计算机操作轨迹数据出发，利用强大的语言模型（Claude 3.7 Sonnet）对这些数据进行“增强”，合成出多样化的行动决策，从而显著提升训练数据的质量和多样性。基于这些“增强版”轨迹数据训练出的 PC Agent-E 模型，在性能上取得了惊人的 <strong class="highlight">141%</strong> 相对提升，甚至超越了具备“扩展思维”能力的 Claude 3.7 Sonnet。这一成果不仅在论文改进的 Windows AgentArena-V2 基准测试中得到验证，PC Agent-E 还展现了在不同操作系统（如OSWorld上的Linux环境）间的强大泛化能力。这项研究有力地证明了：<strong class="highlight">通过精心设计的高质量小样本数据，同样可以激发出智能代理强大的计算机操作潜能。</strong></p>
+            </section>
+
+            <section id="intro">
+                <h2>引言：智能“舵手”的挑战与机遇</h2>
+                <p>让人工智能（AI）像经验丰富的人类用户一样，在复杂的计算机图形用户界面（GUI）中游刃有余地完成各种任务，是AI领域一个里程碑式的追求。这样的智能“舵手”一旦实现，无疑将极大地解放生产力，重塑我们与数字世界的交互方式。然而，理想丰满，现实骨感。当前最先进的模型在模拟人类操作计算机方面，仍与真实人类水平存在显著差距。究其原因，除了模型本身的认知和规划能力有待提升外，<strong class="highlight">高质量计算机操作轨迹数据的极度匮乏</strong>是公认的核心瓶颈。</p>
+                <p>传统的轨迹数据收集方法，或依赖大量人工标注，成本高昂且效率低下；或让代理在真实环境中直接探索，风险高且成功率低；或尝试从在线教程中合成数据，但真实性和多样性难以保证。本文介绍的 PC Agent-E 框架，正是为了破解这一“数据困境”而生，它巧妙地融合了人类智慧与AI的自动化能力，探索出一条<span class="concept">高效、高质量</span>的数据生成与模型训练新路径。</p>
+            </section>
+
+            <section id="framework">
+                <h2>PC Agent-E 框架揭秘：四步炼成“操作大师”</h2>
+                <p>PC Agent-E 的训练框架可以概括为四个关键步骤，每一步都精心设计，旨在以最高效率利用和增强宝贵的人类数据。从物理逻辑的视角看，这是一个清晰的数据处理与模型迭代流程：</p>
+                
+                <div id="frameworkAnimation" class="animation-container">
+                    <div class="animation-canvas-container" id="frameworkCanvasContainer"></div>
+                    <div class="controls">
+                        <button id="frameworkPlayPause">播放/暂停</button>
+                    </div>
+                    <figcaption>图1: PC Agent-E 框架流程动画 (概念)</figcaption>
+                </div>
+
+                <h3 class="mt-6">A. 轨迹收集 (Trajectory Collection)</h3>
+                <p>起点是“少而精”的人类操作数据。研究团队使用名为 <span class="concept">PC Tracker</span> 的工具，由两名标注员在一天内收集了 <strong class="highlight">312条</strong> 真实的Windows计算机操作轨迹。这些轨迹包含了任务描述、每一步的屏幕截图以及对应的键盘/鼠标操作。这个阶段强调的是数据的<span class="concept">真实性</span>和<span class="concept">任务完成的可靠性</span>，因为它们直接来源于人类的实际操作。</p>
+
+                <h3 class="mt-6">B. 思维补全 (Thought Completion)</h3>
+                <p>原始的人类操作记录往往只包含“做了什么”（action），而缺少“为什么这么做”（thought）。为了让模型更好地理解操作背后的逻辑，研究者利用强大的语言模型（Claude 3.7 Sonnet），为每一步人类操作<strong class="highlight">重建其隐含的思维过程</strong>。输入包括任务描述、历史操作、当前操作和截图，模型则输出合理的“思考”内容。这使得原始轨迹数据变得更加丰满，成为包含“思考-行动”对的完整序列。</p>
+
+                <h3 class="mt-6">C. 轨迹增强 (Trajectory Boost) - 核心创新</h3>
+                <p>这是 PC Agent-E 框架中最具创新性的部分，也是提升数据质量和多样性的关键。研究者认识到，对于同一个任务状态，人类操作者选择的路径往往只是众多可行路径中的一条。为了挖掘这些“未被探索但同样合理”的路径，他们提出了 <span class="concept">Trajectory Boost</span> 方法：</p>
+                <ul>
+                    <li><strong>环境快照利用：</strong> 将人类轨迹中的每一步（包含任务描述、历史步骤、当前截图）视为一个“环境快照”。</li>
+                    <li><strong>多样化行动决策合成：</strong> 将这些快照喂给 Claude 3.7 Sonnet，让它基于当前状态<strong class="highlight">生成多个（论文中为9个）不同的、合理的“思考-行动”决策</strong>。这些决策并不会实际执行，而是作为增强数据。</li>
+                    <li><strong>“轨迹树”的形成：</strong> 原始的人类轨迹构成了“树干”，而模型合成的多种备选行动则像“树枝”一样扩展出去，形成了一个包含丰富决策可能性的“轨迹树”（Traj Tree）。</li>
+                </ul>
+                <p>从物理逻辑上看，“轨迹增强”相当于在状态空间中，围绕人类已验证的“优质路径点”，进行了一次智能化的“邻域探索”，极大地丰富了模型在相似情境下可学习的应对策略。</p>
+                
+                <div id="boostAnimation" class="animation-container">
+                     <div class="animation-canvas-container" id="boostCanvasContainer"></div>
+                    <div class="controls">
+                        <button id="boostPlayPause">播放/暂停</button>
+                        <label for="boostBranchSlider">分支数量: <span id="boostBranchValue">3</span></label>
+                        <input type="range" id="boostBranchSlider" min="1" max="9" value="3" step="1">
+                    </div>
+                    <figcaption>图2: 轨迹增强 (Trajectory Boost) 概念动画</figcaption>
+                </div>
+
+                <h3 class="mt-6">D. 智能体训练 (Agent Training)</h3>
+                <p>最后一步是利用这些经过“思维补全”和“轨迹增强”的高质量数据来训练 PC Agent-E 模型。模型采用了简洁的<span class="concept">端到端</span>训练框架，遵循 <span class="concept">ReAct (Reasoning and Acting)</span> 范式，即在每个时间步，模型接收（截图、任务描述、历史记录）作为输入，输出（思考、行动）决策。训练样本直接从“轨迹树”的每个行动节点（无论是人类的还是模型合成的）转化而来，确保了训练过程与推理过程的一致性。通过这种方式，仅312条原始轨迹，经过增强后，就产生了约 <strong class="highlight">27,000个</strong> 训练实例。</p>
+            </section>
+
+            <section id="data-efficiency">
+                <h2>数据为王：质与量的双重飞跃</h2>
+                <p>PC Agent-E 的成功，很大程度上归功于其对“数据质量”的极致追求。它并非盲目追求数据量，而是通过巧妙的机制确保每一条数据都能为模型能力的提升贡献最大价值：</p>
+                <ul>
+                    <li><strong class="highlight">真实世界任务闭环：</strong> 源于人类标注的轨迹，天然保证了任务的可完成性和操作的真实有效性。这是许多纯合成数据难以比拟的优势。</li>
+                    <li><strong class="highlight">多样化行动决策：</strong> “轨迹增强”步骤是点睛之笔。它不仅增加了训练数据的“数量级”（从312条轨迹到2.7万个实例），更重要的是极大地提升了“质量”——即行动决策的多样性。模型不再仅仅学习人类操作的单一路径，而是接触到在同一情境下的多种合理应对方案，这对于提升模型的<span class="concept">泛化能力</span>和<span class="concept">鲁棒性</span>至关重要。</li>
+                </ul>
+                <p>这种“以质取胜，以巧增量”的策略，使得 PC Agent-E 能够用远少于传统方法所需的数据量，达到甚至超越顶尖模型的性能，充分体现了其“高效”的特性。</p>
+                <div id="dataEfficiencyAnimation" class="animation-container">
+                    <div class="animation-canvas-container" id="dataEfficiencyCanvasContainer"></div>
+                    <div class="controls">
+                        <button id="dataEfficiencyPlayPause">播放/暂停</button>
+                    </div>
+                    <figcaption>图3: 数据高效性动画 - 从少量高质量数据到卓越性能</figcaption>
+                </div>
+            </section>
+
+            <section id="benchmark">
+                <h2>全新试炼场：WindowsAgentArena-V2</h2>
+                <p>一个优秀的智能代理，离不开一个公平、可靠的“试炼场”。研究团队在评估过程中发现，原有的 WindowsAgentArena 基准测试存在一些局限性，可能影响评估的准确性和公平性。因此，他们改进并发布了 <span class="concept">WindowsAgentArena-V2</span>，包含141个任务，横跨11个常用的Windows应用程序。其主要改进逻辑如下：</p>
+                <ul>
+                    <li><strong>解决评估依赖性：</strong> 原基准在任务间缺乏虚拟机（VM）状态重置，可能导致前一个任务的修改影响后续任务。V2版通过在每次评估前<strong class="highlight">恢复VM快照</strong>，确保了初始状态的一致性和评估的独立性。</li>
+                    <li><strong>防止不可行任务“作弊” (Infeasible Hacking)：</strong> 一些基准测试包含本身无法完成的任务（如系统功能已废弃），模型只需输出“失败”即可得分。这种机制容易被“钻空子”，无法真实反映模型解决实际问题的能力。V2版暂时<strong class="highlight">移除了这些不可行任务</strong>，以更聚焦于评估模型在可行任务上的表现。</li>
+                    <li><strong>保证VM初始状态稳定性：</strong> 针对原VM配置后可能出现的网络连接不稳定、软件启动失败等问题，V2版设计了验证框架和重试机制，显著降低了初始化失败率。</li>
+                    <li><strong>修复评估缺陷：</strong> 修正了原基准中一些评估函数存在的逻辑错误或不够鲁棒的问题，并对少数复杂任务引入人工评估，提升了评估结果的可靠性。</li>
+                </ul>
+                 <div id="benchmarkAnimation" class="animation-container" style="min-height: 450px;">
+                    <div class="animation-canvas-container" id="benchmarkCanvasContainer" style="height: 400px;"></div>
+                    <div class="controls">
+                        <button id="benchmarkPlayPause">播放/暂停</button>
+                        <button id="benchmarkToggle">切换 V1 / V2</button>
+                    </div>
+                    <figcaption>图4: WindowsAgentArena-V2 改进对比动画</figcaption>
+                </div>
+            </section>
+
+            <section id="results">
+                <h2>实战演练：PC Agent-E 性能大比拼</h2>
+                <p>在改进后的 WindowsAgentArena-V2 基准上，PC Agent-E 的表现令人瞩目：</p>
+                <ul>
+                    <li>相较于其基座模型 Qwen2.5-VL-72B（原始成功率14.9%），PC Agent-E 达到了 <strong class="highlight">36.0%</strong> 的成功率，实现了 <strong class="highlight">141%</strong> 的惊人相对性能提升。</li>
+                    <li>更值得一提的是，PC Agent-E 的表现甚至超越了用于合成增强数据的、且开启了“扩展思维”模式的 Claude 3.7 Sonnet（成功率35.4%）。这充分说明了“轨迹增强”并非简单地让模型模仿教师模型，而是真正从多样化数据中学习到了更底层的操作逻辑和规划能力。</li>
+                    <li>在多个应用类别上，PC Agent-E 都展现了最佳或接近最佳的开源模型性能。</li>
+                </ul>
+                <p>定性分析表明，PC Agent-E 的性能提升主要来源于<span class="concept">长程规划能力的增强</span>。训练后的模型能产生更长的思考链条，在验证、反思和自我纠错方面表现更佳。</p>
+                <div id="performanceAnimation" class="animation-container" style="min-height: 450px;">
+                    <div class="animation-canvas-container" id="performanceCanvasContainer" style="height: 400px;"></div>
+                    <div class="controls">
+                        <button id="performancePlayPause">播放/暂停</button>
+                    </div>
+                    <figcaption>图5: PC Agent-E 与其他模型在 WindowsAgentArena-V2 上的性能对比</figcaption>
+                </div>
+            </section>
+            
+            <section id="trajectory-boost-validation">
+                <h2>“轨迹增强”效果验证：越多越好？</h2>
+                <p>为了验证“轨迹增强”中合成备选行动数量的影响，研究者进行了“训练时行动扩展”实验。他们改变了每个原始人类操作步骤所合成的备选行动数量（从0个到9个），并观察模型性能的变化。结果（如图8(a)所示）清晰地表明：<strong class="highlight">随着用于训练的备选行动决策数量的增加，模型性能显著提升。</strong> 相较于仅使用原始人类轨迹进行训练（s'=1，即每个原始步骤只用它自己），完整使用9个合成行动（s'=10）的 PC Agent-E 取得了远超前者的性能增益。这从逻辑上证明了“轨迹增强”方法通过增加决策多样性来提升数据质量的有效性。</p>
+                <p>公式可以简单表示为：性能 = f(增强因子 s')，其中 f 是一个单调递增函数（在实验范围内）。</p>
+            </section>
+
+            <section id="generalizability">
+                <h2>跨平台通用性：Windows“学徒”也能玩转Linux</h2>
+                <p>一个真正强大的智能代理，不应局限于单一的操作系统环境。PC Agent-E 虽然完全基于Windows系统收集的数据进行训练，但研究团队也在流行的Linux基准测试 OSWorld 上评估了其<span class="concept">跨平台泛化能力</span>。</p>
+                <p>结果显示，PC Agent-E 在Linux任务上的表现同样优于其基座模型，取得了 <strong class="highlight">34%</strong> 的相对性能提升（从11.1%提升到14.9%）。这表明通过 PC Agent-E 框架学习到的计算机操作知识和规划能力，具有一定的<span class="concept">普适性</span>，能够迁移到不同的操作系统环境中。尽管提升幅度不如在Windows上那么巨大，但这无疑为训练更通用的GUI代理带来了积极信号。</p>
+                <p>值得注意的是，在OSWorld的“不可行任务”评估中，较弱的基座模型反而取得了更高的分数。这再次印证了之前提到的“不可行任务作弊”问题，并提示未来需要为这类任务设计更鲁棒的评估标准，例如评估代理声明任务不可行时的“理由”是否合理。</p>
+            </section>
+
+            <section id="contributions">
+                <h2>核心贡献：三大亮点照亮前路</h2>
+                <p>该研究的核心贡献可以总结为以下三点，它们共同推动了计算机操作智能代理领域的发展：</p>
+                <ol class="list-decimal list-inside space-y-2 pl-4">
+                    <li><strong>提出 Trajectory Boost 方法：</strong> 一种简单而高效的数据合成方法，通过利用强大模型的推理能力，为人类轨迹的每一步生成多样化的备选行动决策，显著提升了训练数据的质量和多样性。这是实现数据高效训练的关键。</li>
+                    <li><strong>发布 WindowsAgentArena-V2 基准：</strong> 改进了原有的Windows操作任务评估基准，解决了评估依赖、不可行任务作弊、初始状态不稳定和评估函数缺陷等问题，为Windows环境下的GUI代理提供了更公平、更可靠的“试炼场”。</li>
+                    <li><strong>开发 PC Agent-E 模型：</strong> 一款在Windows计算机操作任务上达到SOTA（State-of-the-Art）水平的开源模型。它以极高的数据效率（仅312条增强轨迹）超越了强大的闭源模型，并展现了良好的跨平台泛化能力，为后续研究提供了宝贵的模型和经验。</li>
+                </ol>
+            </section>
+
+            <section id="conclusion">
+                <h2>总结与展望：智能操作的未来已来</h2>
+                <p>PC Agent-E 的研究有力地证明了一个核心观点：<strong class="highlight">复杂而强大的计算机操作能力，可以通过数量惊人地少但质量极高、多样性丰富的轨迹数据来激发。</strong> “轨迹增强”（Trajectory Boost）作为一种创新的数据赋能手段，为解决智能代理训练中的“数据饥渴症”提供了一条极具潜力的途径。它启示我们，在追求更大模型的道路上，精细化、智能化地利用和增强现有数据，或许是通往更高智能水平的另一条捷径。</p>
+                <p>展望未来，随着强化学习（RL）在复杂推理任务中不断取得突破，将其应用于长程计算机操作任务已成为趋势。然而，当前基础模型的计算机操作能力仍有较大提升空间。研究者认为，高质量的预训练和后训练数据收集对于打造真正智能的数字世界代理依然至关重要。未来，<span class="concept">强化学习（RL）与监督微调（SFT）的协同发展</span>，相互补充、相互促进，将可能成为推动计算机操作智能代理走向成熟的关键。</p>
+                <p>PC Agent-E 的探索，无疑为这个激动人心的未来，迈出了坚实而富有启发性的一步。它不仅提供了一个高效的训练框架和强大的开源模型，更重要的是，它所蕴含的关于数据、模型与智能之间关系的深刻洞见，将持续激励着后续的研究者。</p>
+            </section>
+        </main>
+
+        <footer class="mt-16 pt-8 pb-8 text-center bg-gray-800 text-gray-300 rounded-b-lg">
+            <p>&copy; 2025 GAIR-NLP &amp; AI 思辨者 (灵感源自论文作者与用户需求)</p>
+            <p class="text-sm mt-1">内容主要基于 arXiv:2505.13909v1 论文，动画与解读仅供学习与交流目的。</p>
+        </footer>
+    </div>
+
+    <script>
+        // Animation 1: PC Agent-E Framework Process
+        let sketchFramework = function(p) {
+            let playing = true;
+            let stages = [
+                { name: "1. 轨迹收集\n(Trajectory Collection)", x: 0, y: 50, w: 180, h: 60, color: [110, 190, 255] },
+                { name: "2. 思维补全\n(Thought Completion)", x: 0, y: 150, w: 180, h: 60, color: [130, 210, 255] },
+                { name: "3. 轨迹增强\n(Trajectory Boost)", x: 0, y: 250, w: 180, h: 60, color: [150, 230, 255] },
+                { name: "4. 智能体训练\n(Agent Training)", x: 0, y: 350, w: 180, h: 60, color: [170, 250, 255] }
+            ];
+            let currentStage = 0;
+            let progress = 0; // 0 to 1 for animation between stages
+
+            p.setup = function() {
+                const container = p.select('#frameworkCanvasContainer');
+                let canvas = p.createCanvas(container.width, container.height);
+                canvas.parent('frameworkCanvasContainer');
+                p.textAlign(p.CENTER, p.CENTER);
+                p.textSize(13);
+                p.select('#frameworkPlayPause').mousePressed(() => { playing = !playing; if(playing) p.loop(); else p.noLoop(); });
+                if (!playing) p.noLoop();
+                p.frameRate(30);
+                 stages.forEach(stage => stage.x = p.width / 2); // Center stages horizontally
+            };
+
+            p.draw = function() {
+                p.background(249, 250, 251); // Tailwind gray-50
+
+                for (let i = 0; i < stages.length; i++) {
+                    let stage = stages[i];
+                    p.fill(stage.color[0], stage.color[1], stage.color[2], i <= currentStage ? 255 : 100);
+                    p.stroke(50);
+                    p.rectMode(p.CENTER);
+                    p.rect(stage.x, stage.y, stage.w, stage.h, 10);
+                    p.fill(0);
+                    p.noStroke();
+                    p.text(stage.name, stage.x, stage.y);
+
+                    if (i < stages.length - 1) {
+                        p.stroke(50, i < currentStage ? 255 : 100);
+                        p.strokeWeight(3);
+                        p.line(stage.x, stage.y + stage.h / 2, stages[i+1].x, stages[i+1].y - stages[i+1].h / 2);
+                        // Arrow head
+                        if (i < currentStage || (i === currentStage && progress > 0.5)) {
+                            p.push();
+                            p.translate(stages[i+1].x, stages[i+1].y - stages[i+1].h / 2);
+                            p.fill(50);
+                            p.noStroke();
+                            p.triangle(0, 0, -5, -10, 5, -10);
+                            p.pop();
+                        }
+                    }
+                }
+                
+                if (playing) {
+                    progress += 0.02;
+                    if (progress >= 1) {
+                        progress = 0;
+                        currentStage = (currentStage + 1) % stages.length;
+                         if (currentStage === 0 && progress === 0) { // Loop completed
+                            // Reset or pause
+                        }
+                    }
+                }
+                // Animate flow
+                if (currentStage < stages.length -1) {
+                    let from = stages[currentStage];
+                    let to = stages[currentStage+1];
+                    let particleX = p.lerp(from.x, to.x, progress);
+                    let particleY = p.lerp(from.y + from.h/2, to.y - to.h/2, progress);
+                    p.fill(255,0,0);
+                    p.noStroke();
+                    p.ellipse(particleX, particleY, 10, 10);
+                }
+            };
+             p.windowResized = function() {
+                const container = p.select('#frameworkCanvasContainer');
+                p.resizeCanvas(container.width, container.height);
+                stages.forEach(stage => stage.x = p.width / 2);
+            };
+        };
+        new p5(sketchFramework);
+
+        // Animation 2: Trajectory Boost
+        let sketchBoost = function(p) {
+            let playing = true;
+            let angle = 0;
+            let numBranches = 3;
+            let slider;
+
+            p.setup = function() {
+                const container = p.select('#boostCanvasContainer');
+                let canvas = p.createCanvas(container.width, container.height);
+                canvas.parent('boostCanvasContainer');
+                p.select('#boostPlayPause').mousePressed(() => { playing = !playing; if(playing) p.loop(); else p.noLoop(); });
+                slider = p.select('#boostBranchSlider');
+                slider.input(() => { 
+                    numBranches = parseInt(slider.value());
+                    p.select('#boostBranchValue').html(numBranches);
+                    if (!playing) p.redraw();
+                });
+                numBranches = parseInt(slider.value());
+                p.select('#boostBranchValue').html(numBranches);
+                if (!playing) p.noLoop();
+                p.frameRate(30);
+            };
+
+            p.draw = function() {
+                p.background(249, 250, 251);
+                p.translate(p.width / 2, p.height * 0.8); // Start from bottom center
+
+                // Main trunk (human trajectory)
+                p.stroke(50, 150, 50); // Green
+                p.strokeWeight(8);
+                p.line(0, 0, 0, -p.height * 0.4);
+                p.fill(50,150,50);
+                p.noStroke();
+                p.ellipse(0, -p.height*0.4, 20,20); // Node for human action
+                p.fill(0);
+                p.textAlign(p.CENTER, p.BOTTOM);
+                p.textSize(12);
+                p.text("原始人类轨迹步骤", 0, -p.height * 0.4 - 15);
+
+
+                // Boosted branches (Claude actions)
+                let branchLength = p.height * 0.3;
+                let startAngle = -p.PI / 2 - ( (numBranches-1) * p.PI / (numBranches*2.5) )/2; // Centering branches
+
+                for (let i = 0; i < numBranches; i++) {
+                    let currentAngle = startAngle + i * (p.PI / (numBranches*2.5));
+                    let endX = branchLength * p.cos(currentAngle);
+                    let endY = branchLength * p.sin(currentAngle);
+                    
+                    p.stroke(0, 150, 255, p.map(p.sin(angle + i*p.PI/4), -1, 1, 100, 255) ); // Blue, animated alpha
+                    p.strokeWeight(4);
+                    p.line(0, -p.height * 0.4, endX, -p.height * 0.4 + endY);
+                    
+                    p.fill(0,150,255);
+                    p.noStroke();
+                    p.ellipse(endX, -p.height * 0.4 + endY, 15,15);
+                     if (i === Math.floor(numBranches/2)) {
+                        p.fill(0);
+                        p.textAlign(p.CENTER, p.BOTTOM);
+                        p.text(`增强行动 ${i+1}`, endX, -p.height * 0.4 + endY -10);
+                    }
+                }
+                
+                p.fill(220,50,50);
+                p.noStroke();
+                p.ellipse(0, -p.height*0.4, 30,30); // Central "Boost" node
+                p.fill(255);
+                p.textAlign(p.CENTER, p.CENTER);
+                p.textSize(10);
+                p.text("Boost!", 0, -p.height * 0.4);
+
+
+                if (playing) {
+                    angle += 0.05;
+                }
+            };
+            p.windowResized = function() {
+                const container = p.select('#boostCanvasContainer');
+                p.resizeCanvas(container.width, container.height);
+            };
+        };
+        new p5(sketchBoost);
+
+        // Animation 3: Data Efficiency
+        let sketchDataEfficiency = function(p) {
+            let playing = true;
+            let progress = 0; // 0 to 1
+            let phase = 0; // 0: trajectories, 1: instances, 2: performance
+
+            p.setup = function() {
+                const container = p.select('#dataEfficiencyCanvasContainer');
+                let canvas = p.createCanvas(container.width, container.height);
+                canvas.parent('dataEfficiencyCanvasContainer');
+                p.select('#dataEfficiencyPlayPause').mousePressed(() => { playing = !playing; if(playing) p.loop(); else p.noLoop(); });
+                if (!playing) p.noLoop();
+                p.frameRate(30);
+                p.textAlign(p.CENTER, p.CENTER);
+            };
+
+            p.draw = function() {
+                p.background(249, 250, 251);
+                let centerX = p.width / 2;
+                let centerY = p.height / 2;
+
+                if (phase === 0) { // Show 312 trajectories
+                    p.fill(100, 100, 255);
+                    let rectSize = p.lerp(10, 50, progress);
+                    p.rectMode(p.CENTER);
+                    p.rect(centerX, centerY, rectSize, rectSize, 5);
+                    p.fill(0);
+                    p.textSize(16);
+                    p.text("312 人类轨迹", centerX, centerY + 40);
+                } else if (phase === 1) { // Transform to 27k instances
+                    p.fill(50, 200, 50);
+                    let numDots = p.int(p.lerp(1, 100, progress));
+                     for(let i=0; i<numDots; i++) {
+                        p.ellipse(centerX + p.random(-80,80), centerY + p.random(-50,50), 5,5);
+                    }
+                    p.fill(0);
+                    p.textSize(16);
+                    p.text("增强为 ~27K 训练实例", centerX, centerY + 70);
+                } else if (phase === 2) { // Show SOTA performance
+                    p.fill(255, 100, 100);
+                    let barHeight = p.lerp(0, p.height * 0.6, progress);
+                    p.rectMode(p.CORNER);
+                    p.rect(centerX - 25, centerY + p.height*0.3 - barHeight, 50, barHeight, 5);
+                    p.fill(0);
+                    p.textSize(16);
+                    p.text("SOTA 性能!", centerX, centerY - p.height*0.3 - 20);
+                }
+
+                if (playing) {
+                    progress += 0.02;
+                    if (progress >= 1) {
+                        progress = 0;
+                        phase = (phase + 1) % 3;
+                    }
+                }
+            };
+             p.windowResized = function() {
+                const container = p.select('#dataEfficiencyCanvasContainer');
+                p.resizeCanvas(container.width, container.height);
+            };
+        };
+        new p5(sketchDataEfficiency);
+
+        // Animation 4: Benchmark V2 Improvements
+        let sketchBenchmark = function(p) {
+            let playing = true;
+            let showV2 = false; // Toggle between V1 issues and V2 solutions
+            let issues = [
+                { name: "评估依赖", y: p.height * 0.2, solved: false, colorV1: [255,100,100], colorV2: [100,255,100], solution: "VM快照恢复" },
+                { name: "不可行任务作弊", y: p.height * 0.4, solved: false, colorV1: [255,100,100], colorV2: [100,255,100], solution: "移除不可行任务" },
+                { name: "初始状态不稳", y: p.height * 0.6, solved: false, colorV1: [255,100,100], colorV2: [100,255,100], solution: "验证+重试" },
+                { name: "评估规则缺陷", y: p.height * 0.8, solved: false, colorV1: [255,100,100], colorV2: [100,255,100], solution: "修正+人工校验" }
+            ];
+            let animationProgress = 0; // 0 to 1 for transition
+
+            p.setup = function() {
+                const container = p.select('#benchmarkCanvasContainer');
+                let canvas = p.createCanvas(container.width, container.height);
+                canvas.parent('benchmarkCanvasContainer');
+                p.textAlign(p.LEFT, p.CENTER);
+                p.textSize(14);
+                p.select('#benchmarkPlayPause').mousePressed(() => { playing = !playing; if(playing) p.loop(); else p.noLoop(); });
+                p.select('#benchmarkToggle').mousePressed(() => { 
+                    showV2 = !showV2; 
+                    issues.forEach(iss => iss.solved = false); // Reset solved state for animation
+                    animationProgress = 0;
+                    if (!playing) p.redraw(); 
+                });
+                if (!playing) p.noLoop();
+                p.frameRate(30);
+                 // Initial y positions based on current height
+                issues.forEach((iss, i) => iss.y = (p.height / (issues.length + 1)) * (i + 1));
+            };
+
+            p.draw = function() {
+                p.background(249, 250, 251);
+                p.textSize(18);
+                p.textAlign(p.CENTER);
+                p.fill(0);
+                p.text(showV2 ? "WindowsAgentArena-V2 改进点" : "WindowsAgentArena V1 问题点", p.width/2, 30);
+
+                issues.forEach((issue, index) => {
+                    let currentY = issue.y;
+                    let targetColor = showV2 ? issue.colorV2 : issue.colorV1;
+                    let displayColor = targetColor;
+                    
+                    if (showV2 && !issue.solved) {
+                        displayColor = p.lerpColor(p.color(issue.colorV1[0],issue.colorV1[1],issue.colorV1[2]), p.color(issue.colorV2[0],issue.colorV2[1],issue.colorV2[2]), animationProgress);
+                    }
+
+                    p.fill(displayColor[0], displayColor[1], displayColor[2], 180);
+                    p.noStroke();
+                    p.rectMode(p.CORNER);
+                    p.rect(50, currentY - 20, p.width - 100, 40, 8);
+
+                    p.fill(0);
+                    p.textAlign(p.LEFT, p.CENTER);
+                    p.textSize(14);
+                    p.text(issue.name, 65, currentY);
+
+                    if (showV2) {
+                        p.textAlign(p.RIGHT, p.CENTER);
+                        p.fill(0,100,0); // Green for solution text
+                        p.text("✅ " + issue.solution, p.width - 65, currentY);
+                    } else {
+                         p.textAlign(p.RIGHT, p.CENTER);
+                         p.fill(150,0,0);
+                         p.text("❌ 问题", p.width - 65, currentY);
+                    }
+                });
+
+                if (playing && showV2 && animationProgress < 1) {
+                    animationProgress += 0.05;
+                    if(animationProgress >=1) {
+                        animationProgress = 1;
+                        issues.forEach(iss => iss.solved = true); // Mark as solved after animation
+                    }
+                } else if (playing && !showV2 && animationProgress < 1) { // For V1, could just be static
+                    animationProgress = 1; // No transition needed for V1 typically
+                }
+            };
+            p.windowResized = function() {
+                const container = p.select('#benchmarkCanvasContainer');
+                p.resizeCanvas(container.width, container.height);
+                issues.forEach((iss, i) => iss.y = (p.height / (issues.length + 1)) * (i + 1));
+            };
+        };
+        new p5(sketchBenchmark);
+
+        // Animation 5: Performance Bar Chart
+        let sketchPerformance = function(p) {
+            let playing = true;
+            let barData = [
+                { label: "Qwen2.5-VL\n(基座)", value: 14.9, targetValue: 14.9, color: [150, 150, 255] },
+                { label: "Claude 3.7 Sonnet\n(扩展思维)", value: 0, targetValue: 35.4, color: [255, 150, 150] },
+                { label: "PC Agent-E\n(本文模型)", value: 0, targetValue: 36.0, color: [100, 220, 100] }
+            ];
+            let maxValue = 40; // For y-axis scaling
+            let animationProgress = 0; // For PC Agent-E's 141% text
+
+            p.setup = function() {
+                const container = p.select('#performanceCanvasContainer');
+                let canvas = p.createCanvas(container.width, container.height);
+                canvas.parent('performanceCanvasContainer');
+                p.select('#performancePlayPause').mousePressed(() => { playing = !playing; if(playing) p.loop(); else p.noLoop(); });
+                if (!playing) p.noLoop();
+                p.frameRate(30);
+            };
+
+            p.draw = function() {
+                p.background(249, 250, 251);
+                let barWidth = (p.width * 0.8) / barData.length / 1.5;
+                let spacing = barWidth * 0.5;
+                let chartBaseY = p.height * 0.85;
+                let chartTopY = p.height * 0.15;
+                let chartHeight = chartBaseY - chartTopY;
+
+                // Draw Y-axis
+                p.stroke(0);
+                p.strokeWeight(1);
+                p.line(p.width * 0.1, chartBaseY, p.width * 0.1, chartTopY);
+                p.fill(0);
+                p.noStroke();
+                p.textAlign(p.RIGHT, p.CENTER);
+                p.textSize(12);
+                for (let i = 0; i <= maxValue; i += 10) {
+                    let y = p.map(i, 0, maxValue, chartBaseY, chartTopY);
+                    p.line(p.width*0.1 - 5, y, p.width*0.1, y);
+                    p.text(i + "%", p.width*0.1 - 10, y);
+                }
+                p.textAlign(p.CENTER, p.CENTER);
+                p.push();
+                p.translate(p.width*0.1 - 40, chartTopY + chartHeight/2);
+                p.rotate(-p.PI/2);
+                p.text("任务成功率", 0,0);
+                p.pop();
+
+
+                // Draw bars
+                barData.forEach((bar, index) => {
+                    if (playing && bar.value < bar.targetValue) {
+                        bar.value += bar.targetValue/60; // Animate growth, approx 1 sec
+                        if (bar.value > bar.targetValue) bar.value = bar.targetValue;
+                    } else if (!playing && bar.value < bar.targetValue) {
+                        bar.value = bar.targetValue; // Instantly set if not playing
+                    }
+
+
+                    let x = p.width * 0.15 + index * (barWidth + spacing);
+                    let h = p.map(bar.value, 0, maxValue, 0, chartHeight);
+                    
+                    p.fill(bar.color[0], bar.color[1], bar.color[2]);
+                    p.noStroke();
+                    p.rect(x, chartBaseY - h, barWidth, h, 5, 5, 0, 0);
+
+                    p.fill(0);
+                    p.textSize(12);
+                    p.textAlign(p.CENTER, p.TOP);
+                    p.text(bar.label, x + barWidth / 2, chartBaseY + 5);
+                    p.textSize(14);
+                    p.text(bar.value.toFixed(1) + "%", x + barWidth / 2, chartBaseY - h - 20);
+                });
+
+                // Highlight 141% improvement for PC Agent-E
+                if (barData[2].value >= barData[2].targetValue * 0.9) { // Show when bar is almost full
+                     if (playing && animationProgress < 1) animationProgress += 0.02;
+                     else if (!playing) animationProgress = 1;
+
+                    let pcAgentE_X = p.width * 0.15 + 2 * (barWidth + spacing) + barWidth / 2;
+                    let pcAgentE_Y = chartBaseY - p.map(barData[2].targetValue, 0, maxValue, 0, chartHeight) - 40;
+                    p.fill(220, 20, 20, p.map(animationProgress, 0, 1, 0, 255));
+                    p.textSize(16);
+                    p.textStyle(p.BOLD);
+                    p.text("相对基座提升141%!", pcAgentE_X, pcAgentE_Y);
+                    p.textStyle(p.NORMAL);
+                }
+                 if (playing && barData.every(b => b.value >= b.targetValue)) {
+                    // Could add a slight delay then reset if looping animation is desired
+                }
+
+            };
+             p.windowResized = function() {
+                const container = p.select('#performanceCanvasContainer');
+                p.resizeCanvas(container.width, container.height);
+            };
+        };
+        new p5(sketchPerformance);
+
+    </script>
+</body>
+</html>

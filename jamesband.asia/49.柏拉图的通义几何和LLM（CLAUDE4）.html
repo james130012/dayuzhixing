@@ -1,0 +1,1225 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>突破向量边界：vec2vec与文本嵌入的通用几何学</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
+    <style>
+        /* Inter font and base styling */
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+            background-color: #010409; /* Very dark blue, almost black */
+            color: #e6edf3; /* Light grey for text */
+            line-height: 1.7;
+        }
+        /* Styling for special text elements */
+        .concept { color: #58a6ff; font-style: italic; } /* Light blue */
+        .highlight { color: #f0a050; font-weight: bold; } /* Orange/Amber */
+        .formula {
+            font-family: 'Courier New', Courier, monospace;
+            background-color: #0d1117; /* Darker background for formula block */
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 0.5rem; /* 8px */
+            border: 1px solid #30363d; /* Dark grey border */
+            white-space: pre-wrap; /* Preserve line breaks and spaces */
+            text-align: left; /* Align formula text to the left */
+            font-size: 0.9rem;
+        }
+        /* Styling for animation containers */
+        .animation-container {
+            width: 100%;
+            max-width: 580px; /* Max width as per p5 canvas */
+            height: 360px; /* Height as per p5 canvas */
+            margin: 1.5rem auto; /* 20px auto */
+            border: 1px solid #30363d;
+            border-radius: 0.5rem;
+            overflow: hidden; /* Ensure p5 canvas fits */
+            background-color: #010409; /* Match body background or slightly different */
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        /* Styling for control elements */
+        .controls {
+            text-align: center;
+            margin-bottom: 1.5rem;
+            padding: 0.5rem;
+        }
+        .controls button, .controls input[type="range"] {
+            margin: 0.3rem; /* 5px */
+            padding: 0.6rem 1rem; /* 8px 15px */
+            background-color: #238636; /* Green */
+            color: white;
+            border: none;
+            border-radius: 0.375rem; /* 6px */
+            cursor: pointer;
+            transition: background-color 0.2s ease-in-out;
+            font-size: 0.9rem;
+        }
+        .controls button:hover { background-color: #2ea043; } /* Lighter green */
+        .controls label { margin-right: 0.3rem; color: #c9d1d9; }
+        .controls input[type="range"] {
+            vertical-align: middle;
+            accent-color: #58a6ff; /* Blue for range slider */
+        }
+        /* Background canvas container */
+        #backgroundCanvasContainer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -1; /* Place it behind all content */
+        }
+        /* Article typography */
+        article h2 {
+            font-size: 1.875rem; /* text-3xl */
+            font-weight: 600;
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            border-bottom: 1px solid #30363d;
+            padding-bottom: 0.5rem;
+            color: #58a6ff; /* Light blue for headings */
+        }
+        article h3 {
+            font-size: 1.5rem; /* text-2xl */
+            font-weight: 600;
+            margin-top: 1.75rem;
+            margin-bottom: 0.75rem;
+            color: #8b949e; /* Lighter grey for subheadings */
+        }
+        article p, article ul, article ol {
+            margin-bottom: 1rem;
+            color: #c9d1d9; /* Slightly lighter grey for paragraph text */
+        }
+        article ul, article ol {
+            padding-left: 1.5rem; /* More subtle indent */
+        }
+        article li { margin-bottom: 0.5rem; }
+        /* Custom container to constrain width */
+        .container-custom {
+            max-width: 900px;
+            margin-left: auto;
+            margin-right: auto;
+            padding: 1rem; /* p-4 */
+        }
+        @media (min-width: 768px) { /* md breakpoint */
+            .container-custom {
+                padding: 2rem; /* md:p-8 */
+            }
+        }
+        /* Footer styling */
+        footer {
+            border-top: 1px solid #30363d;
+            padding-top: 1.5rem;
+            margin-top: 2.5rem;
+            text-align: center;
+            font-size: 0.875rem; /* text-sm */
+            color: #8b949e; /* Grey for footer text */
+        }
+        footer p { margin-bottom: 0.5rem; }
+    </style>
+</head>
+<body class="antialiased">
+    <div id="backgroundCanvasContainer"></div>
+
+    <div class="container-custom min-h-screen">
+        <header class="text-center mb-12 pt-8">
+            <h1 class="text-4xl md:text-5xl font-bold mb-3 text-sky-400">突破向量边界：vec2vec与文本嵌入的通用几何学</h1>
+            <p class="text-lg text-gray-400">论文作者：Rishi Jha, Collin Zhang, Vitaly Shmatikov, John X. Morris</p>
+            <p class="text-md text-gray-500">康奈尔大学计算机科学系</p>
+            <p class="mt-6 text-xl text-amber-400">解读：基于"利用嵌入的通用几何学"这一突破性研究</p>
+        </header>
+
+        <main>
+            <article>
+                <section id="intro-embedding-problem">
+                    <h2>引言：嵌入空间的巴别塔困境</h2>
+                    <p>在现代自然语言处理的宏伟建筑中，<span class="concept">文本嵌入</span>就像是语言理解的基石。从BERT到GPT，从GTR到GTE，每个模型都在构建自己独特的语义表示空间。然而，这些看似相似的模型却创造出了彼此<strong class="highlight">完全不兼容</strong>的向量空间，就像古代巴别塔的语言混乱一样，不同模型之间无法直接交流。</p>
+                    <p>康奈尔大学的研究团队带来了一个革命性的解决方案：<strong class="highlight">vec2vec</strong>——世界上第一个能够在<strong>没有配对数据、没有编码器、没有预定义匹配集合</strong>的情况下，实现文本嵌入跨空间翻译的方法。这项研究不仅在技术上实现了重大突破，更揭示了一个深刻的理论基础：<span class="concept">强柏拉图表示假说</span>。</p>
+                    <p>想象一下，如果我们能够建立一个"通用翻译器"，让所有不同的嵌入模型都能够相互理解和交流，那将会带来怎样的可能性？同时，这也带来了前所未有的安全挑战：仅凭访问嵌入向量，攻击者就能够提取出敏感的原始文档信息。让我们深入探索这个既充满机遇又暗藏风险的新世界。</p>
+                </section>
+
+                <section id="platonic-hypothesis">
+                    <h2>第一章：柏拉图的数字洞穴——通用表示的哲学</h2>
+                    <p><span class="concept">柏拉图表示假说</span>最初由Huh等人提出，认为足够大的图像模型会收敛到相同的潜在表示。康奈尔团队将这一假说推向了更激进的境界，提出了<strong class="highlight">强柏拉图表示假说</strong>：</p>
+                    <p class="formula">具有相同目标和模态、但不同数据和架构的神经网络，
+会收敛到一个通用的潜在空间，使得它们各自表示之间的翻译可以在
+没有任何成对对应关系的情况下学习。</p>
+                    <p>这个假说如同柏拉图的理念世界：在我们看到的各种不同嵌入模型背后，存在着一个<span class="concept">通用的语义结构</span>。就像所有的"圆"都是对理念中完美圆形的不完美模仿，所有的文本嵌入模型都在试图逼近这个理想的语义空间。</p>
+                    <p>研究团队通过大量实验验证了这一假说。他们发现，即使是架构完全不同的模型（T5与BERT）、参数量相差巨大的模型（1亿参数vs 2.8亿参数）、训练数据集完全不同的模型，它们的嵌入空间都可以通过学习到的映射函数实现高质量的相互翻译，<strong class="highlight">余弦相似度高达0.92</strong>，在8000个随机排列的嵌入上实现完美匹配。</p>
+                    <div id="embeddingSpaceAnimation" class="animation-container"></div>
+                    <div class="controls">
+                        <button id="esToggleModels" class="bg-blue-600 hover:bg-blue-700">切换模型对比</button>
+                        <label for="esSimilarity">相似度阈值:</label>
+                        <input type="range" id="esSimilarity" min="0.1" max="1.0" value="0.5" step="0.05">
+                    </div>
+                    <p class="text-sm text-gray-400 text-center">动画演示：展示两个不同的嵌入空间（用不同颜色的点云表示），初始状态下它们看起来完全不相关。但当我们应用vec2vec学习到的映射后，这些看似混乱的点开始找到它们的对应关系，最终形成高度一致的结构。调节相似度阈值可以观察不同质量的翻译效果。</p>
+                </section>
+
+                <section id="vec2vec-methodology">
+                    <h2>第二章：架设桥梁——vec2vec的技术创新</h2>
+                    <p>vec2vec的核心创新在于设计了一个<span class="concept">模块化架构</span>，巧妙地结合了<strong class="highlight">对抗损失</strong>和<strong class="highlight">循环一致性</strong>。这个架构包含几个关键组件：</p>
+                    <ul>
+                        <li><strong>输入适配器 (A₁, A₂)</strong>：将不同编码器的嵌入转换为通用潜在表示</li>
+                        <li><strong>共享主干网络 (T)</strong>：提取通用潜在嵌入的核心变换</li>
+                        <li><strong>输出适配器 (B₁, B₂)</strong>：将通用表示转换回特定编码器空间</li>
+                    </ul>
+                    <p>翻译函数的数学表达简洁而优雅：</p>
+                    <p class="formula">F₁ = B₂ ∘ T ∘ A₁  (从空间1到空间2)
+F₂ = B₁ ∘ T ∘ A₂ (从空间2到空间1)
+R₁ = B₁ ∘ T ∘ A₁ (空间1的重构)
+R₂ = B₂ ∘ T ∘ A₂ (空间2的重构)</p>
+                    <p>训练过程采用三种互补的损失函数：</p>
+                    <ul>
+                        <li><strong>重构损失 (L_rec)</strong>：确保嵌入经过映射后能够准确还原</li>
+                        <li><strong>循环一致性损失 (L_CC)</strong>：保证翻译的可逆性，A→B→A应该回到原点</li>
+                        <li><strong>向量空间保持损失 (L_VSP)</strong>：维持嵌入间的几何关系不变</li>
+                    </ul>
+                    <p>特别值得注意的是，与图像处理不同，嵌入向量没有空间偏置性，因此vec2vec使用<span class="concept">多层感知机(MLP)</span>配合残差连接、层归一化和SiLU非线性函数，而非传统的卷积神经网络。</p>
+                    <div id="vec2vecArchitectureAnimation" class="animation-container"></div>
+                    <div class="controls">
+                        <button id="vaPlayPause" class="bg-purple-600 hover:bg-purple-700">播放/暂停翻译过程</button>
+                        <button id="vaShowLoss" class="bg-indigo-600 hover:bg-indigo-700">显示损失函数</button>
+                    </div>
+                    <p class="text-sm text-gray-400 text-center">动画演示：可视化vec2vec的完整翻译流程。观察一个嵌入向量如何通过输入适配器、共享主干网络和输出适配器的处理，最终转换到目标空间。同时展示三种损失函数如何协同工作，确保翻译的质量和一致性。</p>
+                </section>
+
+                <section id="translation-performance">
+                    <h2>第三章：量化奇迹——翻译性能的科学验证</h2>
+                    <p>研究团队采用三个关键指标来评估vec2vec的翻译质量：</p>
+                    <ul>
+                        <li><strong>平均余弦相似度</strong>：衡量翻译向量与目标向量的接近程度</li>
+                        <li><strong>Top-1准确率</strong>：翻译结果在候选目标中排名第一的比例</li>
+                        <li><strong>平均排名</strong>：目标向量在翻译结果排序中的平均位置</li>
+                    </ul>
+                    <p>实验结果令人振奋：在分布内翻译任务中，vec2vec在某些模型对上达到了<strong class="highlight">0.92的余弦相似度</strong>、<strong class="highlight">100%的Top-1准确率</strong>和<strong class="highlight">接近1.0的平均排名</strong>。更令人惊讶的是，这些优异表现还延伸到了分布外数据上。</p>
+                    <p>特别值得关注的是跨骨干网络的翻译能力。当两个模型基于相同的骨干架构（如都基于BERT）时，即使是简单的基准方法也能取得不错的效果。但对于跨架构翻译（如T5到BERT），vec2vec显示出了压倒性的优势，而基准方法的表现几乎等同于随机猜测。</p>
+                    <p>研究还验证了vec2vec在多模态场景下的潜力。即使是CLIP这样的图像-文本多模态模型，vec2vec也能实现有效的翻译，尽管效果不如纯文本模型间的翻译。这进一步证实了<span class="concept">通用几何结构</span>的存在性。</p>
+                    <div id="performanceMetricsAnimation" class="animation-container"></div>
+                    <div class="controls">
+                        <button id="pmShowMetric" class="bg-teal-600 hover:bg-teal-700">切换指标显示</button>
+                        <label for="pmModelPair">模型对:</label>
+                        <input type="range" id="pmModelPair" min="0" max="4" value="0" step="1">
+                    </div>
+                    <p class="text-sm text-gray-400 text-center">动画演示：实时展示不同模型对的翻译性能指标。可以观察到同架构模型间的高相似性，以及跨架构翻译中vec2vec相对于基准方法的巨大优势。动画中的色彩变化直观地反映了翻译质量的高低。</p>
+                </section>
+
+                <section id="information-extraction">
+                    <h2>第四章：语义保持的验证——属性推理与文档还原</h2>
+                    <p>优秀的翻译不仅要保持几何结构，更要保持<strong class="highlight">语义内容</strong>。研究团队通过两种方法验证了vec2vec翻译的语义保持能力：</p>
+                    <h3>零样本属性推理</h3>
+                    <p>团队使用TweetTopic数据集（19个话题标签）和MIMIC医疗记录数据集（2673个疾病描述）进行测试。结果显示，基于翻译嵌入的属性推理效果<strong class="highlight">一致优于朴素基准</strong>，在某些情况下甚至超过了理想零样本基准。</p>
+                    <p>特别令人印象深刻的是在医疗领域的表现。尽管像"牙槽骨膜炎"这样的专业医学术语从未出现在训练数据中，vec2vec依然能够保持这些概念的语义完整性，证明了其潜在空间确实捕获了<span class="concept">通用语义结构</span>。</p>
+                    <h3>零样本文档逆向工程</h3>
+                    <p>更令人震惊的是文档还原能力。研究团队使用现成的零样本逆向工程方法，仅基于翻译后的嵌入就能够提取出原始文档信息，成功率高达<strong class="highlight">80%</strong>。这些逆向工程能够提取出：</p>
+                    <ul>
+                        <li>个人和公司名称</li>
+                        <li>重要日期信息</li>
+                        <li>财务数据</li>
+                        <li>设备故障报告</li>
+                        <li>甚至是午餐订单！</li>
+                    </ul>
+                    <div id="informationExtractionAnimation" class="animation-container"></div>
+                    <div class="controls">
+                        <button id="ieStartExtraction" class="bg-pink-600 hover:bg-pink-700">开始信息提取</button>
+                        <button id="ieToggleDataset" class="bg-rose-600 hover:bg-rose-700">切换数据集</button>
+                    </div>
+                    <p class="text-sm text-gray-400 text-center">动画演示：模拟信息提取过程。观察一个加密的嵌入向量如何通过vec2vec翻译和逆向工程，逐步暴露出原始文档的敏感信息。不同颜色的信息块代表不同类型的泄露内容（姓名、日期、财务等）。</p>
+                </section>
+
+                <section id="security-implications">
+                    <h2>第五章：潘多拉的魔盒——安全风险与防护思考</h2>
+                    <p>vec2vec的成功带来了一个令人深思的安全问题：<strong class="highlight">向量数据库的安全性可能被严重高估了</strong>。传统观念认为，嵌入向量只是原始文档的抽象表示，即使被窃取也不会泄露具体信息。然而，这项研究彻底颠覆了这一认知。</p>
+                    <h3>攻击场景分析</h3>
+                    <p>考虑以下现实场景：攻击者通过某种方式获得了一个企业内部向量数据库的dump文件。在vec2vec之前，这些向量几乎毫无价值。但现在，攻击者可以：</p>
+                    <ol>
+                        <li>使用公开可用的嵌入模型作为"已知空间"</li>
+                        <li>基于高层次的分布知识（如语言、领域）训练vec2vec</li>
+                        <li>将未知嵌入翻译到已知空间</li>
+                        <li>应用现有的逆向工程技术提取敏感信息</li>
+                    </ol>
+                    <h3>防护策略思考</h3>
+                    <p>面对这一挑战，我们需要重新思考向量数据库的安全架构：</p>
+                    <ul>
+                        <li><strong>差分隐私</strong>：在嵌入生成过程中注入控制性噪声</li>
+                        <li><strong>模型混淆</strong>：使用私有的、不可预测的嵌入架构</li>
+                        <li><strong>访问控制</strong>：严格限制对嵌入向量的直接访问</li>
+                        <li><strong>分布式存储</strong>：将嵌入向量分散存储，增加攻击难度</li>
+                    </ul>
+                    <p>然而，这些防护措施都可能影响嵌入的实用性。这提醒我们，在机器学习系统中，<span class="concept">效用性</span>和<span class="concept">隐私性</span>之间的权衡比我们想象的更加复杂。</p>
+                    <div id="securityAttackAnimation" class="animation-container"></div>
+                    <div class="controls">
+                        <button id="saSimulateAttack" class="bg-red-600 hover:bg-red-700">模拟攻击过程</button>
+                        <button id="saShowDefense" class="bg-orange-600 hover:bg-orange-700">显示防护策略</button>
+                        <label for="saNoiseLevel">防护强度:</label>
+                        <input type="range" id="saNoiseLevel" min="0" max="100" value="0" step="10">
+                    </div>
+                    <p class="text-sm text-gray-400 text-center">动画演示：可视化完整的安全攻击链条。从窃取向量数据库开始，展示攻击者如何使用vec2vec实现翻译，再通过逆向工程提取敏感信息。同时展示不同防护策略的效果，观察防护强度对信息泄露的影响。</p>
+                </section>
+
+                <section id="universal-geometry">
+                    <h2>第六章：几何直觉——理解通用表示的数学美学</h2>
+                    <p>vec2vec的成功揭示了一个深刻的数学真理：不同的嵌入模型虽然在表面上创建了不同的向量空间，但它们在深层次上遵循着相似的<span class="concept">几何原理</span>。这种通用几何可以用几个关键概念来理解：</p>
+                    <h3>拓扑等价性</h3>
+                    <p>虽然不同模型的嵌入空间在欧几里得意义下可能差异巨大，但它们在拓扑结构上具有相似性。相似的概念在不同空间中都会聚集在相近的区域，形成类似的"语义星系"。</p>
+                    <h3>流形假设</h3>
+                    <p>自然语言的语义结构可能遵循一个低维流形，不同的嵌入模型都在试图学习这个潜在流形的不同参数化。vec2vec实际上学习的是这些不同参数化之间的<span class="concept">坐标变换</span>。</p>
+                    <h3>对称性保持</h3>
+                    <p>研究中的<strong class="highlight">向量空间保持损失(VSP)</strong>确保翻译过程保持向量间的成对关系。这类似于几何变换中的等距映射，保证了语义结构的完整性。</p>
+                    <div id="geometryVisualizationAnimation" class="animation-container"></div>
+                    <div class="controls">
+                        <button id="gvRotateView" class="bg-lime-600 hover:bg-lime-700">旋转视角</button>
+                        <button id="gvShowTransform" class="bg-emerald-600 hover:bg-emerald-700">显示变换过程</button>
+                        <label for="gvDimension">观察维度:</label>
+                        <input type="range" id="gvDimension" min="2" max="3" value="2" step="1">
+                    </div>
+                    <p class="text-sm text-gray-400 text-center">动画演示：在低维空间中可视化通用几何概念。展示两个"星系"（代表不同的嵌入空间）如何通过连续变换对齐。观察者可以旋转视角，观察从2D到3D的维度变化，直观理解高维空间中的几何变换。</p>
+                </section>
+
+                <section id="conclusion-future">
+                    <h2>结语：站在新纪元的门槛</h2>
+                    <p>vec2vec的出现标志着文本嵌入技术进入了一个新纪元。这项研究不仅在技术上实现了突破，更在理论上为我们提供了全新的视角来理解神经网络表示学习的本质。</p>
+                    <p><strong class="highlight">强柏拉图表示假说</strong>的验证表明，在看似混乱的高维向量空间背后，确实存在着某种<span class="concept">通用的语义秩序</span>。这一发现具有深远的哲学和实践意义：</p>
+                    <p>从<strong class="highlight">哲学角度</strong>看，它呼应了柏拉图关于理念世界的古老思考——是否存在一个完美的、不变的语义理念世界，而所有的模型都在努力逼近？从<strong class="highlight">实践角度</strong>看，它为模型互操作性、知识迁移和表示学习开辟了新的可能性。</p>
+                    <p>然而，这项技术也带来了前所未有的安全挑战。它提醒我们，在人工智能快速发展的时代，我们必须同时关注技术的进步和潜在的风险。<span class="concept">技术的双刃剑特性</span>在vec2vec身上体现得淋漓尽致：它既是连接不同AI系统的桥梁，也是可能威胁数据安全的利器。</p>
+                    <p>展望未来，这项研究开启了多个激动人心的研究方向：更稳定的训练算法、跨模态的通用表示、更强的隐私保护机制，以及对通用几何结构更深层次的理论理解。我们正站在一个新纪元的门槛上，准备探索语义表示的终极奥秘。</p>
+                    <p>正如康奈尔团队所言，他们的结果只是"相互表示翻译的<strong class="highlight">下界</strong>"。随着算法的改进、架构的优化和方法论的完善，我们有理由相信，这个下界还将不断被突破，带我们走向一个更加互联、更加智能，但也更需要谨慎对待的AI未来。</p>
+                </section>
+            </article>
+        </main>
+
+        <footer>
+            <p>&copy; 2025 vec2vec与文本嵌入通用几何学解读。基于Rishi Jha等人在康奈尔大学的开创性研究。</p>
+            <p>本页面所有动画均为概念性演示，旨在辅助理解复杂的机器学习概念，不代表真实算法的精确实现。</p>
+        </footer>
+    </div>
+
+<script>
+    // --- Global Background Animation ---
+    let sketchBackground = function(p) {
+        let particles = [];
+        const numParticles = 100;
+        
+        p.setup = function() {
+            let canvas = p.createCanvas(p.windowWidth, p.windowHeight);
+            canvas.parent('backgroundCanvasContainer'); // Ensure this div exists
+            for (let i = 0; i < numParticles; i++) {
+                particles.push({
+                    x: p.random(p.width),
+                    y: p.random(p.height),
+                    size: p.random(1, 3),
+                    alpha: p.random(30, 100),
+                    speed: p.random(0.2, 0.8)
+                });
+            }
+            p.noStroke();
+        };
+        
+        p.draw = function() {
+            p.clear(); // Use clear() instead of background() for transparent background if needed
+            // Or p.background(1, 4, 9, 10); for a slightly transparent background to see particles trail
+            for (let particle of particles) {
+                // Subtle blue particles
+                p.fill(100, 150, 255, particle.alpha * (p.sin(p.frameCount * 0.01 + particle.x * 0.01) * 0.3 + 0.7));
+                p.ellipse(particle.x, particle.y, particle.size, particle.size);
+                particle.y += particle.speed;
+                if (particle.y > p.height) {
+                    particle.y = -10; // Reset off-screen top
+                    particle.x = p.random(p.width);
+                }
+            }
+        };
+        
+        p.windowResized = function() {
+            p.resizeCanvas(p.windowWidth, p.windowHeight);
+        };
+    };
+    new p5(sketchBackground);
+
+    // --- Animation 1: Embedding Space Visualization ---
+    let sketchEmbeddingSpace = function(p) {
+        let modelA = [];
+        let modelB = [];
+        let translated = [];
+        let showTranslation = false;
+        let similarityThreshold = 0.5;
+        
+        p.setup = function() {
+            let canvas = p.createCanvas(580, 360);
+            canvas.parent('embeddingSpaceAnimation');
+            
+            generateEmbeddings();
+            
+            // Ensure DOM elements are available
+            let esToggleModelsButton = p.select('#esToggleModels');
+            if (esToggleModelsButton) {
+                esToggleModelsButton.mousePressed(() => {
+                    showTranslation = !showTranslation;
+                    if (showTranslation) {
+                        translateEmbeddings();
+                    }
+                    p.redraw();
+                });
+            }
+
+            let esSimilaritySlider = p.select('#esSimilarity');
+            if (esSimilaritySlider) {
+                esSimilaritySlider.input(() => {
+                    similarityThreshold = parseFloat(esSimilaritySlider.value());
+                    if (showTranslation) {
+                        translateEmbeddings();
+                    }
+                    p.redraw();
+                });
+            }
+            
+            p.noLoop(); // Redraw only on interaction
+            p.redraw();
+        };
+        
+        function generateEmbeddings() {
+            modelA = [];
+            modelB = [];
+            for (let i = 0; i < 50; i++) {
+                modelA.push({
+                    x: p.random(50, 200) + p.random(-20, 20),
+                    y: p.random(50, 150) + p.random(-20, 20),
+                    id: i
+                });
+                modelB.push({
+                    x: p.random(300, 530) + p.sin(i * 0.5) * 30,
+                    y: p.random(100, 300) + p.cos(i * 0.7) * 40,
+                    id: i
+                });
+            }
+        }
+        
+        function translateEmbeddings() {
+            translated = [];
+            for (let i = 0; i < modelB.length; i++) {
+                // Ensure modelA[i] exists
+                if (modelA[i]) {
+                    let similarityFactor = p.noise(i * 0.1, similarityThreshold * 10); // Value between 0 and 1
+                    let effectiveSimilarity = p.lerp(0.3, 1.0, similarityFactor * similarityThreshold);
+
+                    translated.push({
+                        x: p.lerp(modelB[i].x, modelA[i].x + p.random(-30, 30) * (1 - effectiveSimilarity), effectiveSimilarity),
+                        y: p.lerp(modelB[i].y, modelA[i].y + p.random(-30, 30) * (1 - effectiveSimilarity), effectiveSimilarity),
+                        similarity: effectiveSimilarity,
+                        id: i
+                    });
+                }
+            }
+        }
+        
+        p.draw = function() {
+            p.background(1, 4, 9); // Dark background for canvas
+            
+            // Draw Model A
+            p.fill(100, 150, 255); // Blue
+            for (let point of modelA) {
+                p.ellipse(point.x, point.y, 8, 8);
+            }
+            p.fill(100, 150, 255);
+            p.textAlign(p.CENTER);
+            p.textSize(12);
+            p.text("模型A嵌入空间", 125, 30);
+            
+            if (!showTranslation) {
+                // Draw Model B (untranslated)
+                p.fill(255, 100, 100); // Red
+                for (let point of modelB) {
+                    p.ellipse(point.x, point.y, 8, 8);
+                }
+                p.fill(255, 100, 100);
+                p.text("模型B嵌入空间", 415, 30);
+                p.fill(200, 200, 200, 150);
+                p.text("点击按钮观察vec2vec翻译效果", p.width/2, p.height - 20);
+            } else {
+                // Draw Translated Model B
+                for (let point of translated) {
+                    let alpha = p.map(point.similarity, 0.3, 1.0, 80, 255);
+                    p.fill(100, 255, 100, alpha); // Green
+                    p.ellipse(point.x, point.y, 8, 8);
+                    
+                    // Draw lines if similarity is high enough and corresponding modelA point exists
+                    if (point.similarity > 0.4 && modelA[point.id]) {
+                        p.stroke(100, 255, 100, alpha * 0.6);
+                        p.line(modelA[point.id].x, modelA[point.id].y, point.x, point.y);
+                        p.noStroke();
+                    }
+                }
+                p.fill(100, 255, 100);
+                p.text("翻译后的模型B", 415, 30);
+                p.fill(200, 200, 200, 150);
+                p.text(`相似度: ${similarityThreshold.toFixed(2)}`, p.width/2, p.height - 20);
+            }
+        };
+    };
+    new p5(sketchEmbeddingSpace);
+
+    // --- Animation 2: vec2vec Architecture ---
+    let sketchArchitecture = function(p) {
+        let time = 0;
+        let playing = false;
+        let showLoss = false;
+        let inputVector = [];
+        let latentVector = [];
+        let outputVector = [];
+        
+        p.setup = function() {
+            let canvas = p.createCanvas(580, 360);
+            canvas.parent('vec2vecArchitectureAnimation');
+            
+            initializeVectors();
+            
+            let vaPlayPauseButton = p.select('#vaPlayPause');
+            if (vaPlayPauseButton) {
+                vaPlayPauseButton.mousePressed(() => {
+                    playing = !playing;
+                    if (playing) p.loop();
+                    else p.noLoop();
+                });
+            }
+            
+            let vaShowLossButton = p.select('#vaShowLoss');
+            if (vaShowLossButton) {
+                vaShowLossButton.mousePressed(() => {
+                    showLoss = !showLoss;
+                    p.redraw(); // Redraw to show/hide loss
+                });
+            }
+            
+            p.noLoop();
+            p.redraw();
+        };
+        
+        function initializeVectors() {
+            inputVector = Array.from({length: 8}, () => p.random(0.2, 1.0));
+            latentVector = Array.from({length: 6}, () => 0); // Start latent as 0
+            outputVector = Array.from({length: 8}, () => 0); // Start output as 0
+        }
+        
+        p.draw = function() {
+            p.background(1, 4, 9);
+            
+            if (playing) {
+                time += 0.02;
+                // Simulate transformation to latent space
+                for (let i = 0; i < latentVector.length; i++) {
+                    let targetLatentVal = 0;
+                    for(let j=0; j < inputVector.length; j++) {
+                        targetLatentVal += inputVector[j] * p.sin(i * 0.5 + j * 0.3 + time);
+                    }
+                    targetLatentVal = (p.sin(targetLatentVal) * 0.5 + 0.5); // Normalize to 0-1
+                    latentVector[i] = p.lerp(latentVector[i], targetLatentVal, 0.1);
+                }
+                // Simulate transformation to output space
+                for (let i = 0; i < outputVector.length; i++) {
+                     let targetOutputVal = 0;
+                    for(let j=0; j < latentVector.length; j++) {
+                        targetOutputVal += latentVector[j] * p.cos(i * 0.4 + j * 0.2 + time);
+                    }
+                    targetOutputVal = (p.cos(targetOutputVal) * 0.5 + 0.5); // Normalize to 0-1
+                    outputVector[i] = p.lerp(outputVector[i], targetOutputVal, 0.05);
+                }
+            }
+            
+            // Component positions
+            let compWidth = 100;
+            let compSpacing = 40;
+            let startX = (p.width - (3 * compWidth + 2 * compSpacing)) / 2;
+
+            drawComponent(startX + compWidth/2, 180, "输入\n适配器 A₁", inputVector, [100,150,255]);
+            drawComponent(startX + compWidth + compSpacing + compWidth/2, 180, "共享\n主干 T", latentVector, [150,255,100]);
+            drawComponent(startX + 2*compWidth + 2*compSpacing + compWidth/2, 180, "输出\n适配器 B₂", outputVector, [255,150,100]);
+            
+            drawDataFlowArrows(startX, compWidth, compSpacing);
+            
+            if (showLoss) {
+                drawLossFunctions();
+            }
+            
+            if (!playing && time === 0) { // Show initial message only if not played yet
+                p.fill(200, 200, 200, 150);
+                p.textAlign(p.CENTER);
+                p.textSize(12);
+                p.text("点击播放观察数据流动", p.width/2, p.height - 20);
+            }
+        };
+        
+        function drawComponent(x, y, label, vector, color) {
+            p.stroke(color[0], color[1], color[2], 200);
+            p.fill(20, 30, 50, 180); // Darker fill for components
+            p.rectMode(p.CENTER);
+            p.rect(x, y, 100, 140, 10); // Component box
+            
+            // Draw vector bars
+            let barMaxHeight = 80;
+            let barWidth = 60 / vector.length;
+            let totalBarWidth = vector.length * barWidth;
+            p.rectMode(p.CORNER);
+            for (let i = 0; i < vector.length; i++) {
+                let barHeightVal = vector[i] * (barMaxHeight * 0.8); // Max height for bars
+                let barX = x - totalBarWidth/2 + i * barWidth;
+                let barY = y - barMaxHeight/2 + (barMaxHeight - barHeightVal); // Align bottom
+                
+                p.fill(color[0], color[1], color[2], vector[i] * 200 + 55);
+                p.noStroke();
+                p.rect(barX, barY, barWidth - 2, barHeightVal);
+            }
+            
+            p.fill(230, 230, 230); // Lighter text for labels
+            p.textAlign(p.CENTER, p.CENTER);
+            p.textSize(12);
+            p.text(label, x, y + 45); // Label below bars
+        }
+        
+        function drawDataFlowArrows(startX, compWidth, compSpacing) {
+            p.stroke(100, 255, 150, 180); // Greenish arrows
+            p.strokeWeight(2.5);
+            // Arrow 1
+            let x1_end = startX + compWidth;
+            let x1_start_arrow = x1_end + compSpacing/2;
+            p.line(x1_end, 180, x1_start_arrow - 5, 180);
+            drawArrow(x1_start_arrow, 180, 10, [100,255,150]);
+            // Arrow 2
+            let x2_end = startX + compWidth + compSpacing + compWidth;
+            let x2_start_arrow = x2_end + compSpacing/2;
+            p.line(x2_end, 180, x2_start_arrow - 5, 180);
+            drawArrow(x2_start_arrow, 180, 10, [100,255,150]);
+
+            p.strokeWeight(1);
+            p.noStroke();
+        }
+        
+        function drawArrow(x, y, size, color) {
+            p.push();
+            p.translate(x, y);
+            p.fill(color[0], color[1], color[2]);
+            p.noStroke();
+            p.triangle(-size, -size/2, -size, size/2, 0, 0); // Pointing right
+            p.pop();
+        }
+        
+        function drawLossFunctions() {
+            p.fill(255, 200, 100, 200); // Yellowish box for loss functions
+            p.rectMode(p.CORNER);
+            p.rect(p.width - 160, 40, 150, 280, 10); // Positioned to the right
+            p.fill(10,20,30); // Dark text
+            p.textAlign(p.LEFT);
+            p.textSize(11);
+            p.text("损失函数:", p.width - 150, 60);
+            p.text("L_rec: 重构损失", p.width - 150, 90);
+            p.text("L_CC: 循环一致性", p.width - 150, 110);
+            p.text("L_VSP: 空间保持", p.width - 150, 130);
+            
+            // Simulate a loss graph
+            p.stroke(255, 80, 80, 220); // Red for graph line
+            p.noFill();
+            p.beginShape();
+            for (let i = 0; i < 100; i++) {
+                let x = p.width - 150 + i * 1.3; // Scale to fit width
+                let y_offset = playing ? p.sin(time * 2 + i * 0.1) * 15 + 20 : 30;
+                let y = 160 + y_offset;
+                p.vertex(x, y);
+            }
+            p.endShape();
+            p.noStroke();
+        }
+    };
+    new p5(sketchArchitecture);
+
+    // --- Animation 3: Performance Metrics ---
+    let sketchPerformanceMetrics = function(p) {
+        let currentMetricIdx = 0;
+        let currentModelPairIdx = 0;
+        const metricsData = [
+            {name: "余弦相似度", values: [0.92, 0.87, 0.75, 0.81, 0.78], color: [100, 255, 100], range: [0, 1]}, // Green
+            {name: "Top-1准确率", values: [1.0, 0.95, 0.91, 0.99, 0.84], color: [255, 200, 100], range: [0, 1]}, // Yellow
+            {name: "平均排名", values: [1.01, 1.18, 2.64, 1.02, 2.56], color: [255, 100, 150], range: [1, 5]} // Pink (lower is better)
+        ];
+        const modelPairNames = ["GTR-GTE", "GTR-Stella", "GTE-E5", "Granite-GTR", "GTE-E5(OOD)"]; // Added OOD for clarity
+        
+        p.setup = function() {
+            let canvas = p.createCanvas(580, 360);
+            canvas.parent('performanceMetricsAnimation');
+            
+            let pmShowMetricButton = p.select('#pmShowMetric');
+            if (pmShowMetricButton) {
+                pmShowMetricButton.mousePressed(() => {
+                    currentMetricIdx = (currentMetricIdx + 1) % metricsData.length;
+                    p.redraw();
+                });
+            }
+            
+            let pmModelPairSlider = p.select('#pmModelPair');
+            if (pmModelPairSlider) {
+                pmModelPairSlider.input(() => {
+                    currentModelPairIdx = parseInt(pmModelPairSlider.value());
+                    p.redraw();
+                });
+            }
+            
+            p.noLoop();
+            p.redraw();
+        };
+        
+        p.draw = function() {
+            p.background(1, 4, 9);
+            
+            let metric = metricsData[currentMetricIdx];
+            
+            p.fill(230, 230, 230);
+            p.textAlign(p.CENTER);
+            p.textSize(16);
+            p.text(metric.name, p.width/2, 30);
+            p.textSize(12);
+            p.fill(180,180,180);
+            p.text(`当前模型对: ${modelPairNames[currentModelPairIdx]}`, p.width/2, 55);
+            
+            let barWidth = (p.width - 100) / modelPairNames.length * 0.7; // Responsive bar width
+            let barSpacing = (p.width - 100) / modelPairNames.length;
+            let startX = 50 + barSpacing * 0.15; // Centered bars
+            let chartBaseY = p.height - 70;
+            let chartTopY = 80;
+            let chartHeight = chartBaseY - chartTopY;
+
+            for (let i = 0; i < metric.values.length; i++) {
+                let value = metric.values[i];
+                let barH;
+                if (metric.name === "平均排名") { // Lower is better for rank
+                    barH = p.map(value, metric.range[1], metric.range[0], 0, chartHeight); // Invert mapping
+                } else {
+                    barH = p.map(value, metric.range[0], metric.range[1], 0, chartHeight);
+                }
+                barH = p.max(5, barH); // Minimum bar height
+
+                let alpha = (i === currentModelPairIdx) ? 255 : 150;
+                p.fill(metric.color[0], metric.color[1], metric.color[2], alpha);
+                
+                let x = startX + i * barSpacing;
+                let y = chartBaseY - barH;
+                p.rect(x, y, barWidth, barH, 5); // Rounded corners
+                
+                p.fill(230, 230, 230, alpha);
+                p.textAlign(p.CENTER);
+                p.textSize(11);
+                p.text(value.toFixed(2), x + barWidth/2, y - 8);
+                p.textSize(10);
+                p.text(modelPairNames[i], x + barWidth/2, chartBaseY + 15);
+            }
+            
+            // Baseline (e.g., random guess) - conceptual
+            p.stroke(255, 100, 100, 150); // Reddish baseline
+            p.strokeWeight(1.5);
+            let baselineY;
+            if (metric.name === "平均排名") baselineY = chartBaseY - p.map(3.0, metric.range[1], metric.range[0], 0, chartHeight); // Example higher rank baseline
+            else if (metric.name === "余弦相似度") baselineY = chartBaseY - p.map(0.1, metric.range[0], metric.range[1], 0, chartHeight); // Example low similarity
+            else baselineY = chartBaseY - p.map(0.2, metric.range[0], metric.range[1], 0, chartHeight); // Example low accuracy
+            
+            p.line(40, baselineY, p.width - 40, baselineY);
+            p.fill(255, 100, 100);
+            p.noStroke();
+            p.textAlign(p.LEFT);
+            p.textSize(10);
+            p.text("随机基准 (概念)", 45, baselineY - 5);
+        };
+    };
+    new p5(sketchPerformanceMetrics);
+
+    // --- Animation 4: Information Extraction ---
+    let sketchInformationExtraction = function(p) {
+        let extractionProgress = 0; // 0 to 1
+        let extracting = false;
+        let currentDatasetIdx = 0; // 0 for Enron, 1 for MIMIC
+        let extractedItems = [];
+        const datasets = [
+            { name: "Enron邮件数据", items: ["姓名: John Smith", "日期: 2001-03-15", "公司: Enron", "金额: $25,000", "项目: Power Plant", "邮件主题: 会议安排"] },
+            { name: "MIMIC医疗记录", items: ["患者ID: P12345", "诊断: 糖尿病", "药物: 胰岛素", "日期: 2023-01-15", "医生: Dr. Wang", "症状: 多饮多尿"] }
+        ];
+        const itemColors = [[255,102,102], [102,255,102], [102,178,255], [255,178,102], [255,102,178], [178,255,102]]; // Red, Green, Blue, Orange, Pink, Lime
+        
+        p.setup = function() {
+            let canvas = p.createCanvas(580, 360);
+            canvas.parent('informationExtractionAnimation');
+            
+            initializeExtraction();
+            
+            let ieStartButton = p.select('#ieStartExtraction');
+            if (ieStartButton) {
+                ieStartButton.mousePressed(() => {
+                    if (!extracting) {
+                        extracting = true;
+                        extractionProgress = 0;
+                        extractedItems = [];
+                        p.loop(); // Start animation loop
+                    }
+                });
+            }
+            
+            let ieToggleButton = p.select('#ieToggleDataset');
+            if (ieToggleButton) {
+                ieToggleButton.mousePressed(() => {
+                    currentDatasetIdx = (currentDatasetIdx + 1) % datasets.length;
+                    initializeExtraction(); // Reset for new dataset
+                    p.redraw();
+                });
+            }
+            
+            p.noLoop(); // Don't loop by default
+            p.redraw();
+        };
+        
+        function initializeExtraction() {
+            extractedItems = [];
+            extractionProgress = 0;
+            extracting = false;
+            // p.noLoop(); // Ensure it's not looping if reset externally
+            // p.redraw();
+        }
+        
+        p.draw = function() {
+            p.background(1, 4, 9);
+            
+            p.fill(230,230,230);
+            p.textAlign(p.CENTER);
+            p.textSize(16);
+            p.text(`当前数据集: ${datasets[currentDatasetIdx].name}`, p.width/2, 30);
+            
+            drawEncryptedEmbedding(p.width * 0.3, p.height * 0.45); // Centered left
+            
+            if (extracting) {
+                extractionProgress += 0.005; // Slower progress
+                if (extractionProgress >= 1.0) {
+                    extractionProgress = 1.0;
+                    extracting = false;
+                    p.noLoop(); // Stop loop when done
+                }
+                
+                // Add items based on progress
+                let numItemsToShow = Math.floor(extractionProgress * datasets[currentDatasetIdx].items.length);
+                if (numItemsToShow > extractedItems.length && extractedItems.length < datasets[currentDatasetIdx].items.length) {
+                     extractedItems.push({
+                        text: datasets[currentDatasetIdx].items[extractedItems.length],
+                        color: itemColors[extractedItems.length % itemColors.length],
+                        alpha: 0
+                    });
+                }
+            }
+            
+            drawExtractedInfo(p.width * 0.7, p.height * 0.25); // Centered right, starting higher
+            drawProgressBar(p.width * 0.3, p.height - 50); // Below embedding
+            
+            if (!extracting && extractionProgress === 0) {
+                p.fill(200, 200, 200, 150);
+                p.text("点击开始信息提取演示", p.width/2, p.height - 20);
+            } else if (!extracting && extractionProgress === 1.0) {
+                p.fill(100, 255, 100, 200);
+                p.text("信息提取完成!", p.width/2, p.height - 20);
+            }
+        };
+        
+        function drawEncryptedEmbedding(x_center, y_center) {
+            p.fill(100, 100, 200, 150); // Bluish
+            p.rectMode(p.CENTER);
+            p.rect(x_center, y_center, 200, 120, 10);
+            p.fill(230,230,230);
+            p.textAlign(p.CENTER);
+            p.textSize(12);
+            p.text("加密的嵌入向量", x_center, y_center - 70);
+            
+            // Draw pattern for embedding
+            p.rectMode(p.CORNER);
+            for (let i = 0; i < 8; i++) { // Rows
+                for (let j = 0; j < 16; j++) { // Cols
+                    let bitX = x_center - 90 + j * 11;
+                    let bitY = y_center - 45 + i * 12;
+                    let value = p.noise(i * 0.5 + j * 0.2 + (extracting ? p.frameCount * 0.05 : 0));
+                    p.fill(100, 150, 255, value * 150 + 50); // Varying alpha
+                    p.rect(bitX, bitY, 8, 10, 2);
+                }
+            }
+        }
+        
+        function drawExtractedInfo(x_start, y_start) {
+            p.textAlign(p.LEFT);
+            p.textSize(11);
+            
+            for (let i = 0; i < extractedItems.length; i++) {
+                let item = extractedItems[i];
+                item.alpha = p.min(item.alpha + 10, 255); // Fade in
+                
+                p.fill(item.color[0], item.color[1], item.color[2], item.alpha * 0.7); // Box background
+                let boxY = y_start + i * 28;
+                p.rectMode(p.CORNER);
+                p.rect(x_start - 10, boxY - 15, 220, 22, 5);
+                
+                p.fill(20,20,30, item.alpha); // Darker text for contrast
+                p.text(item.text, x_start, boxY);
+            }
+        }
+        
+        function drawProgressBar(x_center, y_pos) {
+            p.rectMode(p.CENTER);
+            p.fill(50, 50, 80); // Dark bar background
+            p.rect(x_center, y_pos, 200, 20, 10);
+            p.fill(100, 255, 150); // Green progress
+            if (extractionProgress > 0) {
+                 p.rectMode(p.CORNER); // Align progress fill
+                 p.rect(x_center - 100, y_pos - 10, 200 * extractionProgress, 20, 10);
+            }
+            p.fill(230,230,230);
+            p.textAlign(p.CENTER, p.CENTER);
+            p.textSize(10);
+            p.text(`提取进度: ${Math.floor(extractionProgress * 100)}%`, x_center, y_pos);
+        }
+    };
+    new p5(sketchInformationExtraction);
+
+    // --- Animation 5: Security Attack ---
+    let sketchSecurityAttack = function(p) {
+        let attackStage = 0; // 0: Initial, 1: DB, 2: vec2vec, 3: Translate, 4: Extract
+        let noiseLevel = 0; // 0-100 from slider
+        let showDefenseOverlay = false;
+        let dataParticles = [];
+        const stageNames = ["数据库", "vec2vec", "翻译引擎", "信息提取"];
+        const stageColors = [[100,100,255], [255,200,100], [100,255,100], [255,100,100]];
+
+        p.setup = function() {
+            let canvas = p.createCanvas(580, 360);
+            canvas.parent('securityAttackAnimation');
+            
+            initializeAttackVisuals();
+            
+            let saSimulateButton = p.select('#saSimulateAttack');
+            if (saSimulateButton) {
+                saSimulateButton.mousePressed(() => {
+                    attackStage = (attackStage + 1) % (stageNames.length + 1); // Cycle through stages + initial
+                    if (attackStage > 0 && attackStage <= stageNames.length) {
+                        p.loop(); // Animate particles during attack stages
+                        // setTimeout(() => { if (attackStage < stageNames.length) p.noLoop(); }, 1500);
+                    } else {
+                        initializeAttackVisuals(); // Reset if cycling back to 0
+                        p.noLoop();
+                    }
+                    p.redraw();
+                });
+            }
+            
+            let saShowDefenseButton = p.select('#saShowDefense');
+            if (saShowDefenseButton) {
+                saShowDefenseButton.mousePressed(() => {
+                    showDefenseOverlay = !showDefenseOverlay;
+                    p.redraw();
+                });
+            }
+            
+            let saNoiseSlider = p.select('#saNoiseLevel');
+            if (saNoiseSlider) {
+                saNoiseSlider.input(() => {
+                    noiseLevel = parseInt(saNoiseSlider.value());
+                    p.redraw();
+                });
+            }
+            
+            p.noLoop();
+            p.redraw();
+        };
+        
+        function initializeAttackVisuals() {
+            dataParticles = [];
+            for (let i = 0; i < 30; i++) { // Fewer, more distinct particles
+                dataParticles.push({
+                    x: p.random(50, 150), // Start near DB
+                    y: p.random(p.height * 0.2, p.height * 0.8),
+                    size: p.random(4, 8),
+                    speedX: p.random(1, 3),
+                    color: [p.random(150,255), p.random(100,200), p.random(50,150), 200], // Varied particle colors
+                    originalAlpha: 200,
+                    targetX: 0 // Will be set based on stage
+                });
+            }
+            // attackStage = 0; // Reset stage
+        }
+        
+        p.draw = function() {
+            p.background(1, 4, 9);
+            
+            drawStages();
+            updateAndDrawParticles();
+            
+            if (showDefenseOverlay) {
+                drawDefenseEffect();
+            }
+            
+            drawStageDescriptionText();
+
+            if (attackStage === 0 || attackStage > stageNames.length) { // Pause if initial or after last stage
+                p.noLoop();
+            }
+        };
+        
+        function drawStages() {
+            let boxWidth = 100;
+            let boxHeight = 60;
+            let spacing = (p.width - stageNames.length * boxWidth) / (stageNames.length + 1);
+            
+            for (let i = 0; i < stageNames.length; i++) {
+                let x = spacing + i * (boxWidth + spacing) + boxWidth/2;
+                let y = p.height / 2;
+                
+                let currentStageColor = stageColors[i];
+                let alpha = (i < attackStage) ? 255 : 120; // Highlight active/passed stages
+                
+                p.fill(currentStageColor[0], currentStageColor[1], currentStageColor[2], alpha * 0.5); // Box fill
+                p.stroke(currentStageColor[0], currentStageColor[1], currentStageColor[2], alpha);
+                p.strokeWeight(1.5);
+                p.rectMode(p.CENTER);
+                p.rect(x, y, boxWidth, boxHeight, 8);
+                
+                p.fill(230, 230, 230, alpha); // Text color
+                p.noStroke();
+                p.textAlign(p.CENTER, p.CENTER);
+                p.textSize(11);
+                p.text(stageNames[i], x, y);
+
+                // Draw arrows between stages
+                if (i < stageNames.length - 1) {
+                    let arrowAlpha = (i < attackStage -1) ? 200 : 80;
+                    p.stroke(100, 255, 150, arrowAlpha); // Greenish arrow
+                    p.strokeWeight(2);
+                    let startArrowX = x + boxWidth/2;
+                    let endArrowX = x + boxWidth/2 + spacing;
+                    p.line(startArrowX, y, endArrowX - 8, y); // Line part
+                    drawArrow(endArrowX, y, 8, [100,255,150, arrowAlpha]); // Arrow head
+                    p.noStroke();
+                }
+            }
+        }
+
+        function updateAndDrawParticles() {
+            if (attackStage === 0 || attackStage > stageNames.length) return;
+
+            let targetBoxXCenter = spacing + (attackStage - 1) * (boxWidth + spacing) + boxWidth/2 + boxWidth; // Target next box or extraction area
+            if (attackStage === stageNames.length) { // Extraction stage
+                targetBoxXCenter = p.width - 50; // Move towards far right
+            }
+
+
+            for (let particle of dataParticles) {
+                // Move particles towards the current/next stage
+                particle.targetX = targetBoxXCenter; // Simplified target
+                 if (particle.x < particle.targetX) {
+                    particle.x += particle.speedX;
+                } else if (attackStage === stageNames.length && particle.x >= p.width - 60) {
+                    // Particle extracted, fade or change
+                    particle.color[3] = p.max(0, particle.color[3] - 5); // Fade out
+                }
+
+
+                let displayAlpha = particle.originalAlpha;
+                if (showDefenseOverlay) {
+                    displayAlpha *= (1 - noiseLevel / 150); // Reduce alpha based on noise, less severe reduction
+                }
+                p.fill(particle.color[0], particle.color[1], particle.color[2], displayAlpha);
+                p.noStroke();
+                p.ellipse(particle.x, particle.y, particle.size, particle.size);
+            }
+        }
+        
+        function drawDefenseEffect() {
+            p.fill(255, 80, 80, noiseLevel * 0.7); // Semi-transparent red overlay for defense
+            p.rectMode(p.CORNER);
+            p.rect(0, 0, p.width, p.height);
+            
+            p.fill(230,230,230);
+            p.textAlign(p.RIGHT);
+            p.textSize(12);
+            p.text(`防护强度: ${noiseLevel}%`, p.width - 20, 30);
+            if (noiseLevel > 0) {
+                p.text(noiseLevel > 50 ? "高强度防护激活" : "中等防护激活", p.width - 20, 50);
+            }
+        }
+
+        function drawStageDescriptionText() {
+            const descriptions = [
+                "点击按钮开始模拟攻击流程...",
+                "1. 攻击者窃取向量数据库 (数据粒子出现)",
+                "2. 使用vec2vec准备翻译 (粒子向vec2vec移动)", 
+                "3. 翻译引擎处理 (粒子向翻译引擎移动)",
+                "4. 提取敏感信息 (粒子移动并消失)"
+            ];
+            p.fill(200, 200, 200, 220);
+            p.textAlign(p.CENTER);
+            p.textSize(13);
+            let descText = (attackStage <= stageNames.length) ? descriptions[attackStage] : "攻击完成 - 信息可能已泄露";
+            p.text(descText, p.width/2, p.height - 30);
+        }
+        
+        function drawArrow(x, y, size, color) { // Helper for arrows
+            p.push();
+            p.translate(x, y);
+            p.fill(color[0], color[1], color[2], color[3] || 255);
+            p.noStroke();
+            p.triangle(-size*0.8, -size/2, -size*0.8, size/2, 0, 0); // Pointing right
+            p.pop();
+        }
+         // Re-define spacing and boxWidth for global use in this sketch if needed
+        let boxWidth = 100;
+        let spacing = (580 - stageNames.length * boxWidth) / (stageNames.length + 1);
+    };
+    new p5(sketchSecurityAttack);
+
+    // --- Animation 6: Geometry Visualization ---
+    let sketchGeometryVisualization = function(p) {
+        let rotationYAngle = 0;
+        let rotationXAngle = 0;
+        let showTransformEffect = false;
+        let displayDimension = 3; // 2 for 2D, 3 for 3D-like projection
+        let pointsSetA = [];
+        let pointsSetB = [];
+        let transformedPointsB = [];
+        
+        p.setup = function() {
+            let canvas = p.createCanvas(580, 360, p.WEBGL); // Use WEBGL for 3D
+            canvas.parent('geometryVisualizationAnimation');
+            
+            generatePointSets();
+            
+            p.select('#gvRotateView').mousePressed(() => {
+                // rotationYAngle += p.PI / 12; // Increment Y rotation
+                // rotationXAngle += p.PI / 18; // Increment X rotation
+                // For button press, a more noticeable jump:
+                 if (p.mouseButton === p.LEFT) rotationYAngle += p.PI / 6;
+                 // if (p.mouseButton === p.RIGHT) rotationXAngle += p.PI / 6; // Requires disabling context menu
+                p.redraw();
+            });
+            
+            p.select('#gvShowTransform').mousePressed(() => {
+                showTransformEffect = !showTransformEffect;
+                if (showTransformEffect) {
+                    applyTransformation();
+                }
+                p.redraw();
+            });
+            
+            p.select('#gvDimension').input(() => {
+                displayDimension = parseInt(p.select('#gvDimension').value());
+                p.redraw();
+            });
+            
+            p.noLoop();
+            p.redraw();
+        };
+        
+        function generatePointSets() {
+            pointsSetA = []; transformedPointsB = []; pointsSetB = [];
+            let clusterACenter = p.createVector(-100, 0, 0);
+            let clusterBCenter = p.createVector(100, 50, -30); // Initially separated
+
+            for (let i = 0; i < 40; i++) { // Points for set A
+                pointsSetA.push(p.createVector(
+                    clusterACenter.x + p.randomGaussian(0, 40),
+                    clusterACenter.y + p.randomGaussian(0, 40),
+                    clusterACenter.z + p.randomGaussian(0, 30)
+                ));
+            }
+            for (let i = 0; i < 40; i++) { // Points for set B
+                 pointsSetB.push(p.createVector(
+                    clusterBCenter.x + p.randomGaussian(0, 35),
+                    clusterBCenter.y + p.randomGaussian(0, 35),
+                    clusterBCenter.z + p.randomGaussian(0, 25)
+                ));
+            }
+        }
+        
+        function applyTransformation() {
+            transformedPointsB = [];
+            // Target: Move pointsSetB to align with pointsSetA's original position (conceptual)
+            let targetCenter = p.createVector(-100, 0, 0); // Same as clusterACenter
+            let currentBCenter = p.createVector(0,0,0);
+            pointsSetB.forEach(pt => currentBCenter.add(pt));
+            currentBCenter.div(pointsSetB.length);
+
+            let translation = p5.Vector.sub(targetCenter, currentBCenter);
+
+            for (let pt of pointsSetB) {
+                let transformedPt = p5.Vector.add(pt, translation);
+                // Add some noise/ slight mismatch to simulate imperfect transformation
+                transformedPt.x += p.randomGaussian(0, 10);
+                transformedPt.y += p.randomGaussian(0, 10);
+                transformedPt.z += p.randomGaussian(0, 5);
+                transformedPointsB.push(transformedPt);
+            }
+        }
+        
+        p.draw = function() {
+            p.background(1, 4, 9);
+            p.orbitControl(2,2,0.1); // Allows mouse drag to rotate view for WEBGL
+            
+            p.rotateX(rotationXAngle);
+            p.rotateY(rotationYAngle);
+
+            if (displayDimension === 2) {
+                p.ortho(-p.width / 2, p.width / 2, -p.height / 2, p.height / 2, 0.1, 1000); // Orthographic for 2D
+            } else {
+                 p.perspective(p.PI / 3.0, p.width / p.height, 0.1, 1000); // Perspective for 3D
+            }
+
+            // Draw axes
+            p.stroke(100); p.strokeWeight(1);
+            p.line(-200,0,0, 200,0,0); // X
+            p.line(0,-200,0, 0,200,0); // Y
+            if (displayDimension === 3) p.line(0,0,-200, 0,0,200); // Z
+
+            // Draw pointsSetA
+            p.noStroke();
+            for (let pt of pointsSetA) {
+                p.push();
+                p.translate(pt.x, pt.y, displayDimension === 2 ? 0 : pt.z);
+                p.fill(100, 150, 255, 200); // Blue
+                p.sphere(5);
+                p.pop();
+            }
+
+            // Draw pointsSetB or transformedPointsB
+            let pointsToDrawB = showTransformEffect ? transformedPointsB : pointsSetB;
+            let colorB = showTransformEffect ? [100, 255, 100, 200] : [255, 100, 150, 200]; // Green if transformed, Pink otherwise
+            
+            for (let i = 0; i < pointsToDrawB.length; i++) {
+                let pt = pointsToDrawB[i];
+                 p.push();
+                p.translate(pt.x, pt.y, displayDimension === 2 ? 0 : pt.z);
+                p.fill(colorB[0], colorB[1], colorB[2], colorB[3]);
+                p.sphere(5);
+                p.pop();
+
+                // If transformed, draw line from original B to transformed B
+                if (showTransformEffect && pointsSetB[i]) {
+                    p.stroke(colorB[0], colorB[1], colorB[2], 100);
+                    p.strokeWeight(0.5);
+                    let originalPtB = pointsSetB[i];
+                    p.line(originalPtB.x, originalPtB.y, displayDimension === 2 ? 0 : originalPtB.z, 
+                           pt.x, pt.y, displayDimension === 2 ? 0 : pt.z);
+                }
+            }
+            
+            // Legend - drawn in 2D screen space
+            p.resetMatrix(); // Go back to 2D drawing mode for hud
+            p.fill(230,230,230); p.textSize(11); p.textAlign(p.LEFT);
+            p.text("蓝色: 嵌入空间A", -p.width/2 + 20, -p.height/2 + 30);
+            p.text(showTransformEffect ? "绿色: 变换后的B" : "粉色: 嵌入空间B", -p.width/2 + 20, -p.height/2 + 50);
+            p.text(displayDimension === 2 ? "2D 视图" : "3D 视图 (拖动旋转)", -p.width/2 + 20, -p.height/2 + 70);
+        };
+    };
+    new p5(sketchGeometryVisualization);
+
+    // Ensure all p5 sketches are initialized after DOM is ready
+    // This is implicitly handled by placing scripts at the end of body.
+    // Alternatively, one could use window.onload or DOMContentLoaded.
+</script>
+</body>
+</html>

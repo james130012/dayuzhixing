@@ -1,0 +1,930 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GEMINI 利用嵌入的通用几何学：“物理逻辑”视角解读</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.2/p5.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
+    <style>
+        /* 基本重置和页面设置 */
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Noto Sans SC', sans-serif;
+            font-size: 18px; /* 基础字号，参考“三号”在屏幕上的可读性 */
+            line-height: 1.8;
+            background-color: #0d1117; /* GitHub 暗黑模式背景色 */
+            color: #c9d1d9; /* GitHub 暗黑模式文字颜色 */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            overflow-x: hidden; /* 防止水平溢出 */
+        }
+
+        /* 背景动画容器 */
+        #backgroundCanvasContainer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 0;
+            pointer-events: none; /* 允许点击穿透 */
+        }
+
+        /* 内容容器 */
+        .container {
+            position: relative;
+            z-index: 1; /* 在背景动画之上 */
+            width: 90%;
+            max-width: 1000px; /* 优化阅读宽度，类似A3纸张感 */
+            margin: 40px auto; /* 增加上下边距 */
+            padding: 30px 40px;
+            background-color: rgba(22, 27, 34, 0.92); /* GitHub 暗黑模式内容区背景，稍不透明 */
+            border: 1px solid #30363d; /* GitHub 暗黑模式边框颜色 */
+            border-radius: 12px; /* 圆角 */
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+        }
+
+        /* 标题样式 */
+        h1, h2, h3 {
+            font-family: 'ZCOOL KuaiLe', cursive; /* 轻松活泼字体 */
+            color: #58a6ff; /* GitHub 暗黑模式链接/标题颜色 */
+            margin-bottom: 0.75em;
+            text-align: center;
+            letter-spacing: 1px;
+        }
+        h1 {
+            font-size: 2.6em; /* 主标题 */
+            color: #79c0ff; /* 更亮的蓝色 */
+            border-bottom: 2px solid #388bfd;
+            padding-bottom: 15px;
+            margin-top: 0;
+        }
+        h2 {
+            font-size: 2.0em; /* 章节标题 */
+            color: #f778ba; /* 粉色系，增加活泼感 */
+            margin-top: 2.2em;
+        }
+        h3 {
+            font-size: 1.5em;
+            color: #a371f7; /* 紫色系 */
+            margin-top: 1.6em;
+            text-align: left;
+        }
+
+        /* 段落和文本样式 */
+        p, li {
+            margin-bottom: 1.2em;
+            text-align: justify;
+            color: #adbac7; /* 柔和的文字颜色 */
+        }
+        ul, ol {
+            padding-left: 30px;
+        }
+
+        /* 强调文字 */
+        strong, .highlight {
+            color: #ffa657; /* 暖黄色强调 */
+            font-weight: bold;
+        }
+        .concept { /* 概念词 */
+            font-weight: 500;
+            color: #7ee787; /* 绿色概念词 */
+            padding: 3px 7px;
+            background-color: rgba(63, 185, 80, 0.15);
+            border-radius: 6px;
+            border: 1px solid rgba(63, 185, 80, 0.4);
+            font-family: 'Noto Sans SC', sans-serif; /* 概念词使用标准字体 */
+        }
+        .formula {
+            display: block;
+            text-align: center;
+            margin: 20px auto;
+            padding: 15px;
+            background-color: rgba(34, 39, 46, 0.8);
+            border-left: 4px solid #388bfd;
+            color: #c9d1d9;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 1.05em;
+            border-radius: 4px;
+            white-space: pre-wrap; /* 保证公式换行 */
+            word-break: break-all;
+        }
+
+        /* 动画容器 */
+        .animation-container {
+            width: 100%;
+            max-width: 600px; /* 动画区域宽度 */
+            height: 380px; /* 动画区域高度 */
+            margin: 25px auto;
+            border: 1px solid #30363d;
+            border-radius: 10px;
+            overflow: hidden;
+            background-color: #010409; /* 更深的动画背景 */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: inset 0 0 12px rgba(0,0,0,0.5);
+        }
+        .animation-container canvas { /* Ensure canvas fills container */
+            display: block;
+            max-width: 100%;
+            max-height: 100%;
+            border-radius: 8px;
+        }
+        
+        /* 交互按钮和控件样式 */
+        .controls {
+            text-align: center;
+            margin-bottom: 25px;
+            margin-top: 15px;
+        }
+        .controls button {
+            padding: 10px 22px;
+            font-size: 0.95em;
+            font-family: 'Noto Sans SC', sans-serif;
+            background-image: linear-gradient(to right, #388bfd, #58a6ff);
+            color: white;
+            border: none;
+            border-radius: 22px; 
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            letter-spacing: 0.5px;
+        }
+        .controls button:hover {
+            transform: translateY(-2px) scale(1.05);
+            box-shadow: 0 7px 18px rgba(56, 139, 253, 0.35);
+        }
+        .controls button:active {
+            transform: translateY(0px) scale(1);
+        }
+        .controls label {
+            color: #8b949e; /* GitHub 暗黑模式次要文字颜色 */
+            margin: 0 10px;
+            font-size: 0.9em;
+        }
+        .controls input[type="range"] {
+            vertical-align: middle;
+            cursor: grab;
+            width: 140px;
+        }
+
+        /* 作者信息 */
+        .author-info {
+            text-align: center;
+            margin: 20px 0 30px 0;
+            font-size: 0.95em;
+            color: #8b949e;
+        }
+        .author-info strong {
+            color: #79c0ff;
+        }
+        .author-info .paper-title {
+            font-style: italic;
+            color: #a371f7; /* 紫色系 */
+            margin-bottom: 5px;
+        }
+
+
+        /* 页脚 */
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding: 25px;
+            background-color: #161b22; /* 页脚背景 */
+            color: #8b949e;
+            width: 100%;
+            font-size: 0.9em;
+            border-top: 1px solid #30363d;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            body {
+                font-size: 17px; /* 移动端稍小字号 */
+            }
+            .container {
+                width: 95%;
+                padding: 20px 25px;
+                margin: 20px auto;
+            }
+            h1 {
+                font-size: 2.1em;
+            }
+            h2 {
+                font-size: 1.7em;
+            }
+            h3 {
+                font-size: 1.3em;
+            }
+            .animation-container {
+                height: 320px; /* 移动端动画高度调整 */
+            }
+            .controls button {
+                padding: 9px 18px;
+                font-size: 0.85em;
+            }
+            .controls input[type="range"] {
+                width: 120px;
+            }
+            .formula {
+                font-size: 1em;
+                padding: 10px;
+            }
+        }
+         @media (max-width: 480px) {
+            body {
+                font-size: 16px;
+            }
+            h1 {
+                font-size: 1.8em;
+            }
+            h2 {
+                font-size: 1.5em;
+            }
+            h3 {
+                font-size: 1.2em;
+            }
+            .animation-container {
+                height: 280px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="backgroundCanvasContainer"></div>
+    <div class="container">
+        <header>
+            <h1>利用嵌入的通用几何学：“物理逻辑”视角解读</h1>
+            <div class="author-info">
+                <p class="paper-title">《Harnessing the Universal Geometry of Embeddings》</p>
+                <p>作者: <strong>Rishi Jha, Collin Zhang, Vitaly Shmatikov, John X. Morris</strong></p>
+                <p>机构: <strong>康奈尔大学计算机科学系 (Department of Computer Science, Cornell University)</strong></p>
+                <p>论文日期: 2025年5月20日 (arXiv:2505.12540v2)</p>
+            </div>
+        </header>
+
+        <main>
+            <article>
+                <section id="intro-universe">
+                    <h2>引言：探索“嵌入宇宙”的统一法则</h2>
+                    <p>在数字信息的浩瀚宇宙中，<span class="concept">文本嵌入 (Text Embeddings)</span> 如同繁星，将语言的奥秘编码为多维空间中的向量。然而，不同的“造星者”（即嵌入模型）创造出的“星系”（即向量空间）往往遵循着各自独特的“物理法则”（几何结构），彼此之间难以直接沟通，仿佛是相互隔绝的平行宇宙。这篇开创性的论文，<strong class="highlight">《利用嵌入的通用几何学》</strong>，为我们揭示了一种突破这些宇宙壁垒的方法——<span class="concept">vec2vec</span>。</p>
+                    <p>这不仅仅是一项技术创新，更像是一次对“嵌入宇宙”底层逻辑的深刻洞察。论文大胆地提出了<strong class="highlight">“强柏拉图表征假设” (Strong Platonic Representation Hypothesis)</strong>，认为所有足够强大的文本模型，尽管其结构、训练数据各异，最终都会在潜意识层面趋向于一个<span class="concept">通用的语义结构</span>。vec2vec 的使命，便是发现并利用这个“宇宙常数”，实现不同嵌入空间之间的无监督翻译，无需任何成对的“星图”作为参照。</p>
+                    <p>本篇解读，我们将尝试从一种“<strong class="highlight">物理逻辑</strong>”的视角，审视这篇论文的核心思想。我们将把嵌入空间比作物理宇宙，将模型、算法和损失函数视为作用于其中的“力”与“场”，探讨它们如何相互作用，共同塑造了这个“嵌入多重宇宙”的秩序与奥秘。让我们一同踏上这场充满思辨的探索之旅，看看计算机科学家们是如何扮演“宇宙学家”的角色，试图统一那些看似迥异的数字世界。</p>
+                </section>
+
+                <section id="embedding-multiverse">
+                    <h2>第一章：“嵌入多重宇宙”与统一的渴望</h2>
+                    <p>想象一下，每一个强大的文本嵌入模型（如BERT, T5等）都创造了一个独立的“宇宙”。在这个宇宙里，文本的语义被映射为空间中的点，点与点之间的距离和方向代表了它们语义上的亲疏远近。然而，模型A的“宇宙”和模型B的“宇宙”可能有着截然不同的“坐标系”和“几何常数”。同一句话在两个宇宙中的“坐标”可能风马牛不相及，使得直接比较或转换变得异常困难。这便是<span class="concept">嵌入空间不兼容</span>的难题，如同物理学家面对众多宇宙模型，渴望找到一个大一统理论。</p>
+                    <p>论文的核心洞见——<strong class="highlight">强柏拉图表征假设</strong>——就像是物理学中对某种“统一场论”的信仰。它认为，在这些看似异构的嵌入宇宙之下，存在一个更深层次的、<span class="concept">普适的潜在语义结构</span>。这股“柏拉图之力”是连接不同嵌入宇宙的纽带，是实现它们之间“语言”互通的希望所在。如果这个假设成立，那么我们就有可能找到一种方法，将任何一个嵌入“翻译”到这个通用的潜在表征中，再从这个通用表征“翻译”到另一个目标嵌入空间。</p>
+                    <div id="animation1Container" class="animation-container"></div>
+                    <div class="controls">
+                        <button id="anim1BtnAlign">尝试朴素对齐</button>
+                        <button id="anim1BtnExplore">探索通用结构</button>
+                    </div>
+                    <p><strong>动画1：嵌入空间不兼容与统一的希望</strong>。演示两组不同颜色（代表来自不同模型的嵌入）的点集。点击“尝试朴素对齐”，它们会尝试重叠，但显示出不匹配。点击“探索通用结构”，两组点会向一个中心“通用区域”变换和靠拢，暗示存在共同基础。</p>
+                </section>
+
+                <section id="vec2vec-translator">
+                    <h2>第二章：vec2vec——“语义虫洞”的构建者</h2>
+                    <p>如果说不同的嵌入空间是独立的宇宙，那么 <span class="concept">vec2vec</span> 方法就扮演了构建“<strong class="highlight">语义虫洞</strong>”或“星际之门”的角色。它能够在没有任何成对数据（即不需要知道某个文本在两个空间中的具体对应嵌入）的情况下，学习如何将一个嵌入从其“母宇宙”安全地传送到另一个“目标宇宙”，并尽可能保持其核心的语义特性。</p>
+                    <p>vec2vec 的架构精巧地体现了这种“跨宇宙旅行”的理念。它包含针对特定空间的<span class="concept">适配器模块 (Adapter Modules)</span>，如同虫洞的“入口”和“出口”，负责将特定空间的嵌入编码到一个<span class="concept">共享的骨干网络 (Shared Backbone)</span>中，这个骨干网络则像是虫洞的“通道”，负责提取和转换通用的潜在语义特征。最终，再通过目标空间的适配器解码出来。</p>
+                    <p>为了确保这种“旅行”的有效性和保真度，vec2vec 运用了几种关键的“物理法则”——即损失函数：</p>
+                    <ul>
+                        <li><strong class="highlight">对抗性损失 (Adversarial Loss)</strong>：如同让旅行者在新的宇宙中通过“图灵测试”，确保翻译后的嵌入看起来像是目标空间的原生成员，无法被轻易分辨出来。这在嵌入层面和潜在表征层面都起作用。</li>
+                        <li><strong class="highlight">循环一致性损失 (Cycle Consistency Loss)</strong>：确保一次“往返旅行”（例如，从空间A到空间B，再回到空间A）后，嵌入还能“认得回家的路”，即 $F_2(F_1(x)) \approx x$。这是无监督学习中的关键约束。</li>
+                        <li><strong class="highlight">重构损失 (Reconstruction Loss)</strong>：保证嵌入在自身空间内编码再解码后，仍能保持原样，即 $R_1(x) \approx x$。这是对适配器和骨干网络基本能力的考核。</li>
+                        <li><span class="concept">向量空间保持损失 (Vector Space Preservation, VSP)</span>：这是一个精妙的约束，要求嵌入之间的<strong class="highlight">相对几何关系</strong>（例如点积或距离）在翻译后得以保持。如同在新的宇宙中，物体间的相对位置和引力关系依然遵循相似的规律。</li>
+                    </ul>
+                    <p class="formula">整体优化目标可以表示为: L_total = L_adv + lambda_gen * (lambda_rec * L_rec + lambda_CC * L_CC + lambda_VSP * L_VSP)</p>
+                    <div id="animation2Container" class="animation-container"></div>
+                    <div class="controls">
+                        <button id="anim2BtnTraceAB">追踪 A 到 B</button>
+                        <button id="anim2BtnCycle">演示循环一致性</button>
+                    </div>
+                    <p><strong>动画2：vec2vec “翻译官”机制</strong>。概念性地展示一个嵌入（如红色方块）从“空间A”出发，经过“输入适配器A”，进入“共享核心网络”，再通过“输出适配器B”，最终转变为“空间B”中的嵌入（如蓝色方块）。“演示循环一致性”按钮可以展示一个往返过程。</p>
+                </section>
+
+                <section id="universal-latent-space">
+                    <h2>第三章：“通用潜在空间”——宇宙的共同基石</h2>
+                    <p>vec2vec 的成功运作，强烈暗示了“<strong class="highlight">强柏拉图表征假设</strong>”的现实性。它似乎真的发掘出了一个<span class="concept">通用的潜在空间 (Universal Latent Space)</span>。这个空间，可以被理解为不同嵌入宇宙之下共同的“量子泡沫”或“基本粒子场”。无论上层结构（特定模型的嵌入空间）多么不同，它们本质上都源于这个更基础、更普适的语义表达层面。</p>
+                    <p>论文中的图1和图4（概念性重现于下方动画）直观地展示了这一点：即使原始输入嵌入在各自空间中相距甚远（余弦相似度低），它们在vec2vec学习到的潜在空间中的表征却惊人地接近。这就像物理学家发现，尽管宏观物质形态各异，但它们都由有限种类的夸克和轻子构成一样，揭示了表象之下的深刻统一性。</p>
+                    <p>这个通用潜在空间的存在，是vec2vec能够实现无监督翻译的<strong class="highlight">物理基础</strong>。它提供了一个“共同语言”或“罗塞塔石碑”，使得不同嵌入模型间的语义信息得以对齐和转换。vec2vec通过其适配器将特定空间的“方言”翻译成这种“通用语”，在通用语层面进行处理，然后再翻译回另一种“方言”。</p>
+                    <div id="animation3Container" class="animation-container"></div>
+                    <div class="controls">
+                        <label for="anim3Slider">投影强度:</label>
+                        <input type="range" id="anim3Slider" min="0" max="100" value="0" step="1">
+                        <button id="anim3BtnReset">重置</button>
+                    </div>
+                    <p><strong>动画3：潜在空间中的语义融合</strong>。左侧展示两组不同颜色的点（代表模型A和模型B的嵌入），它们在原始空间中分离。当拖动“投影强度”滑块时，这些点会动态地投影到右侧的“潜在空间”，在潜在空间中，代表相同语义的点（尽管颜色不同）会彼此靠近甚至重叠，形象地展示了语义的对齐。</p>
+                </section>
+
+                <section id="semantic-conservation">
+                    <h2>第四章：“语义守恒”与跨空间信息流</h2>
+                    <p>正如物理学中的能量守恒定律，一个成功的“宇宙翻译”技术，必须保证在转换过程中核心的“<span class="concept">语义能量</span>”不发生显著耗散或畸变。vec2vec通过多项指标证明了其卓越的“语义守恒”能力。论文中使用的核心评估指标包括：</p>
+                    <ul>
+                        <li><strong class="highlight">平均余弦相似度 (Mean Cosine Similarity)</strong>：衡量翻译后的嵌入与其在目标空间中的“理想真身”（如果存在成对数据）的接近程度。越高表示翻译越精准。</li>
+                        <li><strong class="highlight">Top-1 准确率 (Top-1 Accuracy)</strong>：在目标空间中，翻译后的嵌入是否能正确地将其对应的“理想真身”排在所有其他候选项的第一位。</li>
+                        <li><strong class="highlight">平均排名 (Mean Rank)</strong>：目标“理想真身”在所有候选项中被翻译嵌入匹配到的平均位置。越低越好。</li>
+                    </ul>
+                    <p>实验结果（如论文表2、表3所示）令人振奋：vec2vec在多种模型对（包括不同架构、不同参数量、不同训练数据，甚至是跨模态的CLIP模型）之间均取得了高余弦相似度和接近完美的Top-1准确率。这表明vec2vec学习到的“翻译法则”具有相当的<strong class="highlight">普适性和鲁棒性</strong>，能够在不同的“宇宙条件”下有效工作，无论是处理“同源宇宙”（如基于BERT的不同模型）还是“异构宇宙”（如T5与BERT）之间的转换。</p>
+                    <p>特别值得注意的是，vec2vec在处理<span class="concept">分布外 (Out-of-Distribution)</span> 数据（如用维基百科数据训练，但在推文或医疗记录上测试）时依然表现出色。这进一步证明了其学习到的潜在结构是真正领域无关的，触及了语义表达的更本质层面，而非仅仅拟合了特定训练数据的表面特征。</p>
+                    <div id="animation4Container" class="animation-container"></div>
+                    <div class="controls">
+                        <button id="anim4BtnSame">同构模型对</button>
+                        <button id="anim4BtnCross">异构模型对</button>
+                        <button id="anim4BtnMulti">跨模态对</button>
+                    </div>
+                    <p><strong>动画4：翻译质量仪表盘 (简化)</strong>。展示一个简化的条形图，比较在不同类型的模型对（如同构、异构、跨模态）下，“vec2vec”与“朴素基线”在“翻译余弦相似度”上的表现。点击按钮切换不同场景，条形图会相应更新（数据为示意性）。</p>
+                </section>
+
+                <section id="information-extraction">
+                    <h2>第五章：“洞察幽冥”——从嵌入的“时空织锦”中提取信息</h2>
+                    <p>如果说嵌入向量是信息在特定“时空”中的一种编码形式，那么vec2vec的出现，无疑为我们提供了一把<strong class="highlight">解锁未知编码、洞察隐藏信息</strong>的钥匙。这不仅仅是理论上的突破，更对<span class="concept">向量数据库的安全性</span>提出了严峻的挑战。</p>
+                    <p>论文展示了，即使在只拥有目标嵌入向量（例如从一个被泄露的向量数据库中获取），而对原始文档、原始编码器一无所知的情况下，通过vec2vec将这些“匿名”嵌入翻译到一个我们<strong class="highlight">已知并能操作的嵌入空间</strong>后，就可能提取出关于原始文档的敏感信息。这好比通过观测遥远天体发出的、经过未知引力场扭曲的光线，如果我们能“校正”这种扭曲，就能反推出光源的某些特性。</p>
+                    <p>主要的信息提取方式有两种：</p>
+                    <ul>
+                        <li><span class="concept">零样本属性推断 (Zero-shot Attribute Inference)</span>：将翻译后的嵌入与已知属性（如主题、类别）的嵌入进行比较，从而推断原始文档可能具备的属性。例如，从病历记录的翻译嵌入中推断出相关的疾病描述。</li>
+                        <li><span class="concept">嵌入反演 (Embedding Inversion)</span>：更进一步，尝试从翻译后的嵌入中重构出原始文本的部分甚至全部内容。论文图6展示了从安然公司邮件的翻译嵌入中恢复出如人名、公司名、日期、项目内容等具体信息的惊人案例。</li>
+                    </ul>
+                    <p>这些结果如同一记警钟：嵌入并非绝对安全的“黑箱”。它们承载的语义信息，远比我们想象的要丰富和具体。vec2vec证明，只要掌握了正确的“解码透镜”，即使是来自未知来源的嵌入，其内部隐藏的秘密也可能被揭示。这对于数据隐私和安全领域而言，无疑是一个需要高度重视的新课题。</p>
+                    <div id="animation5Container" class="animation-container"></div>
+                    <div class="controls">
+                        <button id="anim5BtnStart">开始信息提取流程</button>
+                    </div>
+                    <p><strong>动画5：信息泄露路径概念演示</strong>。序列化展示：一个“加密文档”图标，通过“未知编码器”变成“嵌入向量数据库”中的点。这些点经过“vec2vec翻译模块”后，在“已知嵌入空间”中显现。随后，“信息提取工具”（如放大镜）作用于这些翻译后的嵌入，最终揭示出原始文档中的关键词或属性。</p>
+                </section>
+
+                <section id="conclusion">
+                    <h2>结语：嵌入宇宙的和谐与深远影响</h2>
+                    <p>《利用嵌入的通用几何学》这篇论文，以其vec2vec方法和对“强柏拉图表征假设”的有力支持，为我们描绘了一幅关于<span class="concept">文本嵌入宇宙</span>的新图景。在这个图景中，看似孤立和异构的语义空间，实则共享着一个深刻的、可被学习和利用的<strong class="highlight">通用潜在结构</strong>。这不仅是自然语言处理领域的一大步，也为我们从更哲学的层面思考“表征”与“现实”的关系提供了新的素材。</p>
+                    <p>从“物理逻辑”的视角来看，vec2vec的成功，如同发现了一条连接不同物理宇宙的“基本定律”。它证明了语义信息在不同表征形式间的转换，可以遵循某种“守恒原则”，并且这种转换可以被精确地“操控”和“度量”。这不仅提升了我们处理和理解大规模文本信息的能力，也揭示了信息本身的某种<strong class="highlight">内在几何秩序</strong>。</p>
+                    <p>当然，正如任何伟大的探索一样，这只是一个开始。更稳定、更高效的学习算法，对更多模态（如图像、音频）的拓展，以及对这个“通用潜在空间”更深层次的理论探索，都将是未来激动人心的研究方向。vec2vec的工作，无疑为我们打开了一扇通往更广阔、更统一的“嵌入多重宇宙”的大门，其深远影响，值得我们持续关注与思考。</p>
+                </section>
+            </article>
+        </main>
+        <footer>
+            <p>&copy; 2025 “利用嵌入的通用几何学”物理逻辑解读。灵感与核心内容参考自相关科研论文。</p>
+            <p>本页面所有动画均为概念性、简化性演示，旨在辅助理解，不完全代表真实物理过程或论文数据的精确模拟。</p>
+        </footer>
+    </div>
+
+    <script>
+        // --- 全局背景星空动画 (复用自模板) ---
+        let sketchBackground = function(p) {
+            let stars = [];
+            const numStars = 120; 
+            p.setup = function() {
+                let canvas = p.createCanvas(p.windowWidth, p.windowHeight);
+                canvas.parent('backgroundCanvasContainer');
+                for (let i = 0; i < numStars; i++) {
+                    stars.push({
+                        x: p.random(p.width),
+                        y: p.random(p.height),
+                        size: p.random(0.2, 1.8), 
+                        alpha: p.random(30, 110) 
+                    });
+                }
+                p.noStroke();
+            };
+            p.draw = function() {
+                p.clear(); 
+                for (let star of stars) {
+                    p.fill(180, 200, 235, star.alpha * (p.sin(p.frameCount * 0.007 + star.x * 0.07) * 0.25 + 0.75) ); 
+                    p.ellipse(star.x, star.y, star.size, star.size);
+                    star.y += star.size * 0.018; 
+                    if (star.y > p.height) {
+                        star.y = 0;
+                        star.x = p.random(p.width);
+                    }
+                }
+            };
+            p.windowResized = function() {
+                p.resizeCanvas(p.windowWidth, p.windowHeight);
+                 stars = []; 
+                for (let i = 0; i < numStars; i++) {
+                    stars.push({
+                        x: p.random(p.width),
+                        y: p.random(p.height),
+                        size: p.random(0.2, 1.8),
+                        alpha: p.random(30, 110)
+                    });
+                }
+            };
+        };
+        new p5(sketchBackground);
+
+        // --- 动画1: 嵌入空间不兼容与统一的希望 ---
+        let sketchAnimation1 = function(p) {
+            let pointsA = [];
+            let pointsB = [];
+            let numPoints = 30;
+            let targetPositionsA = [];
+            let targetPositionsB = [];
+            let mode = 'initial'; // 'initial', 'alignAttempt', 'exploreUniversal'
+            let transitionSpeed = 0.05;
+
+            function setupPoints(arr, color, centerX, centerY, radius) {
+                for (let i = 0; i < numPoints; i++) {
+                    let angle = p.map(i, 0, numPoints, 0, p.TWO_PI);
+                    let r = radius * p.random(0.5, 1);
+                    arr.push({
+                        x: centerX + r * p.cos(angle),
+                        y: centerY + r * p.sin(angle),
+                        tx: centerX + r * p.cos(angle),
+                        ty: centerY + r * p.sin(angle),
+                        color: color,
+                        origX: centerX + r * p.cos(angle),
+                        origY: centerY + r * p.sin(angle)
+                    });
+                }
+            }
+            
+            p.setup = function() {
+                let container = p.select('#animation1Container');
+                let canvas = p.createCanvas(container.width, container.height);
+                canvas.parent('animation1Container');
+                
+                setupPoints(pointsA, p.color(255, 87, 51, 200), p.width * 0.3, p.height * 0.5, p.width*0.15); // Reddish
+                setupPoints(pointsB, p.color(51, 153, 255, 200), p.width * 0.7, p.height * 0.5, p.width*0.15); // Bluish
+
+                p.select('#anim1BtnAlign').mousePressed(() => {
+                    mode = 'alignAttempt';
+                    for(let pt of pointsA) { pt.tx = pt.origX + p.width*0.2; pt.ty = pt.origY; }
+                    for(let pt of pointsB) { pt.tx = pt.origX - p.width*0.2; pt.ty = pt.origY; }
+                });
+                p.select('#anim1BtnExplore').mousePressed(() => {
+                    mode = 'exploreUniversal';
+                    let universalCenterX = p.width/2;
+                    let universalCenterY = p.height/2;
+                    for(let pt of pointsA) { pt.tx = universalCenterX + p.random(-20,20); pt.ty = universalCenterY + p.random(-20,20); }
+                    for(let pt of pointsB) { pt.tx = universalCenterX + p.random(-20,20); pt.ty = universalCenterY + p.random(-20,20); }
+                });
+                p.noLoop(); p.redraw(); // Draw once initially
+            };
+
+            p.draw = function() {
+                p.background(1, 4, 9);
+                p.textAlign(p.CENTER, p.CENTER);
+                p.textSize(14);
+
+                if (mode === 'initial') {
+                    p.fill(200);
+                    p.text("模型A嵌入空间", p.width*0.3, p.height*0.2);
+                    p.text("模型B嵌入空间", p.width*0.7, p.height*0.2);
+                } else if (mode === 'alignAttempt') {
+                     p.fill(200);
+                     p.text("尝试对齐... 结构不匹配!", p.width/2, p.height*0.1);
+                } else if (mode === 'exploreUniversal') {
+                    p.fill(150,255,150);
+                    p.ellipse(p.width/2, p.height/2, p.width*0.25, p.width*0.25); // Universal region
+                    p.fill(1,4,9);
+                    p.text("通用潜在结构", p.width/2, p.height/2);
+                }
+                
+                let allConverged = true;
+                [...pointsA, ...pointsB].forEach(pt => {
+                    pt.x = p.lerp(pt.x, pt.tx, transitionSpeed);
+                    pt.y = p.lerp(pt.y, pt.ty, transitionSpeed);
+                    p.fill(pt.color);
+                    p.ellipse(pt.x, pt.y, 10, 10);
+                    if (p.dist(pt.x, pt.y, pt.tx, pt.ty) > 1) {
+                        allConverged = false;
+                    }
+                });
+
+                if (allConverged && mode !== 'initial') {
+                    p.noLoop();
+                } else if (mode !== 'initial' || p.frameCount === 1) { // Keep looping during transition or for first frame
+                    p.loop();
+                }
+            };
+             p.windowResized = function() {
+                let container = p.select('#animation1Container');
+                p.resizeCanvas(container.width, container.height);
+                pointsA = []; pointsB = [];
+                setupPoints(pointsA, p.color(255, 87, 51, 200), p.width * 0.3, p.height * 0.5, p.width*0.15);
+                setupPoints(pointsB, p.color(51, 153, 255, 200), p.width * 0.7, p.height * 0.5, p.width*0.15);
+                mode = 'initial';
+                p.redraw();
+            };
+        };
+        new p5(sketchAnimation1);
+
+        // --- 动画2: vec2vec “翻译官”机制 ---
+        let sketchAnimation2 = function(p) {
+            let particle = null;
+            let stage = 'idle'; // idle, AtoB_adapterA, AtoB_core, AtoB_adapterB, AtoB_done, cycle_BtoCore, cycle_coretoA, cycle_Adone
+            let progress = 0;
+            let speed = 0.02;
+
+            // Define positions for components
+            let spaceA_pos, adapterA_pos, core_pos, adapterB_pos, spaceB_pos;
+
+            function updatePositions() {
+                spaceA_pos = { x: p.width * 0.15, y: p.height * 0.5 };
+                adapterA_pos = { x: p.width * 0.3, y: p.height * 0.5 };
+                core_pos = { x: p.width * 0.5, y: p.height * 0.5 };
+                adapterB_pos = { x: p.width * 0.7, y: p.height * 0.5 };
+                spaceB_pos = { x: p.width * 0.85, y: p.height * 0.5 };
+            }
+            
+            p.setup = function() {
+                let container = p.select('#animation2Container');
+                let canvas = p.createCanvas(container.width, container.height);
+                canvas.parent('animation2Container');
+                updatePositions();
+
+                p.select('#anim2BtnTraceAB').mousePressed(() => {
+                    stage = 'AtoB_adapterA';
+                    progress = 0;
+                    particle = { x: spaceA_pos.x, y: spaceA_pos.y, color: p.color(255, 0, 0), targetText: "空间A嵌入" };
+                    p.loop();
+                });
+                p.select('#anim2BtnCycle').mousePressed(() => {
+                    stage = 'cycle_BtoCore'; // Start cycle from B
+                    progress = 0;
+                    particle = { x: spaceB_pos.x, y: spaceB_pos.y, color: p.color(0, 0, 255), targetText: "空间B嵌入 (返回)" };
+                    p.loop();
+                });
+                p.noLoop(); p.redraw();
+            };
+
+            function drawComponent(label, pos, w, h) {
+                p.stroke(150);
+                p.fill(30, 30, 50);
+                p.rectMode(p.CENTER);
+                p.rect(pos.x, pos.y, w, h, 5);
+                p.fill(220);
+                p.noStroke();
+                p.textAlign(p.CENTER, p.CENTER);
+                p.textSize(12);
+                p.text(label, pos.x, pos.y);
+            }
+            
+            function drawArrow(from, to) {
+                p.stroke(100);
+                p.line(from.x, from.y, to.x, to.y);
+                let angle = p.atan2(to.y - from.y, to.x - from.x);
+                p.push();
+                p.translate(to.x, to.y);
+                p.rotate(angle);
+                p.fill(100);
+                p.triangle(-8, -4, -8, 4, 0, 0);
+                p.pop();
+            }
+
+            p.draw = function() {
+                p.background(1, 4, 9);
+                
+                drawComponent("空间 A", spaceA_pos, p.width*0.18, p.height*0.6);
+                drawComponent("适配器 A", adapterA_pos, p.width*0.15, p.height*0.3);
+                drawComponent("共享核心", core_pos, p.width*0.15, p.height*0.4);
+                drawComponent("适配器 B", adapterB_pos, p.width*0.15, p.height*0.3);
+                drawComponent("空间 B", spaceB_pos, p.width*0.18, p.height*0.6);
+
+                drawArrow(spaceA_pos, adapterA_pos);
+                drawArrow(adapterA_pos, core_pos);
+                drawArrow(core_pos, adapterB_pos);
+                drawArrow(adapterB_pos, spaceB_pos);
+                // Cycle arrows (conceptual)
+                p.stroke(100,100,0);
+                p.noFill();
+                p.arc(core_pos.x, core_pos.y - p.height*0.25, p.width*0.4, p.height*0.3, p.PI, p.TWO_PI); // B to A top arc
+
+                if (particle) {
+                    p.fill(particle.color);
+                    p.ellipse(particle.x, particle.y, 15, 15);
+                    p.fill(200);
+                    p.text(particle.targetText, particle.x, particle.y - 20);
+                    progress += speed;
+
+                    if (stage === 'AtoB_adapterA') {
+                        particle.x = p.lerp(spaceA_pos.x, adapterA_pos.x, progress);
+                        if (progress >= 1) { progress = 0; stage = 'AtoB_core'; particle.targetText = "处理中...";}
+                    } else if (stage === 'AtoB_core') {
+                        particle.x = p.lerp(adapterA_pos.x, core_pos.x, progress);
+                        if (progress >= 1) { progress = 0; stage = 'AtoB_adapterB'; particle.color = p.color(128,0,128); /* Transformed color */ }
+                    } else if (stage === 'AtoB_adapterB') {
+                        particle.x = p.lerp(core_pos.x, adapterB_pos.x, progress);
+                        if (progress >= 1) { progress = 0; stage = 'AtoB_done'; particle.color = p.color(0,0,255); /* Final color in B */ particle.targetText = "空间B嵌入";}
+                    } else if (stage === 'AtoB_done') {
+                        particle.x = p.lerp(adapterB_pos.x, spaceB_pos.x, progress);
+                        if (progress >= 1) { p.noLoop(); }
+                    } 
+                    // Cycle stages
+                    else if (stage === 'cycle_BtoCore') { // B -> Adapter B (implicit) -> Core
+                        particle.x = p.lerp(spaceB_pos.x, core_pos.x, progress); // Simplified path for cycle
+                        particle.y = p.lerp(spaceB_pos.y, core_pos.y - p.height*0.1, progress); // Arc path
+                        if (progress >= 1) { progress = 0; stage = 'cycle_coretoA'; particle.targetText = "逆向转换..."; particle.color = p.color(128,128,0);}
+                    } else if (stage === 'cycle_coretoA') { // Core -> Adapter A (implicit) -> A
+                        particle.x = p.lerp(core_pos.x, spaceA_pos.x, progress);
+                        particle.y = p.lerp(core_pos.y - p.height*0.1, spaceA_pos.y, progress); // Arc path
+                        if (progress >= 1) { progress = 0; stage = 'cycle_Adone'; particle.targetText = "空间A (循环)"; particle.color = p.color(255,100,100); /* Slightly different red */}
+                    } else if (stage === 'cycle_Adone') {
+                         if (progress >= 0.1) {p.noLoop(); } // Just stay for a bit
+                    }
+                }
+                if (stage === 'idle' && p.frameCount === 1) p.noLoop();
+            };
+             p.windowResized = function() {
+                let container = p.select('#animation2Container');
+                p.resizeCanvas(container.width, container.height);
+                updatePositions();
+                stage = 'idle'; particle = null;
+                p.redraw();
+            };
+        };
+        new p5(sketchAnimation2);
+
+        // --- 动画3: 潜在空间中的语义融合 ---
+        let sketchAnimation3 = function(p) {
+            let pointsSourceA = [];
+            let pointsSourceB = [];
+            let numPoints = 20;
+            let projectionStrength = 0;
+
+            function setupSourcePoints(arr, color, centerX, startY, spreadX, spreadY) {
+                for (let i = 0; i < numPoints; i++) {
+                    // Create pairs of points that should ideally map to the same latent spot
+                    let idealLatentX = p.width * 0.75 + p.random(-p.width*0.05, p.width*0.05);
+                    let idealLatentY = p.height * 0.5 + p.random(-p.height*0.1, p.height*0.1);
+                    arr.push({
+                        x: centerX + p.random(-spreadX, spreadX),
+                        y: startY + i * (spreadY / numPoints) + p.random(-5,5),
+                        color: color,
+                        latentX: idealLatentX,
+                        latentY: idealLatentY
+                    });
+                }
+            }
+
+            p.setup = function() {
+                let container = p.select('#animation3Container');
+                let canvas = p.createCanvas(container.width, container.height);
+                canvas.parent('animation3Container');
+                
+                setupSourcePoints(pointsSourceA, p.color(255, 87, 51, 180), p.width * 0.2, p.height*0.2, p.width*0.1, p.height*0.6);
+                setupSourcePoints(pointsSourceB, p.color(51, 153, 255, 180), p.width * 0.2, p.height*0.2, p.width*0.1, p.height*0.6); // Same initial region for B, but different ideal latents
+
+                p.select('#anim3Slider').input(() => {
+                    projectionStrength = p.select('#anim3Slider').value() / 100;
+                    p.loop(); // Redraw when slider changes
+                });
+                p.select('#anim3BtnReset').mousePressed(() => {
+                    projectionStrength = 0;
+                    p.select('#anim3Slider').value(0);
+                    p.redraw();
+                    p.noLoop();
+                });
+                p.noLoop(); p.redraw();
+            };
+
+            p.draw = function() {
+                p.background(1, 4, 9);
+
+                // Draw areas
+                p.noStroke();
+                p.fill(20,25,30);
+                p.rect(0, 0, p.width/2, p.height);
+                p.fill(25,30,35);
+                p.rect(p.width/2, 0, p.width/2, p.height);
+                
+                p.fill(200); p.textAlign(p.CENTER, p.CENTER); p.textSize(14);
+                p.text("原始混合空间", p.width * 0.25, p.height * 0.1);
+                p.text("通用潜在空间", p.width * 0.75, p.height * 0.1);
+
+                // Draw points and their projections
+                for (let i = 0; i < numPoints; i++) {
+                    let ptA = pointsSourceA[i];
+                    let ptB = pointsSourceB[i]; // Assuming B's points correspond for simplicity
+
+                    // Current positions based on projection strength
+                    let currentAx = p.lerp(ptA.x, ptA.latentX, projectionStrength);
+                    let currentAy = p.lerp(ptA.y, ptA.latentY, projectionStrength);
+                    let currentBx = p.lerp(ptB.x, ptB.latentX, projectionStrength); // B points start at same X but different latent target
+                    let currentBy = p.lerp(ptB.y, ptB.latentY, projectionStrength);
+
+
+                    // Draw lines from original source area to projected points
+                    if (projectionStrength > 0.01) {
+                        p.stroke(ptA.color, 80);
+                        p.line(ptA.x, ptA.y, currentAx, currentAy);
+                        p.stroke(ptB.color, 80);
+                        p.line(ptB.x, ptB.y, currentBx, currentBy); // B points start at same X
+                    }
+                    
+                    // Draw source points (always visible at original spot, but fade if projected)
+                    p.noStroke();
+                    p.fill(ptA.color, p.lerp(180, 50, projectionStrength));
+                    p.ellipse(ptA.x, ptA.y, 8, 8);
+                    p.fill(ptB.color, p.lerp(180, 50, projectionStrength));
+                    p.ellipse(ptB.x + 5, ptB.y + 5, 8, 8); // Slightly offset B for visibility in source
+
+                    // Draw projected points
+                    if (projectionStrength > 0) {
+                        p.fill(ptA.color);
+                        p.ellipse(currentAx, currentAy, 10, 10);
+                        p.fill(ptB.color);
+                        p.ellipse(currentBx, currentBy, 10, 10);
+                    }
+                }
+                if (projectionStrength == 0 || projectionStrength == 1) p.noLoop();
+            };
+             p.windowResized = function() {
+                let container = p.select('#animation3Container');
+                p.resizeCanvas(container.width, container.height);
+                pointsSourceA = []; pointsSourceB = [];
+                setupSourcePoints(pointsSourceA, p.color(255, 87, 51, 180), p.width * 0.2, p.height*0.2, p.width*0.1, p.height*0.6);
+                setupSourcePoints(pointsSourceB, p.color(51, 153, 255, 180), p.width * 0.2, p.height*0.2, p.width*0.1, p.height*0.6);
+                projectionStrength = 0; p.select('#anim3Slider').value(0);
+                p.redraw();
+            };
+        };
+        new p5(sketchAnimation3);
+
+        // --- 动画4: 翻译质量仪表盘 (简化) ---
+        let sketchAnimation4 = function(p) {
+            let data = {
+                "same": { vec2vec: 0.90, naive: 0.65, label: "同构模型对 (如 GTE <-> E5)" },
+                "cross": { vec2vec: 0.82, naive: 0.10, label: "异构模型对 (如 GTR <-> GTE)" },
+                "multi": { vec2vec: 0.75, naive: 0.02, label: "跨模态对 (如 GTR <-> CLIP)" } // Naive might not apply or be very low
+            };
+            let currentScenario = "same";
+            let barWidth, maxBarHeight, chartOriginX, chartOriginY, barSpacing;
+
+            function updateChartDimensions() {
+                barWidth = p.width * 0.2;
+                maxBarHeight = p.height * 0.6;
+                chartOriginX = p.width * 0.25;
+                chartOriginY = p.height * 0.8;
+                barSpacing = p.width * 0.3;
+            }
+
+            p.setup = function() {
+                let container = p.select('#animation4Container');
+                let canvas = p.createCanvas(container.width, container.height);
+                canvas.parent('animation4Container');
+                updateChartDimensions();
+
+                p.select('#anim4BtnSame').mousePressed(() => { currentScenario = "same"; p.redraw(); });
+                p.select('#anim4BtnCross').mousePressed(() => { currentScenario = "cross"; p.redraw(); });
+                p.select('#anim4BtnMulti').mousePressed(() => { currentScenario = "multi"; p.redraw(); });
+                p.noLoop(); p.redraw();
+            };
+
+            p.draw = function() {
+                p.background(1, 4, 9);
+                let currentData = data[currentScenario];
+
+                p.fill(220);
+                p.textAlign(p.CENTER, p.CENTER);
+                p.textSize(16);
+                p.text(currentData.label, p.width / 2, p.height * 0.1);
+                p.textSize(12);
+                p.text("翻译余弦相似度 (越高越好)", p.width / 2, p.height * 0.18);
+
+                // Draw Y axis
+                p.stroke(150);
+                p.line(chartOriginX - 20, chartOriginY, chartOriginX - 20, chartOriginY - maxBarHeight - 20);
+                for (let i = 0; i <= 10; i++) {
+                    let val = i / 10;
+                    let yPos = chartOriginY - val * maxBarHeight;
+                    p.line(chartOriginX - 25, yPos, chartOriginX - 15, yPos);
+                    p.fill(180); p.noStroke(); p.textAlign(p.RIGHT, p.CENTER);
+                    p.text(val.toFixed(1), chartOriginX - 30, yPos);
+                }
+
+                // Bar for vec2vec
+                p.fill(100, 200, 255); // Blueish
+                let h1 = currentData.vec2vec * maxBarHeight;
+                p.rect(chartOriginX, chartOriginY - h1, barWidth, h1);
+                p.fill(255); p.textAlign(p.CENTER); p.noStroke();
+                p.text("vec2vec", chartOriginX + barWidth / 2, chartOriginY + 15);
+                p.text(currentData.vec2vec.toFixed(2), chartOriginX + barWidth / 2, chartOriginY - h1 - 10);
+
+                // Bar for Naive Baseline
+                p.fill(255, 100, 100); // Reddish
+                let h2 = currentData.naive * maxBarHeight;
+                p.rect(chartOriginX + barSpacing, chartOriginY - h2, barWidth, h2);
+                p.fill(255); p.textAlign(p.CENTER);
+                p.text("朴素基线", chartOriginX + barSpacing + barWidth / 2, chartOriginY + 15);
+                p.text(currentData.naive.toFixed(2), chartOriginX + barSpacing + barWidth / 2, chartOriginY - h2 - 10);
+            };
+             p.windowResized = function() {
+                let container = p.select('#animation4Container');
+                p.resizeCanvas(container.width, container.height);
+                updateChartDimensions();
+                p.redraw();
+            };
+        };
+        new p5(sketchAnimation4);
+
+        // --- 动画5: 信息泄露路径概念演示 ---
+        let sketchAnimation5 = function(p) {
+            let currentStep = 0;
+            const totalSteps = 6;
+            let itemPositions = [];
+            let itemLabels = [
+                "1. 机密文档", "2. 未知编码器", "3. 嵌入向量库", 
+                "4. vec2vec 翻译", "5. 已知空间嵌入", "6. 信息提取"
+            ];
+            let revealedInfo = "";
+
+            function updateItemPositions() {
+                itemPositions = [
+                    { x: p.width * 0.2, y: p.height * 0.2, w: p.width*0.25, h:p.height*0.15, icon: "📄" }, // Document
+                    { x: p.width * 0.5, y: p.height * 0.2, w: p.width*0.25, h:p.height*0.15, icon: "⚙️" }, // Encoder
+                    { x: p.width * 0.8, y: p.height * 0.2, w: p.width*0.25, h:p.height*0.15, icon: "🗄️" }, // DB
+                    { x: p.width * 0.2, y: p.height * 0.6, w: p.width*0.25, h:p.height*0.15, icon: "↔️" }, // vec2vec
+                    { x: p.width * 0.5, y: p.height * 0.6, w: p.width*0.25, h:p.height*0.15, icon: "💡" }, // Known Embedding
+                    { x: p.width * 0.8, y: p.height * 0.6, w: p.width*0.25, h:p.height*0.15, icon: "🔍" }  // Extraction tool
+                ];
+            }
+
+            p.setup = function() {
+                let container = p.select('#animation5Container');
+                let canvas = p.createCanvas(container.width, container.height);
+                canvas.parent('animation5Container');
+                updateItemPositions();
+                p.select('#anim5BtnStart').mousePressed(() => {
+                    currentStep = (currentStep + 1) % (totalSteps + 1); // Cycle through or reset
+                    if (currentStep === 0) revealedInfo = "";
+                    if (currentStep === totalSteps) revealedInfo = "关键词: 项目Alpha\n日期: 2025-XX-XX";
+                    p.redraw();
+                });
+                p.noLoop(); p.redraw();
+            };
+
+            p.draw = function() {
+                p.background(1, 4, 9);
+                p.textAlign(p.CENTER, p.CENTER);
+                p.textSize(12);
+                p.strokeWeight(1.5);
+
+                for (let i = 0; i < totalSteps; i++) {
+                    let item = itemPositions[i];
+                    if (i < currentStep) {
+                        p.fill(30, 60, 90, 200);
+                        p.stroke(100, 150, 200);
+                    } else {
+                        p.fill(20, 30, 40, 150);
+                        p.stroke(80);
+                    }
+                    p.rectMode(p.CENTER);
+                    p.rect(item.x, item.y, item.w, item.h, 8);
+                    p.fill(220); p.noStroke(); p.textSize(20);
+                    p.text(item.icon, item.x, item.y - item.h*0.1);
+                    p.textSize(11);
+                    p.text(itemLabels[i], item.x, item.y + item.h*0.25);
+
+                    // Draw arrows
+                    if (i < totalSteps - 1 && i < currentStep) {
+                        let nextItem = itemPositions[i+1];
+                        // Simple horizontal or wrap-around arrows
+                        if ( (i+1) % 3 !== 0 ) { // Horizontal arrow
+                             p.stroke(150,200,100);
+                             p.line(item.x + item.w/2, item.y, nextItem.x - nextItem.w/2, nextItem.y);
+                        } else if (i === 2) { // Arrow from DB to vec2vec (wrap around)
+                             p.stroke(150,200,100);
+                             p.noFill();
+                             p.beginShape();
+                             p.vertex(item.x, item.y + item.h/2);
+                             p.vertex(item.x, item.y + item.h*0.8);
+                             p.vertex(nextItem.x, item.y + item.h*0.8);
+                             p.vertex(nextItem.x, nextItem.y - nextItem.h/2);
+                             p.endShape();
+                        }
+                    }
+                }
+
+                if (currentStep === totalSteps && revealedInfo) {
+                    p.fill(255, 223, 186); // Light gold
+                    p.rect(p.width / 2, p.height * 0.85, p.width*0.6, p.height*0.2, 5);
+                    p.fill(0); p.textSize(14);
+                    p.text("提取信息:\n" + revealedInfo, p.width / 2, p.height * 0.85);
+                }
+                
+                if (currentStep === 0 && p.frameCount === 1) {
+                     p.fill(200); p.textSize(14);
+                     p.text("点击按钮逐步演示信息提取流程", p.width/2, p.height/2);
+                }
+            };
+             p.windowResized = function() {
+                let container = p.select('#animation5Container');
+                p.resizeCanvas(container.width, container.height);
+                updateItemPositions();
+                currentStep = 0; revealedInfo = "";
+                p.redraw();
+            };
+        };
+        new p5(sketchAnimation5);
+
+    </script>
+</body>
+</html>

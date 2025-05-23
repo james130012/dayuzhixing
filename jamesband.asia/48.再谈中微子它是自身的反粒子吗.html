@@ -1,0 +1,1038 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>无中微子双贝塔衰变 探秘幽灵粒子：中微子是自身的反粒子吗？- Martin Bauer观点解读</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.2/p5.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
+    <style>
+        /* 基本重置和页面设置 */
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Noto Sans SC', sans-serif;
+            font-size: 18px; /* 基础字号，参考“三号”在屏幕上的可读性 (16pt) */
+            line-height: 1.8;
+            background-color: #0d1117; /* GitHub 暗黑模式背景色 */
+            color: #c9d1d9; /* GitHub 暗黑模式文字颜色 */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            overflow-x: hidden; /* 防止水平溢出 */
+        }
+
+        /* 背景动画容器 */
+        #backgroundCanvasContainer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 0;
+            pointer-events: none; /* 允许点击穿透 */
+        }
+
+        /* 内容容器 */
+        .container {
+            position: relative;
+            z-index: 1; /* 在背景动画之上 */
+            width: 90%;
+            max-width: 1000px; /* 优化阅读宽度，类似A3纸张感 */
+            margin: 40px auto; /* 增加上下边距 */
+            padding: 30px 40px;
+            background-color: rgba(22, 27, 34, 0.92); /* GitHub 暗黑模式内容区背景，稍作调整透明度 */
+            border: 1px solid #30363d; /* GitHub 暗黑模式边框颜色 */
+            border-radius: 12px; /* 圆角 */
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4); /* 增强阴影 */
+        }
+
+        /* 标题样式 */
+        h1, h2, h3 {
+            font-family: 'ZCOOL KuaiLe', cursive; /* 轻松活泼字体 */
+            color: #58a6ff; /* GitHub 暗黑模式链接/标题颜色 */
+            margin-bottom: 0.8em;
+            text-align: center;
+            letter-spacing: 1.5px; /* 增加字间距 */
+        }
+        h1 {
+            font-size: 2.8em; /* 主标题，略微增大 */
+            color: #79c0ff; /* 更亮的蓝色 */
+            border-bottom: 2px solid #388bfd;
+            padding-bottom: 20px; /* 增加内边距 */
+            margin-top: 0;
+            margin-bottom: 1em;
+        }
+        h2 {
+            font-size: 2.2em; /* 章节标题 */
+            color: #f778ba; /* 粉色系，增加活泼感 */
+            margin-top: 2.5em; /* 增加上边距 */
+            padding-bottom: 10px;
+            border-bottom: 1px dashed #58a6ff;
+        }
+        h3 {
+            font-size: 1.6em; /* 副标题 */
+            color: #a371f7; /* 紫色系 */
+            margin-top: 1.8em;
+            text-align: left; /* 副标题左对齐 */
+        }
+
+        /* 段落和文本样式 */
+        p, li {
+            margin-bottom: 1.3em; /* 增加段落间距 */
+            text-align: justify; /* 两端对齐 */
+            color: #adbac7; /* 柔和的文字颜色 */
+        }
+        ul, ol {
+            padding-left: 35px; /* 增加列表缩进 */
+        }
+        li {
+            margin-bottom: 0.8em;
+        }
+
+        /* 强调文字 */
+        strong, .highlight {
+            color: #ffa657; /* 暖黄色强调 */
+            font-weight: bold;
+            padding: 0 2px;
+        }
+        .concept { /* 物理概念词 */
+            font-weight: 500;
+            color: #7ee787; /* 绿色概念词 */
+            padding: 3px 8px; /* 增加内边距 */
+            background-color: rgba(63, 185, 80, 0.18); /* 调整背景透明度 */
+            border-radius: 6px;
+            border: 1px solid rgba(63, 185, 80, 0.5); /* 调整边框透明度 */
+            font-family: 'Noto Sans SC', sans-serif; /* 概念词使用标准字体 */
+            display: inline-block; /* 防止奇怪的换行 */
+        }
+        .formula {
+            display: block;
+            text-align: center;
+            margin: 25px auto; /* 增加上下外边距 */
+            padding: 18px; /* 增加内边距 */
+            background-color: rgba(13, 17, 23, 0.85); /* 更深的背景 */
+            border-left: 5px solid #388bfd; /* 强调边框 */
+            color: #c9d1d9;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 1.1em; /* 稍大一点的公式字号 */
+            border-radius: 6px; /* 增加圆角 */
+            white-space: pre-wrap; /* 保证公式换行 */
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+
+        /* 动画容器 */
+        .animation-container {
+            width: 100%;
+            max-width: 600px; /* 动画区域宽度 */
+            height: 380px; /* 动画区域高度 */
+            margin: 30px auto; /* 增加上下外边距 */
+            border: 1px solid #30363d;
+            border-radius: 10px;
+            overflow: hidden;
+            background-color: #010409; /* 更深的动画背景 */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: inset 0 0 15px rgba(0,0,0,0.6); /* 增强内阴影 */
+        }
+        .animation-container canvas {
+            display: block;
+            max-width: 100%;
+            max-height: 100%;
+            border-radius: 8px; /* 确保canvas也有圆角 */
+        }
+        
+        /* 交互按钮和控件样式 */
+        .controls {
+            text-align: center;
+            margin-bottom: 30px;
+            margin-top: 18px;
+        }
+        .controls button {
+            padding: 12px 25px; /* 增加按钮大小 */
+            font-size: 1em; /* 调整字号 */
+            font-family: 'Noto Sans SC', sans-serif;
+            background-image: linear-gradient(to right, #388bfd, #58a6ff);
+            color: white;
+            border: none;
+            border-radius: 25px; 
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 10px; /* 增加按钮间距 */
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.25);
+            letter-spacing: 0.8px;
+        }
+        .controls button:hover {
+            transform: translateY(-3px) scale(1.08); /* 增强悬浮效果 */
+            box-shadow: 0 8px 20px rgba(56, 139, 253, 0.4);
+        }
+        .controls button:active {
+            transform: translateY(0px) scale(1);
+        }
+        .controls label {
+            color: #8b949e; /* GitHub 暗黑模式次要文字颜色 */
+            margin: 0 12px;
+            font-size: 0.95em;
+        }
+        .controls input[type="range"] {
+            vertical-align: middle;
+            cursor: grab;
+            width: 150px;
+        }
+
+        /* 作者信息 */
+        .author-info {
+            text-align: center;
+            margin: 25px 0 35px 0;
+            font-size: 1em;
+            color: #8b949e;
+            border-top: 1px dashed #30363d;
+            border-bottom: 1px dashed #30363d;
+            padding: 15px 0;
+        }
+        .author-info strong {
+            color: #79c0ff;
+        }
+        .post-meta {
+            font-size: 0.85em;
+            color: #6a737d;
+            margin-top: 5px;
+        }
+
+        /* 图片描述块 */
+        .image-description {
+            background-color: rgba(48, 54, 61, 0.3);
+            border-left: 3px solid #f778ba;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+            font-size: 0.9em;
+            color: #b1bac4;
+        }
+        .image-description strong {
+            color: #f778ba;
+        }
+
+        /* 页脚 */
+        footer {
+            text-align: center;
+            margin-top: 50px;
+            padding: 30px;
+            background-color: #161b22; /* 页脚背景 */
+            color: #8b949e;
+            width: 100%;
+            font-size: 0.9em;
+            border-top: 1px solid #30363d;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            body {
+                font-size: 17px; /* 移动端稍小字号 */
+            }
+            .container {
+                width: 95%;
+                padding: 20px 25px;
+                margin: 20px auto;
+            }
+            h1 { font-size: 2.2em; }
+            h2 { font-size: 1.8em; }
+            h3 { font-size: 1.4em; }
+            .animation-container { height: 320px; }
+            .controls button { padding: 10px 20px; font-size: 0.9em; }
+            .controls input[type="range"] { width: 120px; }
+            .formula { font-size: 1em; padding: 12px; }
+        }
+         @media (max-width: 480px) {
+            body { font-size: 16px; }
+            h1 { font-size: 1.9em; }
+            h2 { font-size: 1.6em; }
+            h3 { font-size: 1.25em; }
+            .animation-container { height: 280px; }
+            p, li { line-height: 1.7; }
+        }
+    </style>
+</head>
+<body>
+    <div id="backgroundCanvasContainer"></div>
+    <div class="container">
+        <header>
+            <h1>探秘幽灵粒子：中微子是自身的反粒子吗？</h1>
+            <div class="author-info">
+                <p>基于 <strong>Martin Bauer (@martinmbauer)</strong> 系列帖文的物理逻辑解读</p>
+                <p class="post-meta">帖文发布于 2025年5月22日 | Martin Bauer 先生作为英国科学界代表参与相关研究与讨论</p>
+            </div>
+        </header>
+
+        <main>
+            <article>
+                <section id="introduction">
+                    <h2>引言：揭开中微子的神秘面纱</h2>
+                    <p>在粒子物理学的宏伟画卷中，<span class="concept">中微子</span>无疑是最神秘莫测的角色之一。它们如宇宙中的幽灵，几乎不与任何物质发生相互作用，每秒钟都有数万亿个中微子穿过我们的身体，却悄无声息。然而，正是这些难以捉摸的粒子，可能掌握着解开宇宙深层奥秘的关键钥匙。其中一个悬而未决的核心问题便是：<strong>中微子是否是它们自身的反粒子？</strong></p>
+                    <p>这个问题并非空穴来风。在已知的基本费米子（构成物质的基本粒子，如电子、夸克）中，中微子是唯一可能具有这种独特性质的候选者。如果中微子确实是其自身的反粒子，那么它将被称为<span class="concept">马约拉纳费米子</span> (Majorana fermion)，这将对粒子物理标准模型产生深远影响，甚至可能帮助我们理解宇宙中物质远多于反物质这一世纪难题（即<span class="concept">物质-反物质不对称性</span>）。</p>
+                    <p>物理学家 Martin Bauer 在其一系列引人入胜的帖文中，深入浅出地探讨了这一前沿问题，并着重介绍了一种极具智慧的实验方法——<span class="concept">无中微子双贝塔衰变</span> (neutrinoless double beta decay, 0νββ)——它有望在不直接探测到任何一个中微子的情况下，揭示中微子的真实身份。本篇解读将跟随 Bauer 的思路，从物理逻辑的视角，层层剖析这一探索之旅的精彩细节与深刻意义。</p>
+                </section>
+
+                <section id="beta-decay-neutrino-birth">
+                    <h2>一、贝塔衰变：中微子的诞生与“幽灵”本性</h2>
+                    <p>要理解中微子的故事，我们必须从<span class="concept">贝塔衰变</span> (beta decay)谈起。这是放射性现象的一种，也是中微子首次被理论预言和实验发现的舞台。当一个原子核内的中子过多，变得不稳定时，它可能会自发地转变成一个质子。根据<strong class="highlight">电荷守恒定律</strong>，中子（电荷为0）转变为质子（电荷为+1）的过程中，必须同时释放一个带负电的电子（电荷为-1）来平衡电荷。这个过程可以简单表示为：</p>
+                    <p class="formula">n → p⁺ + e⁻</p>
+                    <p>然而，早期的实验观测发现，这个看似简单的衰变过程中存在一个“能量危机”。如果衰变只产生质子和电子，那么根据能量守恒和动量守恒，发射出的电子应该具有一个特定的、固定的能量值。但实验结果却显示，电子的能量是连续变化的，形成一个<strong class="highlight">连续能谱</strong>，这意味着有一部分能量“神秘地消失”了。为了解释这一现象，物理学家沃尔夫冈·泡利在1930年大胆假设存在一种新的、电中性的、质量极小（甚至可能为零）的粒子，它在贝塔衰变中与电子一同被释放，并带走了那部分“丢失”的能量和动量。这个粒子就是后来由恩里科·费米命名的“中微子”（neutrino，意为“微小的中性粒子”）。</p>
+                    <p>更准确地说，在中子衰变（β⁻衰变）中产生的是<span class="concept">反电子中微子</span> (ν̄ₑ)。因此，完整的贝塔衰变过程应为：</p>
+                    <p class="formula">n → p⁺ + e⁻ + ν̄ₑ</p>
+                    <div class="image-description">
+                        <strong>参考图解 (Post 2 & 3):</strong>
+                        <ul>
+                            <li><strong>普通贝塔衰变图示：</strong>一个中子（灰色球）转变为一个质子（红色球）、一个电子（黄色球）和一个反中微子（浅蓝色球）。</li>
+                            <li><strong>电子能谱图示：</strong>横轴为电子动能，纵轴为概率。观测到的能谱（蓝色曲线）是连续的，从零到一个最大值；而如果不存在中微子，电子能量将是一个固定值（图中红色竖线所示的“背对背衰变”情况）。这清晰地表明了中微子带走了部分能量。</li>
+                        </ul>
+                    </div>
+                    <p>中微子之所以难以探测，正是因为它们只参与<span class="concept">弱相互作用</span>和引力相互作用，而不参与强相互作用和电磁相互作用。这使得它们能够轻易穿透大量的物质而不发生任何反应，如同“幽灵”一般。直到1956年，雷因斯和考恩才通过核反应堆实验首次直接探测到了中微子的存在，证实了泡利的预言。</p>
+                    <div id="betaDecayAnimation" class="animation-container"></div>
+                    <div class="controls">
+                        <button id="playBetaDecayButton">演示贝塔衰变过程</button>
+                        <button id="showEnergySpectrumButton">显示电子能谱</button>
+                    </div>
+                </section>
+
+                <section id="particle-antiparticle-majorana">
+                    <h2>二、粒子与反粒子：湮灭的宿命与马约拉纳之问</h2>
+                    <p>宇宙中的每一个基本粒子似乎都有一个对应的“镜中影像”——<span class="concept">反粒子</span>。反粒子与粒子拥有相同的质量，但电荷等某些量子数则相反。例如，电子的反粒子是正电子 (e⁺)，质子的反粒子是反质子 (p⁻)。当粒子与其反粒子相遇时，它们会发生<strong class="highlight">湮灭</strong> (annihilation) 现象，双双消失，并将其全部质量转化为能量，通常以光子的形式释放出来。一个经典的例子就是电子和正电子湮灭产生两个伽马光子：</p>
+                    <p class="formula">e⁻ + e⁺ → γ + γ</p>
+                     <div class="image-description">
+                        <strong>参考图解 (Post 4):</strong> 图片展示电子（橙色线）和正电子（黄色线）相向运动并湮灭，产生两个光子（蓝色波浪线）。
+                    </div>
+                    <p>那么，中微子作为一种粒子，它是否也有自己的反粒子——反中微子呢？答案是肯定的，标准模型中存在中微子和反中微子。但一个更深层次的问题是：<strong class="highlight">中微子和反中微子会不会是同一种粒子？</strong></p>
+                    <p>如果一个粒子是其自身的反粒子，那么它就被称为<span class="concept">马约拉纳粒子</span>。光子就是一种马约拉纳粒子，它是电中性的，并且是自身的反粒子。如果中微子也是马约拉纳粒子，这意味着中微子不需要“寻找”一个独立的反中微子来湮灭，两个中微子（如果它们是马约拉纳型的）在特定条件下就可以相互“湮灭”或表现出类似的效应。这将是一个极其独特的属性，因为其他所有已知的基本费米子（如电子、夸克）都是<span class="concept">狄拉克费米子</span> (Dirac fermion)，即粒子和反粒子是明确区分的。</p>
+                    <p>中微子是电中性的，这为它们成为马约拉纳粒子提供了可能性。如果中微子是马约拉纳粒子，那么赋予它们质量的机制（例如通过所谓的“跷跷板机制”）也将与赋予其他费米子质量的希格斯机制有所不同，这可能解释为什么中微子的质量如此之小。此外，马约拉纳中微子的存在将直接导致<span class="concept">轻子数不守恒</span>。轻子数是一个在标准模型中通常守恒的量子数（电子和中微子的轻子数为+1，正电子和反中微子的轻子数为-1）。如果中微子是自身的反粒子，那么一个中微子既可以是+1也可以是-1（取决于如何定义），这就为轻子数不守恒的过程打开了大门。</p>
+                    <div id="annihilationAnimation" class="animation-container"></div>
+                    <div class="controls">
+                        <button id="playElectronPositronAnnihilation">电子-正电子湮灭</button>
+                        <button id="playMajoranaConcept">马约拉纳粒子概念</button>
+                    </div>
+                </section>
+
+                <section id="double-beta-decay-search">
+                    <h2>三、双贝塔衰变：在稀有事件中寻找答案</h2>
+                    <p>既然中微子如此难以直接研究，我们如何才能判断它们是否是马约拉纳粒子呢？正如 Martin Bauer 所指出的，一个“绝妙的实验”可以在不直接探测中微子的情况下回答这个问题。这个实验就是寻找<span class="concept">无中微子双贝塔衰变</span> (0νββ)。</p>
+                    <p>首先，我们需要了解什么是<span class="concept">双贝塔衰变</span> (double beta decay)。在某些原子核中，单个贝塔衰变在能量上是被禁止的（即衰变后的核素质量反而更大），或者被高度压制。然而，如果同时发生两次贝塔衰变，使得原子核的质子数增加2，中子数减少2，并且最终核素的质量低于初始核素，那么这种双贝塔衰变过程就可能发生。这是一种极为罕见的放射性衰变模式。</p>
+                    <p>标准的双贝塔衰变过程（称为<span class="concept">2νββ衰变</span>）涉及两个中子同时转变为两个质子，并释放两个电子和<strong class="highlight">两个反电子中微子</strong>：</p>
+                    <p class="formula">(A,Z) → (A,Z+2) + 2e⁻ + 2ν̄ₑ</p>
+                    <p>这个过程是完全符合标准模型的，并且已经被实验观测到，其半衰期通常长达10¹⁸至10²¹年甚至更久。例如，钙-48 (⁴⁸Ca) 可以通过2νββ衰变转变为钛-48 (⁴⁸Ti)。</p>
+                    <div class="image-description">
+                        <strong>参考图解 (Post 6):</strong> 展示普通双贝塔衰变 (2νββ) 的示意图，一个原子核同时释放两个电子和两个反中微子。
+                    </div>
+                    <p>现在，关键点来了：如果中微子是马约拉纳粒子（即 ν̄ₑ ≡ νₑ），那么在双贝塔衰变过程中，第一个中子衰变产生的“反中微子”和第二个中子衰变产生的另一个“反中微子”（它们现在可以看作是同一种马约拉纳中微子）有可能在原子核内部就相互“湮灭”掉，或者说，一个中微子被发射出来后，立即被同一个原子核内的另一个衰变过程吸收（因为它是自己的反粒子）。这样一来，最终的衰变产物中将<strong class="highlight">只有两个电子，而没有中微子</strong>被释放出来。这就是无中微子双贝塔衰变 (0νββ)：</p>
+                    <p class="formula">(A,Z) → (A,Z+2) + 2e⁻</p>
+                    <div class="image-description">
+                        <strong>参考图解 (Post 1 & 7):</strong>
+                        <ul>
+                            <li><strong>0νββ示意图 (Post 1):</strong> 钙-48 (⁴⁸Ca) 原子核（含20质子，28中子）通过0νββ过程转变为钛-48 (⁴⁸Ti) 原子核（含22质子，26中子），同时释放两个电子 (e⁻)，但没有中微子射出。图中强调了两个中子（橙色）转变为两个质子（蓝色）。</li>
+                            <li><strong>核素能量变化图 (Post 7):</strong> 展示了双贝塔衰变的能量路径。初始核素 (A,Z) 的能量高于最终核素 (A,Z+2)。对于0νββ的发生，通常要求从 (A,Z) 到 (A,Z+1) 的单贝塔衰变在能量上是不利的或被压制的，而到 (A,Z+2) 的双贝塔衰变在能量上是有利的。</li>
+                        </ul>
+                    </div>
+                    <p>如果实验上能够明确无误地观测到0νββ衰变，那将是粒子物理学的一个重大突破。它将直接证明：</p>
+                    <ul>
+                        <li><strong>中微子是马约拉纳粒子。</strong></li>
+                        <li><strong>轻子数不守恒。</strong>因为在0νββ过程中，轻子数从初始态的L（例如，对于原子核是0）变为了末态的L+2（两个电子的轻子数是+2）。</li>
+                        <li>中微子具有<span class="concept">马约拉纳质量</span>，其质量起源机制可能与标准模型中其他费米子不同。</li>
+                    </ul>
+                    <p>0νββ衰变的发生率与中微子的“有效马约拉纳质量” (mββ) 的平方成正比。这个有效质量是一个组合量，涉及到三种中微子质量本征态的混合。因此，测量0νββ的半衰期可以直接探测到中微子的这一基本属性。</p>
+                    <div id="doubleBetaDecayComparisonAnimation" class="animation-container"></div>
+                    <div class="controls">
+                        <button id="play2nubbButton">演示标准双贝塔 (2νββ)</button>
+                        <button id="play0nubbButton">演示无中微子双贝塔 (0νββ)</button>
+                    </div>
+                </section>
+
+                <section id="experimental-signatures">
+                    <h2>四、实验的火眼金睛：如何区分0νββ与2νββ？</h2>
+                    <p>既然2νββ衰变本身就极为罕见，那么比它更为稀有的0νββ衰变（如果存在的话）将如何被实验捕捉到呢？关键在于<strong class="highlight">测量衰变释放的两个电子的总能量</strong>。</p>
+                    <p>在2νββ衰变中，由于有两个中微子被释放，它们会带走一部分能量，且这部分能量是连续变化的。因此，两个电子的总动能也是一个<span class="concept">连续的谱</span>，从零一直延伸到一个最大值（Q值，即衰变释放的总能量）。</p>
+                    <p>而在0νββ衰变中，由于没有中微子带走能量，衰变释放的全部Q值能量都分配给了两个出射电子（以及原子核的微小反冲能量，通常可忽略）。因此，如果0νββ衰变发生，实验上应该能观测到这两个电子的总动能集中在一个<strong class="highlight">尖锐的峰</strong>上，这个峰的位置就对应于该核素双贝塔衰变的Q值。</p>
+                    <div class="image-description">
+                        <strong>回顾Post 3的电子能谱图:</strong> 虽然该图用于说明单贝塔衰变中中微子导致能谱连续，但其逻辑可以类推到双贝塔衰变。在2νββ中，双电子的总能量谱也是连续的。而在0νββ中，双电子的总能量将是一个固定值（Q值），在能谱上表现为一个峰。
+                    </div>
+                    <p>这就是实验寻找0νββ的核心判据：在高灵敏度、高能量分辨率的探测器中，寻找在特定Q值处出现的超出背景预期的电子信号峰。这要求实验具有极低的本底噪声（来自宇宙射线、天然放射性等），以及尽可能多的源物质（例如锗-76、氙-136、碲-130等适合研究0νββ的同位素）。</p>
+                    <div id="electronEnergySpectrumAnimation" class="animation-container"></div>
+                    <div class="controls">
+                        <button id="show2nubbSpectrumButton">2νββ 电子总能谱</button>
+                        <button id="show0nubbPeakButton">0νββ 电子总能峰</button>
+                    </div>
+                    <p>为了实现这一目标，科学家们发展了各种精密的实验技术。例如，使用高纯锗 (HPGe) 探测器，其中锗晶体本身既是源物质 (富集⁷⁶Ge) 又是探测器。这些实验通常建在<strong class="highlight">深地实验室</strong>（如意大利的Gran Sasso国家实验室、加拿大的SNOLAB等），利用厚厚的岩石层来屏蔽宇宙射线，并采用多层主动和被动屏蔽材料来进一步降低环境本底辐射。</p>
+                </section>
+
+                <section id="experimental-efforts-future">
+                    <h2>五、全球的求索：GERDA、LEGEND及未来展望</h2>
+                    <p>Martin Bauer 的帖文中提到了以<span class="concept">锗-76 (⁷⁶Ge)</span> 为目标的实验，并指出第一阶段实验已在意大利的Gran Sasso实验室采集数据，背后有一个大型的国际合作。这很可能指的是像GERDA (Germanium Detector Array) 实验以及其后续的LEGEND (Large Enriched Germanium Experiment for Neutrinoless ββ Decay) 合作项目。</p>
+                    <div class="image-description">
+                        <strong>参考图解 (Post 8):</strong> 展示了一个大型实验装置的示意图，可能是一个圆柱形的高纯锗探测器阵列，周围有液氩冷却和屏蔽装置，整个设施位于地下。这与GERDA/LEGEND等实验的特征相符。
+                    </div>
+                    <p>这些实验的挑战是巨大的。0νββ衰变的半衰期如果存在，预计将远超10²⁶年，甚至可能达到10²⁷至10²⁸年或更长。这意味着在大量的源物质中，每一年可能也只有极少数几个（甚至没有）0νββ事件发生。因此，实验的<span class="concept">灵敏度</span>至关重要。灵敏度取决于源物质的质量、测量时间、能量分辨率以及本底水平。</p>
+                    <p>Bauer 提到，未来阶段的实验可能达到对0νββ衰变半衰期<strong class="highlight">10²⁸年</strong>的灵敏度。这是一个非常宏伟的目标，如果实现，将极大地推进我们对中微子性质的理解。即使未能观测到0νββ信号，实验给出的半衰期下限也能对中微子的有效马约拉纳质量设定更严格的上限，从而检验各种理论模型。</p>
+                    <p>作者还提到他将代表英国科学界参加在德国海德堡马克斯·普朗克核物理研究所举办的“第三届无中微子双贝塔衰变未来国际峰会”（2025年5月26-27日）。这表明0νββ研究是一个充满活力且高度国际化的前沿领域，全球科学家正在共同努力，攻克这一难题。</p>
+                    <div class="image-description">
+                        <strong>参考图解 (Post 10):</strong> 会议网页截图，显示了峰会的标题、时间和主办方，背景是海德堡的风景。
+                    </div>
+                    <div id="experimentSchematicAnimation" class="animation-container"></div>
+                    <div class="controls">
+                        <button id="toggleShieldingLayersButton">显示/隐藏屏蔽层</button>
+                        <button id="zoomToDetectorButton">放大/缩小探测器核心</button>
+                    </div>
+                    <p>如果0νββ过程被观测到，其意义将是革命性的。它不仅证明中微子是马约拉纳粒子，揭示了新的质量起源机制，并证实轻子数不守恒，还可能为解释宇宙的物质-反物质不对称性提供线索（通过一种称为“轻子生成”的理论机制）。这一“单个衰变”确实可能教会我们关于自然界的许多深刻道理。</p>
+                </section>
+
+                <section id="conclusion">
+                    <h2>结语：幽灵粒子的终极追问</h2>
+                    <p>中微子是否是自身的反粒子？这个问题是粒子物理学中最引人入胜的谜题之一。通过对 Martin Bauer 系列帖文的解读，我们深入了解了科学家们是如何通过巧妙的实验设计——尤其是无中微子双贝塔衰变研究——来尝试回答这个问题的。这不仅仅是对一种粒子特性的探索，更是对物质基本构成、自然界基本对称性以及宇宙演化奥秘的追问。</p>
+                    <p>0νββ实验的每一点进展，无论是信号的发现还是半衰期下限的推进，都在不断拓展我们认知的边界。正如 Bauer 所言，如果这个过程被观测到，它将证明中微子是马约拉纳粒子，它们具有马约拉纳质量，赋予它们质量的机制与自然界中所有其他基本费米子都不同，并且轻子数并不守恒。这无疑将开启粒子物理学的新篇章。</p>
+                    <p>这场对“幽灵粒子”的终极追问，凝聚了全球科学家的智慧与汗水，展现了人类探索未知、追求真理的不懈精神。让我们拭目以待，期待着这些精密实验能够早日为我们揭示中微子的真实面貌，以及宇宙更深层次的秘密。</p>
+                </section>
+            </article>
+        </main>
+        <footer>
+            <p>&copy; 2025 中微子性质解读。内容主要基于 Martin Bauer (@martinmbauer) 的公开帖文分析。</p>
+            <p>本页面所有动画均为概念性、简化性演示，旨在辅助理解物理概念，不完全代表真实物理过程或实验装置的精确模拟。</p>
+        </footer>
+    </div>
+
+    <script>
+        // --- 全局背景星空动画 (来自模板) ---
+        let sketchBackground = function(p) {
+            let stars = [];
+            const numStars = 120; 
+            p.setup = function() {
+                let canvas = p.createCanvas(p.windowWidth, p.windowHeight);
+                canvas.parent('backgroundCanvasContainer');
+                for (let i = 0; i < numStars; i++) {
+                    stars.push({
+                        x: p.random(p.width),
+                        y: p.random(p.height),
+                        size: p.random(0.2, 1.8), 
+                        alpha: p.random(30, 100) 
+                    });
+                }
+                p.noStroke();
+            };
+            p.draw = function() {
+                p.clear(); 
+                for (let star of stars) {
+                    p.fill(180, 200, 235, star.alpha * (p.sin(p.frameCount * 0.007 + star.x * 0.07) * 0.3 + 0.7) ); 
+                    p.ellipse(star.x, star.y, star.size, star.size);
+                    star.y += star.size * 0.01; 
+                    if (star.y > p.height) {
+                        star.y = 0;
+                        star.x = p.random(p.width);
+                    }
+                }
+            };
+            p.windowResized = function() {
+                p.resizeCanvas(p.windowWidth, p.windowHeight);
+                 stars = []; 
+                for (let i = 0; i < numStars; i++) {
+                    stars.push({
+                        x: p.random(p.width),
+                        y: p.random(p.height),
+                        size: p.random(0.2, 1.8),
+                        alpha: p.random(30, 100)
+                    });
+                }
+            };
+        };
+        new p5(sketchBackground);
+
+        // --- 动画1: 贝塔衰变与电子能谱 ---
+        let sketchBetaDecay = function(p) {
+            let neutron, proton, electron, antineutrino;
+            let state = 'initial'; // initial, decaying, spectrum
+            let decayProgress = 0;
+            let spectrumData = [];
+            let showSpectrum = false;
+
+            class Particle {
+                constructor(x, y, r, label, color) {
+                    this.x = x; this.y = y; this.r = r; this.label = label; this.color = color;
+                    this.vx = 0; this.vy = 0; this.targetX = x; this.targetY = y;
+                }
+                draw() {
+                    p.fill(this.color); p.noStroke();
+                    p.ellipse(this.x, this.y, this.r * 2, this.r * 2);
+                    p.fill(0); p.textAlign(p.CENTER, p.CENTER); p.textSize(this.r * 0.8);
+                    p.text(this.label, this.x, this.y);
+                }
+                update() {
+                    this.x += (this.targetX - this.x) * 0.1 + this.vx;
+                    this.y += (this.targetY - this.y) * 0.1 + this.vy;
+                }
+            }
+
+            p.setup = function() {
+                let container = p.select('#betaDecayAnimation');
+                let canvas = p.createCanvas(container.width, container.height);
+                canvas.parent('betaDecayAnimation');
+                p.select('#playBetaDecayButton').mousePressed(startDecay);
+                p.select('#showEnergySpectrumButton').mousePressed(toggleSpectrum);
+                resetDecay();
+                generateSpectrumData();
+                p.noLoop(); p.redraw();
+            };
+
+            function resetDecay() {
+                state = 'initial';
+                decayProgress = 0;
+                neutron = new Particle(p.width / 2, p.height / 2, 30, 'n', p.color(150, 150, 150)); // Grey neutron
+                proton = null; electron = null; antineutrino = null;
+                showSpectrum = false;
+            }
+
+            function startDecay() {
+                resetDecay();
+                state = 'decaying';
+                showSpectrum = false;
+                p.loop();
+            }
+            
+            function toggleSpectrum() {
+                showSpectrum = !showSpectrum;
+                if (showSpectrum) {
+                    state = 'spectrum';
+                    p.loop(); // Ensure drawing if paused
+                } else {
+                     if (state === 'spectrum') { // If was showing spectrum, go back to initial/decayed state
+                         resetDecay(); // Or go to a 'decayed_static' state
+                         p.noLoop(); p.redraw();
+                     }
+                }
+                 p.redraw();
+            }
+
+            function generateSpectrumData() {
+                spectrumData = [];
+                for (let i = 0; i < 100; i++) {
+                    // Simplified beta spectrum shape (approximate)
+                    let x = i / 100; // Energy fraction
+                    let y = 30 * x * p.pow(1 - x, 2) * (1 + 2*x); // Arbitrary shape for illustration
+                    spectrumData.push(y);
+                }
+            }
+
+            p.draw = function() {
+                p.background(1, 4, 9);
+                if (showSpectrum) {
+                    drawSpectrum();
+                } else {
+                    if (neutron) neutron.draw();
+                    if (proton) { proton.update(); proton.draw(); }
+                    if (electron) { electron.update(); electron.draw(); }
+                    if (antineutrino) { antineutrino.update(); antineutrino.draw(); }
+
+                    if (state === 'decaying') {
+                        decayProgress += 0.01;
+                        if (decayProgress > 0.2 && !proton) {
+                            proton = new Particle(neutron.x, neutron.y, 28, 'p⁺', p.color(255, 80, 80)); // Red proton
+                            electron = new Particle(neutron.x, neutron.y, 15, 'e⁻', p.color(80, 80, 255)); // Blue electron
+                            antineutrino = new Particle(neutron.x, neutron.y, 10, 'ν̄ₑ', p.color(80, 200, 80)); // Green antineutrino
+                            
+                            proton.targetX = neutron.x - 15;
+                            electron.targetX = neutron.x + 60; electron.targetY = neutron.y - 60;
+                            electron.vx = 2; electron.vy = -1.5;
+                            antineutrino.targetX = neutron.x + 70; antineutrino.targetY = neutron.y + 50;
+                            antineutrino.vx = 1.8; antineutrino.vy = 1.2;
+                            neutron = null; // Neutron vanishes
+                        }
+                        if (decayProgress >= 1) {
+                            state = 'decayed';
+                            p.noLoop();
+                        }
+                    }
+                    // Formula display
+                    p.fill(200); p.textSize(16); p.textAlign(p.CENTER);
+                    let formulaText = "n → p⁺ + e⁻ + ν̄ₑ";
+                    if (state === 'initial') formulaText = "中子 (n)";
+                    p.text(formulaText, p.width/2, p.height - 30);
+                }
+                 if (!p.isLooping() && !showSpectrum && state === 'initial') {
+                     p.fill(255,255,255,100); p.textAlign(p.CENTER, p.CENTER); p.textSize(14);
+                     p.text("点击按钮开始演示", p.width/2, 20);
+                 }
+            };
+            
+            function drawSpectrum() {
+                p.stroke(200); p.strokeWeight(1);
+                let plotWidth = p.width * 0.8;
+                let plotHeight = p.height * 0.7;
+                let x0 = (p.width - plotWidth) / 2;
+                let y0 = p.height * 0.85;
+
+                // Axes
+                p.line(x0, y0, x0 + plotWidth, y0); // Energy axis
+                p.line(x0, y0, x0, y0 - plotHeight); // Probability axis
+
+                p.fill(200); p.noStroke(); p.textSize(12);
+                p.textAlign(p.CENTER, p.BOTTOM);
+                p.text("电子动能 (E)", x0 + plotWidth / 2, y0 + 20);
+                p.textAlign(p.RIGHT, p.CENTER);
+                p.push();
+                p.translate(x0 - 20, y0 - plotHeight / 2);
+                p.rotate(-p.PI / 2);
+                p.text("概率", 0, 0);
+                p.pop();
+
+                // Plot spectrum data
+                p.noFill(); p.stroke(80, 200, 255); p.strokeWeight(2);
+                p.beginShape();
+                let maxY = p.max(spectrumData);
+                for (let i = 0; i < spectrumData.length; i++) {
+                    let x = x0 + (i / (spectrumData.length -1)) * plotWidth;
+                    let y = y0 - (spectrumData[i] / maxY) * plotHeight * 0.9; // Scale y
+                    p.vertex(x, y);
+                }
+                p.endShape();
+                
+                // Q value point (max energy)
+                p.stroke(255,100,100); p.strokeWeight(1);
+                p.line(x0 + plotWidth, y0 - plotHeight*0.05, x0 + plotWidth, y0 + plotHeight*0.05);
+                p.fill(255,100,100); p.noStroke(); p.textAlign(p.CENTER, p.BOTTOM);
+                p.text("Q", x0 + plotWidth, y0 - plotHeight*0.05 - 5);
+
+                p.fill(200); p.textSize(14); p.textAlign(p.CENTER);
+                p.text("电子连续能谱 (因 ν̄ₑ 带走部分能量)", p.width/2, 30);
+            }
+        };
+        new p5(sketchBetaDecay);
+
+        // --- 动画2: 粒子-反粒子湮灭 ---
+        let sketchAnnihilation = function(p) {
+            let particles = [];
+            let photons = [];
+            let mode = 'electron-positron'; // 'electron-positron', 'majorana'
+            let animationStep = 0;
+            let playing = false;
+
+            class Particle {
+                constructor(x, y, r, label, color, vx) {
+                    this.x = x; this.y = y; this.r = r; this.label = label; this.color = color;
+                    this.vx = vx; this.vy = 0;
+                }
+                update() { this.x += this.vx; }
+                draw() {
+                    p.fill(this.color); p.noStroke();
+                    p.ellipse(this.x, this.y, this.r * 2, this.r * 2);
+                    p.fill(0); p.textAlign(p.CENTER, p.CENTER); p.textSize(this.r * 0.7);
+                    p.text(this.label, this.x, this.y);
+                }
+            }
+            class Photon {
+                constructor(x, y, angle) {
+                    this.x = x; this.y = y; this.angle = angle; this.speed = 4; this.length = 0;
+                }
+                update() {
+                    this.x += this.speed * p.cos(this.angle);
+                    this.y += this.speed * p.sin(this.angle);
+                    if (this.length < 50) this.length += 2;
+                }
+                draw() {
+                    p.stroke(255, 255, 0); p.strokeWeight(3); // Yellow photons
+                    let endX = this.x + this.length * p.cos(this.angle);
+                    let endY = this.y + this.length * p.sin(this.angle);
+                    // Draw wavy line for photon
+                    p.beginShape();
+                    p.noFill();
+                    for(let i=0; i<=this.length; i+=5) {
+                        let waveX = this.x + i * p.cos(this.angle) + p.sin(i*0.5 + p.frameCount*0.2)*5 * p.sin(this.angle);
+                        let waveY = this.y + i * p.sin(this.angle) - p.sin(i*0.5 + p.frameCount*0.2)*5 * p.cos(this.angle);
+                        p.vertex(waveX, waveY);
+                    }
+                    p.endShape();
+                    p.fill(255,255,0); p.noStroke(); p.textSize(12);
+                    p.text("γ", this.x + (this.length/2)*p.cos(this.angle)+10, this.y + (this.length/2)*p.sin(this.angle));
+                }
+            }
+
+            p.setup = function() {
+                let container = p.select('#annihilationAnimation');
+                let canvas = p.createCanvas(container.width, container.height);
+                canvas.parent('annihilationAnimation');
+                p.select('#playElectronPositronAnnihilation').mousePressed(() => startAnimation('electron-positron'));
+                p.select('#playMajoranaConcept').mousePressed(() => startAnimation('majorana'));
+                resetAnimation();
+                p.noLoop(); p.redraw();
+            };
+
+            function startAnimation(type) {
+                mode = type;
+                resetAnimation();
+                playing = true;
+                p.loop();
+            }
+
+            function resetAnimation() {
+                particles = [];
+                photons = [];
+                animationStep = 0;
+                if (mode === 'electron-positron') {
+                    particles.push(new Particle(p.width * 0.2, p.height / 2, 20, 'e⁻', p.color(100, 100, 255), 2)); // Blue electron
+                    particles.push(new Particle(p.width * 0.8, p.height / 2, 20, 'e⁺', p.color(255, 100, 100), -2)); // Red positron
+                } else if (mode === 'majorana') {
+                    // Conceptual: two Majorana particles (e.g., neutrinos if they are Majorana)
+                    particles.push(new Particle(p.width * 0.2, p.height / 2, 20, 'ν(M)', p.color(100, 255, 100), 2)); // Green Majorana nu1
+                    particles.push(new Particle(p.width * 0.8, p.height / 2, 20, 'ν(M)', p.color(100, 255, 100), -2)); // Green Majorana nu2
+                }
+            }
+
+            p.draw = function() {
+                p.background(1, 4, 9);
+                let centerX = p.width / 2;
+
+                if (playing) {
+                    animationStep++;
+                    if (particles.length === 2) {
+                        particles[0].update();
+                        particles[1].update();
+                        if (p.abs(particles[0].x - particles[1].x) < particles[0].r + particles[1].r) { // Collision
+                            if (mode === 'electron-positron') {
+                                photons.push(new Photon(centerX, p.height / 2, p.PI / 4));
+                                photons.push(new Photon(centerX, p.height / 2, -p.PI / 4 + p.PI)); // Opposite direction
+                            } else if (mode === 'majorana') {
+                                // Conceptual: "annihilation" or transformation, maybe into energy or other particles
+                                // For simplicity, show them disappearing or transforming into a flash
+                                photons.push(new Photon(centerX, p.height / 2, 0)); // Single "energy burst"
+                                photons.push(new Photon(centerX, p.height / 2, p.PI));
+                            }
+                            particles = []; // Particles annihilate
+                        }
+                    }
+
+                    for (let ph of photons) ph.update();
+                    
+                    if (animationStep > 200) { // End animation
+                        playing = false;
+                        p.noLoop();
+                        // resetAnimation(); // Optionally reset to initial state
+                    }
+                }
+
+                for (let pa of particles) pa.draw();
+                for (let ph of photons) ph.draw();
+                
+                p.fill(200); p.textAlign(p.CENTER); p.textSize(16);
+                if (mode === 'electron-positron') {
+                    p.text("e⁻ + e⁺ → γ + γ", p.width/2, p.height - 30);
+                } else if (mode === 'majorana') {
+                    p.text("ν(M) + ν(M) → 能量 (概念)", p.width/2, p.height - 30);
+                }
+                
+                if (!playing && animationStep === 0) {
+                     p.fill(255,255,255,100); p.textAlign(p.CENTER, p.CENTER); p.textSize(14);
+                     p.text("点击按钮开始演示", p.width/2, 20);
+                 }
+            };
+        };
+        new p5(sketchAnnihilation);
+
+        // --- 动画3: 双贝塔衰变比较 (2νββ vs 0νββ) ---
+        let sketchDoubleBetaDecay = function(p) {
+            let nucleus;
+            let electrons = [];
+            let neutrinos = [];
+            let mode = '2nubb'; // '2nubb' or '0nubb'
+            let decayProgress = 0;
+            let playing = false;
+
+            class Nucleus {
+                constructor(x, y, r, label, Z, N) {
+                    this.x = x; this.y = y; this.r = r; this.label = label; this.Z = Z; this.N = N;
+                    this.color = p.color(200, 150, 50); // Initial nucleus color
+                }
+                draw() {
+                    p.fill(this.color); p.noStroke();
+                    p.ellipse(this.x, this.y, this.r * 2, this.r * 2);
+                    p.fill(0); p.textAlign(p.CENTER, p.CENTER); p.textSize(this.r * 0.5);
+                    p.text(this.label, this.x, this.y - this.r * 0.2);
+                    p.textSize(this.r * 0.3);
+                    p.text(`Z=${this.Z}, N=${this.N}`, this.x, this.y + this.r * 0.3);
+                }
+                transform() { // After decay
+                    this.Z += 2; this.N -=2;
+                    // Find new element symbol (simplified)
+                    if (this.label === "⁴⁸Ca") this.label = "⁴⁸Ti"; 
+                    else this.label = "(A, Z+2)";
+                    this.color = p.color(150, 200, 80); // Transformed nucleus color
+                }
+            }
+            class EmittedParticle {
+                 constructor(x, y, r, label, color, angle, speed) {
+                    this.x = x; this.y = y; this.r = r; this.label = label; this.color = color;
+                    this.vx = speed * p.cos(angle);
+                    this.vy = speed * p.sin(angle);
+                    this.alpha = 255;
+                }
+                update() { this.x += this.vx; this.y += this.vy; this.alpha = p.max(0, this.alpha - 2); }
+                draw() {
+                    let c = p.color(this.color);
+                    c.setAlpha(this.alpha);
+                    p.fill(c); p.noStroke();
+                    p.ellipse(this.x, this.y, this.r * 2, this.r * 2);
+                    if (this.alpha > 100) { // Only draw label if visible enough
+                        p.fill(0, this.alpha); p.textAlign(p.CENTER, p.CENTER); p.textSize(this.r * 0.7);
+                        p.text(this.label, this.x, this.y);
+                    }
+                }
+            }
+
+            p.setup = function() {
+                let container = p.select('#doubleBetaDecayComparisonAnimation');
+                let canvas = p.createCanvas(container.width, container.height);
+                canvas.parent('doubleBetaDecayComparisonAnimation');
+                p.select('#play2nubbButton').mousePressed(() => startDecayMode('2nubb'));
+                p.select('#play0nubbButton').mousePressed(() => startDecayMode('0nubb'));
+                resetDecay();
+                p.noLoop(); p.redraw();
+            };
+
+            function startDecayMode(type) {
+                mode = type;
+                resetDecay();
+                playing = true;
+                p.loop();
+            }
+
+            function resetDecay() {
+                // Using Ca-48 -> Ti-48 example from post
+                nucleus = new Nucleus(p.width / 2, p.height / 2, 50, "⁴⁸Ca", 20, 28);
+                electrons = [];
+                neutrinos = [];
+                decayProgress = 0;
+            }
+
+            p.draw = function() {
+                p.background(1, 4, 9);
+                nucleus.draw();
+
+                for (let e of electrons) { e.update(); e.draw(); }
+                for (let nu of neutrinos) { nu.update(); nu.draw(); }
+
+                if (playing) {
+                    decayProgress += 0.01;
+                    if (decayProgress > 0.3 && electrons.length === 0) { // Start emitting
+                        nucleus.transform();
+                        let angle1 = p.random(p.TWO_PI); let angle2 = p.random(p.TWO_PI);
+                        let angle3 = p.random(p.TWO_PI); let angle4 = p.random(p.TWO_PI);
+                        
+                        electrons.push(new EmittedParticle(nucleus.x, nucleus.y, 12, 'e⁻', p.color(100,100,255), angle1, 3));
+                        electrons.push(new EmittedParticle(nucleus.x, nucleus.y, 12, 'e⁻', p.color(100,100,255), angle2, 3.2));
+
+                        if (mode === '2nubb') {
+                            neutrinos.push(new EmittedParticle(nucleus.x, nucleus.y, 8, 'ν̄ₑ', p.color(100,255,100), angle3, 3.5));
+                            neutrinos.push(new EmittedParticle(nucleus.x, nucleus.y, 8, 'ν̄ₑ', p.color(100,255,100), angle4, 3.3));
+                        } else { // 0nubb - conceptual internal annihilation
+                            p.stroke(255,255,0,150); p.strokeWeight(2);
+                            // Draw a quick internal "flash" or loop to represent neutrino exchange/annihilation
+                            let r = nucleus.r * 0.3;
+                            p.ellipse(nucleus.x, nucleus.y, r*2, r*1.5); // Flash
+                        }
+                    }
+                    if (decayProgress >= 1) {
+                        playing = false;
+                        p.noLoop();
+                    }
+                }
+                
+                p.fill(200); p.textAlign(p.CENTER); p.textSize(16);
+                let formulaText = "";
+                if (mode === '2nubb') formulaText = "2νββ: (A,Z) → (A,Z+2) + 2e⁻ + 2ν̄ₑ";
+                else formulaText = "0νββ: (A,Z) → (A,Z+2) + 2e⁻ (如果 ν 是马约拉纳粒子)";
+                p.text(formulaText, p.width/2, p.height - 30);
+
+                if (!playing && decayProgress === 0) {
+                     p.fill(255,255,255,100); p.textAlign(p.CENTER, p.CENTER); p.textSize(14);
+                     p.text("点击按钮开始演示", p.width/2, 20);
+                 }
+            };
+        };
+        new p5(sketchDoubleBetaDecay);
+
+        // --- 动画4: 电子能谱比较 (0νββ vs 2νββ) ---
+        let sketchEnergySpectrumComparison = function(p) {
+            let mode = '2nubb_spectrum'; // '2nubb_spectrum', '0nubb_peak'
+            let spectrum2nubb = [];
+            let qValuePosition = 0.85; // Relative position of Q-value peak on energy axis
+
+            p.setup = function() {
+                let container = p.select('#electronEnergySpectrumAnimation');
+                let canvas = p.createCanvas(container.width, container.height);
+                canvas.parent('electronEnergySpectrumAnimation');
+                p.select('#show2nubbSpectrumButton').mousePressed(() => setModeAndRedraw('2nubb_spectrum'));
+                p.select('#show0nubbPeakButton').mousePressed(() => setModeAndRedraw('0nubb_peak'));
+                generate2nubbSpectrum();
+                p.noLoop(); p.redraw();
+            };
+
+            function setModeAndRedraw(newMode) {
+                mode = newMode;
+                p.redraw();
+            }
+
+            function generate2nubbSpectrum() {
+                spectrum2nubb = [];
+                 // Simplified continuous spectrum shape for 2nubb (sum of two electrons)
+                for (let i = 0; i <= 100; i++) {
+                    let x = i / 100; // Energy fraction up to Q-value
+                    // A more complex shape than single beta, often peaking then falling to Q
+                    let y = 100 * p.pow(x, 2) * p.pow(1 - x, 3.5) * (1 + x/2); // Arbitrary shape
+                    spectrum2nubb.push(y);
+                }
+            }
+
+            p.draw = function() {
+                p.background(1, 4, 9);
+                let plotWidth = p.width * 0.8;
+                let plotHeight = p.height * 0.7;
+                let x0 = (p.width - plotWidth) / 2;
+                let y0 = p.height * 0.85;
+
+                // Axes
+                p.stroke(200); p.strokeWeight(1);
+                p.line(x0, y0, x0 + plotWidth, y0); // Sum Energy axis (E_e1 + E_e2)
+                p.line(x0, y0, x0, y0 - plotHeight); // Counts / Probability axis
+                p.fill(200); p.noStroke(); p.textSize(12);
+                p.textAlign(p.CENTER, p.BOTTOM);
+                p.text("双电子总动能 (ΣE)", x0 + plotWidth / 2, y0 + 20);
+                p.textAlign(p.RIGHT, p.CENTER);
+                p.push();p.translate(x0 - 20, y0 - plotHeight / 2);p.rotate(-p.PI / 2);
+                p.text("计数率", 0, 0);p.pop();
+                
+                // Q value marker
+                let qDrawX = x0 + plotWidth * qValuePosition;
+                p.stroke(255, 100, 100, 150); p.strokeWeight(1.5); p.drawingContext.setLineDash([5, 5]);
+                p.line(qDrawX, y0, qDrawX, y0 - plotHeight * 0.95);
+                p.drawingContext.setLineDash([]);
+                p.fill(255,100,100); p.noStroke(); p.textAlign(p.CENTER, p.BOTTOM);
+                p.text("Q-值", qDrawX, y0 - plotHeight * 0.95 - 5);
+
+
+                if (mode === '2nubb_spectrum') {
+                    p.noFill(); p.stroke(100, 200, 255); p.strokeWeight(2.5);
+                    p.beginShape();
+                    let maxY = p.max(spectrum2nubb);
+                    if (maxY === 0) maxY = 1; // Avoid division by zero if all data is zero
+                    for (let i = 0; i < spectrum2nubb.length; i++) {
+                        let x = x0 + (i / (spectrum2nubb.length -1)) * plotWidth * qValuePosition; // Scale to Q-value position
+                        let y = y0 - (spectrum2nubb[i] / maxY) * plotHeight * 0.8;
+                        p.vertex(x, y);
+                    }
+                    p.endShape();
+                    p.fill(200); p.noStroke(); p.textAlign(p.CENTER); p.textSize(14);
+                    p.text("2νββ: 连续的双电子总能谱", p.width/2, 30);
+                } else if (mode === '0nubb_peak') {
+                    // Draw a sharp peak at Q-value
+                    let peakHeight = plotHeight * 0.7;
+                    let peakWidth = plotWidth * 0.03; // Simulate detector resolution
+                    p.fill(100, 255, 100, 200); p.noStroke();
+                    p.beginShape();
+                    p.vertex(qDrawX - peakWidth, y0);
+                    p.vertex(qDrawX, y0 - peakHeight);
+                    p.vertex(qDrawX + peakWidth, y0);
+                    p.endShape(p.CLOSE);
+                    
+                    p.fill(200); p.noStroke(); p.textAlign(p.CENTER); p.textSize(14);
+                    p.text("0νββ: 在Q值处的尖锐能峰", p.width/2, 30);
+                }
+            };
+        };
+        new p5(sketchEnergySpectrumComparison);
+
+        // --- 动画5: 0νββ 实验装置概念图 ---
+        let sketchExperimentSchematic = function(p) {
+            let showShielding = true;
+            let zoomFactor = 1; // 1 for normal, >1 for zoomed in
+            let detectorCrystals = [];
+            const numCrystals = 5;
+
+            p.setup = function() {
+                let container = p.select('#experimentSchematicAnimation');
+                let canvas = p.createCanvas(container.width, container.height);
+                canvas.parent('experimentSchematicAnimation');
+                p.select('#toggleShieldingLayersButton').mousePressed(() => { showShielding = !showShielding; p.redraw(); });
+                p.select('#zoomToDetectorButton').mousePressed(() => { zoomFactor = (zoomFactor === 1) ? 2.5 : 1; p.redraw(); });
+                
+                for(let i=0; i<numCrystals; i++) {
+                    detectorCrystals.push({
+                        x: p.random(-20,20), 
+                        y: p.random(-30,30), 
+                        size: p.random(15,25)
+                    });
+                }
+                p.noLoop(); p.redraw();
+            };
+
+            p.draw = function() {
+                p.background(1, 4, 9);
+                p.translate(p.width / 2, p.height / 2); // Center the drawing
+                p.scale(zoomFactor);
+
+                let baseRadius = p.min(p.width, p.height) / 2.5 / zoomFactor;
+
+                // Outer environment (rock for underground lab)
+                p.noStroke();
+                p.fill(80, 70, 60, 100); // Rock color
+                p.ellipse(0,0, baseRadius * 2.5, baseRadius * 2.5);
+                p.fill(1,4,9); // Cutout for experiment
+                p.ellipse(0,0, baseRadius * 2.2, baseRadius * 2.2);
+                p.fill(200); p.textSize(10/zoomFactor); p.textAlign(p.CENTER);
+                p.text("地下岩石 (屏蔽宇宙射线)", 0, baseRadius*1.2);
+
+
+                if (showShielding) {
+                    // Shielding layers (conceptual)
+                    p.noFill(); p.strokeWeight(8/zoomFactor);
+                    p.stroke(100, 120, 140, 200); // Lead shielding
+                    p.ellipse(0, 0, baseRadius * 1.8, baseRadius * 1.8);
+                    p.fill(100,120,140,30); p.ellipse(0,0,baseRadius*1.8, baseRadius*1.8);
+
+
+                    p.noFill(); p.strokeWeight(6/zoomFactor);
+                    p.stroke(150, 180, 220, 180); // Copper shielding
+                    p.ellipse(0, 0, baseRadius * 1.5, baseRadius * 1.5);
+                     p.fill(150,180,220,25); p.ellipse(0,0,baseRadius*1.5, baseRadius*1.5);
+
+                    p.noFill(); p.strokeWeight(10/zoomFactor);
+                    p.stroke(80, 150, 200, 160); // Liquid Argon/Nitrogen cryostat (blueish)
+                    p.ellipse(0, 0, baseRadius * 1.2, baseRadius * 1.2);
+                    p.fill(80,150,200,20); p.ellipse(0,0,baseRadius*1.2, baseRadius*1.2);
+
+                    if (zoomFactor === 1) { // Only show labels if not zoomed in too much
+                        p.fill(200); p.noStroke(); p.textSize(10/zoomFactor);
+                        p.text("铅屏蔽", 0, -baseRadius*0.8);
+                        p.text("铜屏蔽", 0, -baseRadius*0.65);
+                        p.text("低温容器 (液氩/氮)", 0, -baseRadius*0.45);
+                    }
+                }
+
+                // Detector core (e.g., Germanium crystals)
+                p.fill(200, 220, 255, 230); // Crystal color (e.g., Germanium)
+                p.stroke(150,180,220); p.strokeWeight(1/zoomFactor);
+                for(let crystal of detectorCrystals) {
+                     p.rectMode(p.CENTER);
+                     p.rect(crystal.x, crystal.y, crystal.size, crystal.size*1.2, 3/zoomFactor); // Rectangular crystals
+                }
+                p.fill(255); p.noStroke(); p.textSize(12/zoomFactor);
+                p.text("探测器核心 (如 ⁷⁶Ge 晶体)", 0, 0);
+                
+                if (zoomFactor > 1 && showShielding) {
+                     p.fill(255,255,255,100); p.textAlign(p.CENTER, p.TOP); p.textSize(10/zoomFactor);
+                     p.text("已放大探测器核心区域", 0, baseRadius*0.5);
+                }
+                 if (!showShielding) {
+                     p.fill(255,255,255,100); p.textAlign(p.CENTER, p.TOP); p.textSize(10/zoomFactor);
+                     p.text("屏蔽层已隐藏", 0, baseRadius*0.6);
+                 }
+            };
+        };
+        new p5(sketchExperimentSchematic);
+
+    </script>
+</body>
+</html>

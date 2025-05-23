@@ -5,7 +5,7 @@
 https://github.com/james130012/html-model
 https://github.com/james130012/dayuzhixing
 
-
+你能把这个HTML的核心内容转化成用threejs 和 React（R3F）开发的游戏吗并告诉我怎么运行
 ………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………
 我想把我的HTML里面的图用JavaScript制作，动画效果通过 requestAnimationFrame 实现，
 也可以视情况使用Three.js的JavaScript 3D 库。

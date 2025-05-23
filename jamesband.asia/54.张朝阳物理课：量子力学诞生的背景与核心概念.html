@@ -1,0 +1,993 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>张朝阳物理课：量子力学诞生的背景与核心概念</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.2/p5.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
+    <style>
+        /* 基本重置和页面设置 */
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Noto Sans SC', sans-serif;
+            font-size: 18px; /* 基础字号，参考“三号”在屏幕上的可读性 */
+            line-height: 1.8;
+            background-color: #0d1117; /* GitHub 暗黑模式背景色 */
+            color: #c9d1d9; /* GitHub 暗黑模式文字颜色 */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            overflow-x: hidden; /* 防止水平溢出 */
+        }
+
+        /* 背景动画容器 */
+        #backgroundCanvasContainer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 0;
+            pointer-events: none; /* 允许点击穿透 */
+        }
+
+        /* 内容容器 */
+        .container {
+            position: relative;
+            z-index: 1; /* 在背景动画之上 */
+            width: 90%;
+            max-width: 1000px; /* 优化阅读宽度，类似A3纸张感 */
+            margin: 40px auto; /* 增加上下边距 */
+            padding: 30px 40px;
+            background-color: rgba(22, 27, 34, 0.9); /* GitHub 暗黑模式内容区背景 */
+            border: 1px solid #30363d; /* GitHub 暗黑模式边框颜色 */
+            border-radius: 12px; /* 圆角 */
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+        }
+
+        /* 标题样式 */
+        h1, h2, h3 {
+            font-family: 'ZCOOL KuaiLe', cursive; /* 轻松活泼字体 */
+            color: #58a6ff; /* GitHub 暗黑模式链接/标题颜色 */
+            margin-bottom: 0.75em;
+            text-align: center;
+            letter-spacing: 1px;
+        }
+        h1 {
+            font-size: 2.6em; /* 主标题 */
+            color: #79c0ff; /* 更亮的蓝色 */
+            border-bottom: 2px solid #388bfd;
+            padding-bottom: 15px;
+            margin-top: 0;
+        }
+        h2 {
+            font-size: 2.0em; /* 章节标题 */
+            color: #f778ba; /* 粉色系，增加活泼感 */
+            margin-top: 2.2em;
+        }
+        h3 {
+            font-size: 1.5em;
+            color: #a371f7; /* 紫色系 */
+            margin-top: 1.6em;
+            text-align: left;
+        }
+
+        /* 段落和文本样式 */
+        p, li {
+            margin-bottom: 1.2em;
+            text-align: justify;
+            color: #adbac7; /* 柔和的文字颜色 */
+        }
+        ul, ol {
+            padding-left: 30px;
+        }
+
+        /* 强调文字 */
+        strong, .highlight {
+            color: #ffa657; /* 暖黄色强调 */
+            font-weight: bold;
+        }
+        .concept { /* 物理概念词 */
+            font-weight: 500;
+            color: #7ee787; /* 绿色概念词 */
+            padding: 3px 7px;
+            background-color: rgba(63, 185, 80, 0.15);
+            border-radius: 6px;
+            border: 1px solid rgba(63, 185, 80, 0.4);
+            font-family: 'Noto Sans SC', sans-serif; /* 概念词使用标准字体 */
+        }
+        .formula {
+            display: block;
+            text-align: center;
+            margin: 20px auto;
+            padding: 15px;
+            background-color: rgba(34, 39, 46, 0.8);
+            border-left: 4px solid #388bfd;
+            color: #c9d1d9;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 1.05em;
+            border-radius: 4px;
+            white-space: pre-wrap; /* 保证公式换行 */
+        }
+
+        /* 动画容器 */
+        .animation-container {
+            width: 100%;
+            max-width: 580px; /* 动画区域宽度 */
+            height: 360px; /* 动画区域高度 */
+            margin: 25px auto;
+            border: 1px solid #30363d;
+            border-radius: 10px;
+            overflow: hidden;
+            background-color: #010409; /* 更深的动画背景 */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: inset 0 0 12px rgba(0,0,0,0.5);
+        }
+        .animation-container canvas {
+            display: block;
+            max-width: 100%;
+            max-height: 100%;
+            border-radius: 8px;
+        }
+        
+        /* 交互按钮和控件样式 */
+        .controls {
+            text-align: center;
+            margin-bottom: 25px;
+            margin-top: 15px;
+        }
+        .controls button {
+            padding: 10px 22px;
+            font-size: 0.95em;
+            font-family: 'Noto Sans SC', sans-serif;
+            background-image: linear-gradient(to right, #388bfd, #58a6ff);
+            color: white;
+            border: none;
+            border-radius: 22px; 
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            letter-spacing: 0.5px;
+        }
+        .controls button:hover {
+            transform: translateY(-2px) scale(1.05);
+            box-shadow: 0 7px 18px rgba(56, 139, 253, 0.35);
+        }
+        .controls button:active {
+            transform: translateY(0px) scale(1);
+        }
+        .controls label {
+            color: #8b949e; /* GitHub 暗黑模式次要文字颜色 */
+            margin: 0 10px;
+            font-size: 0.9em;
+        }
+        .controls input[type="range"] {
+            vertical-align: middle;
+            cursor: grab;
+            width: 140px;
+        }
+
+        /* 作者信息 */
+        .author-info {
+            text-align: center;
+            margin: 20px 0 30px 0;
+            font-size: 0.95em;
+            color: #8b949e;
+        }
+        .author-info strong {
+            color: #79c0ff;
+        }
+
+        /* 页脚 */
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding: 25px;
+            background-color: #161b22; /* 页脚背景 */
+            color: #8b949e;
+            width: 100%;
+            font-size: 0.9em;
+            border-top: 1px solid #30363d;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            body {
+                font-size: 17px; /* 移动端稍小字号 */
+            }
+            .container {
+                width: 95%;
+                padding: 20px 25px;
+                margin: 20px auto;
+            }
+            h1 {
+                font-size: 2.1em;
+            }
+            h2 {
+                font-size: 1.7em;
+            }
+            h3 {
+                font-size: 1.3em;
+            }
+            .animation-container {
+                height: 310px; /* 移动端动画高度调整 */
+            }
+            .controls button {
+                padding: 9px 18px;
+                font-size: 0.85em;
+            }
+            .controls input[type="range"] {
+                width: 120px;
+            }
+            .formula {
+                font-size: 1em;
+                padding: 10px;
+            }
+        }
+         @media (max-width: 480px) {
+            body {
+                font-size: 16px;
+            }
+            h1 {
+                font-size: 1.7em;
+            }
+            h2 {
+                font-size: 1.4em;
+            }
+            h3 {
+                font-size: 1.15em;
+            }
+            .animation-container {
+                height: 270px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="backgroundCanvasContainer"></div>
+    <div class="container">
+        <header>
+            <h1>张朝阳物理课：量子力学诞生的背景与核心概念</h1>
+            <div class="author-info">
+                <p>解读自 <strong>张朝阳</strong> 先生的物理课程精髓</p>
+                <p>（搜狐创始人、董事局主席兼CEO，麻省理工学院物理学博士）</p>
+            </div>
+        </header>
+
+        <main>
+            <article>
+                <section id="intro-quantum-mechanics">
+                    <h2>引言：20世纪初物理学的“乌云”与量子黎明</h2>
+                    <p>在20世纪初，经典物理学面临着一系列无法解释的“乌云”，预示着一场深刻的物理学革命。其中一朵乌云，催生了我们今天将要探讨的<strong class="highlight">量子力学</strong>。为什么量子力学如此重要？它如何颠覆了我们对微观世界的认知？“自由度冻结”、“能量量子化”、“光量子”、“波粒二象性”这些概念又是什么意思？本篇解读，将跟随搜狐创始人、董事局主席兼CEO，麻省理工学院物理学博士<strong class="highlight">张朝阳</strong>先生的物理课程精髓，通过四个经典物理学无法合理解释的实验现象，初探量子力学的非凡威力。</p>
+                    <p>量子力学的重要性不言而喻。我们地球上的生命，乃至整个宇宙的物质结构，都深深根植于量子力学的规律之中。从宇宙大爆炸后的能量演变，到原子形成分子，最终构成我们自身，每一个环节都离不开量子力学的精确描述。在原子和分子层面，电子的运动必须用量子力学来描述。所以，要真正理解我们自身的存在，理解这个世界的运作方式，就必须懂得量子力学。</p>
+                    <p>经典力学描绘了一个连续、确定的世界，但量子世界却告诉我们，在微观层面，许多物理量是“不连续”的，它们只能取特定的“量子化”数值。正是这种“不连续性”和<span class="concept">概率性</span>，赋予了世界多样性与稳定性并存的奇妙特性。例如，一个氢原子被激发后，无论经历怎样的复杂过程，当它回到基态时，其状态总是与被激发前完全一样。这正是量子力学在幕后默默守护的秩序，确保了“昨天的你跟今天的你同样都是你”。</p>
+                    <p>量子力学挑战了我们根深蒂固的经典直觉。接下来，我们将逐一揭开那些曾让经典物理学家们“挠头”的现象，感受量子力学从“乌云”中诞生的震撼与魅力。</p>
+                </section>
+
+                <section id="specific-heat-crisis">
+                    <h2>第一章：被“冻结”的自由度——比热危机</h2>
+                    <p>量子力学诞生的第一个“拦路虎”，是<span class="concept">双原子分子比热</span>的测量结果与经典物理理论之间的矛盾，即“比热危机”。根据经典统计力学的<span class="concept">能量均分定理</span>，每个自由度平均贡献 kT/2 的能量。双原子分子有 3 个平动、2 个转动和 2 个振动，共 7 个自由度。因此，经典理论预测其比热比 γ 约为 9/7 ≈ 1.286。</p>
+                    <p class="formula">U = (7/2)NkT</p>
+                    <p class="formula">γ = (f+2)/f = 9/7 ≈ 1.286</p>
+                    <p>然而，实验测得的双原子分子气体（如氢气、氧气）的 γ 值却约为 1.4。为了解释这一差异，物理学家们不得不假设：在室温下，双原子分子的振动自由度并没有被激发，而是被“冻结”了。这样，有效自由度变为 5 个（3平动 + 2转动），内能和比热比变为：</p>
+                    <p class="formula">U = (5/2)NkT</p>
+                    <p class="formula">γ = (5+2)/5 = 7/5 = 1.4</p>
+                    <p>这个结果与实验完美吻合！这个“自由度冻结”现象对经典物理构成了严峻挑战。经典力学认为能量是连续的，所有自由度都应被激发。但量子物理却指出，能量的吸收和释放是“一份一份”的，存在最小的能量单位（<span class="concept">能量子</span>）。如果环境能量不足以达到激发振动所需的最小“门槛”，振动自由度就无法被激活。正是这种<strong class="highlight">能量量子化</strong>的观念，才完美解释了比热危机，揭示了微观世界与宏观世界截然不同的运行法则。</p>
+                    <div id="specificHeatAnimation" class="animation-container"></div>
+                    <div class="controls">
+                        <button id="shToggleTemp">切换温度 (室温/高温)</button>
+                        <label for="shEnergyLevel">能量阈值:</label>
+                        <input type="range" id="shEnergyLevel" min="0.1" max="1" value="0.5" step="0.05">
+                    </div>
+                    <p>动画演示：一个双原子分子模型，展示其平动、旋转和振动自由度。通过“切换温度”按钮，模拟在室温下（能量不足）振动自由度被“冻结”的状态（振动幅度很小或不振动），而在高温下（能量充足）振动自由度被“激活”的状态（明显振动）。能量阈值滑块可以概念性地表示激发振动所需的最小能量。</p>
+                </section>
+
+                <section id="blackbody-radiation">
+                    <h2>第二章：黑体辐射与普朗克的“能量子”</h2>
+                    <p>量子力学诞生的第二个重要背景，是 19 世纪末物理学界悬而未决的<span class="concept">黑体辐射</span>问题。想象一个理想的“黑体”，它能够完全吸收所有入射的电磁辐射，同时也能以最大效率向外辐射能量。当这个黑体被加热时，它会发出不同频率的光，其辐射能量的分布只与温度有关，而与构成黑体的物质无关。科学家们通过实验精确测量了黑体辐射的能量谱，发现它呈现出一种中间突起、高频部分迅速衰减的钟形曲线。</p>
+                    <p>然而，经典物理学在解释这一现象时却遭遇了前所未有的困境。其中最著名的尝试是<span class="concept">瑞利-金斯公式</span>，它将黑体空腔中的电磁波视为一系列可以连续振动的谐振子集合。根据经典统计力学，这些谐振子可以连续地吸收和辐射能量。瑞利-金斯公式的表达式为：</p>
+                    <p class="formula">I(ω)dω = (ω² / (π²c²)) * kT dω</p>
+                    <p>其中 ω 是光的圆频率，c 是光速，k 是玻尔兹曼常数，T 是绝对温度。这个公式在低频区域与实验结果吻合得相当好。然而，当频率 ω 趋于无穷大（即进入紫外线甚至更高频率区域）时，公式预测的辐射能量也趋于无穷大。这被形象地称为“<strong class="highlight">紫外灾难</strong>”（Ultraviolet Catastrophe），因为它意味着黑体会在高频区域辐射出无限大的能量，这显然与现实观测严重不符，也违背了能量守恒定律。</p>
+                    <p>经典理论的困境在于，它认为能量是连续的，因此所有频率的谐振子都能够被激发，并且高频谐振子拥有更多的自由度，从而导致能量在高频端无限积累。为了解决这个“灾难”，伟大的德国物理学家马克斯·普朗克在 1900 年提出了一个革命性的<strong class="highlight">能量子假说</strong>。他大胆假设：光（或者说电磁波）的能量不是连续的，而是只能以一份份的、不连续的“能量子”（或称“量子”）形式被吸收和辐射。每一份能量的大小与光的频率成正比：</p>
+                    <p class="formula">E = ħω</p>
+                    <p>其中 ħ 是一个全新的物理常数，被称为<span class="concept">约化普朗克常数</span>（ħ ≈ 1.05 × 10⁻³⁴ J·s）。这个假设意味着，只有当谐振子吸收或释放的能量达到某个最小的“量子”值时，它才能被激发或退激。如果能量不足，即使有能量，也无法被吸收或释放。</p>
+                    <p>从这一划时代的假设出发，普朗克成功推导出了与实验数据完美吻合的<span class="concept">黑体辐射公式</span>：</p>
+                    <p class="formula">I(ω) = (ħω³ / (π²c²)) * (1 / (e^(ħω/(kT)) - 1))</p>
+                    <p>这个公式在高频区域引入了指数衰减项，有效地“扼杀”了紫外灾难，使得理论曲线与实验曲线完美重合。尽管普朗克本人在提出这个假设时，可能并未完全意识到其深远的物理意义，甚至一度认为这只是一个数学上的“技巧”，但他无意中却打开了通向量子世界的大门。他引入的普朗克常数 ħ，成为了量子物理学中最基本的常数之一，标志着物理学从经典时代向量子时代的伟大转折。</p>
+                    <div id="blackbodyAnimation" class="animation-container"></div>
+                    <div class="controls">
+                        <button id="bbToggleView">切换经典/量子曲线</button>
+                        <label for="bbTemperature">温度:</label>
+                        <input type="range" id="bbTemperature" min="1000" max="6000" value="3000" step="100">
+                    </div>
+                    <p>动画演示：展示黑体辐射的能量谱曲线。通过按钮切换显示经典瑞利-金斯公式预测的曲线（在紫外区域无限升高，即“紫外灾难”）和普朗克量子理论预测的曲线（与实验吻合，在高频区域指数衰减）。温度滑块可以动态调整曲线的峰值位置和形状，展示不同温度下黑体辐射的特点。</p>
+                </section>
+
+                <section id="photoelectric-effect">
+                    <h2>第三章：光电效应与爱因斯坦的“光子”</h2>
+                    <p>在普朗克提出能量子假说之后，物理学界又面临着另一个棘手的难题——<span class="concept">光电效应</span>。这个现象在 19 世纪末就被赫兹发现，但经典物理始终无法给出令人满意的解释。讽刺的是，尽管爱因斯坦以其在狭义相对论和广义相对论方面的划时代工作而闻名于世，但他最终却因对光电效应的解释而获得了 1921 年的诺贝尔物理学奖。这项工作虽然不如相对论那样宏大，但在量子物理学的发展史上却具有里程碑式的意义。</p>
+                    <p>光电效应实验的设置相对简单：将两块金属板分别接入电源的正负极，然后用光照射正极金属板（通常是阴极）。如果光能够将电子从金属中“打”出来，这些电子就会在两板之间的电场作用下飞向另一块金属板（阳极），从而形成可测量的电流，我们称之为<span class="concept">光电流</span>。为了研究电子的动能，我们可以逐渐增加两极板之间的反向电压（即让阳极带负电，阻止电子到达），直到某一电压值恰好能阻止所有被光打出的电子到达阳极，此时光电流降为零。这个电压值就被称为<span class="concept">截止电压</span>（V₀）。</p>
+                    <p>按照经典的<span class="concept">电磁理论</span>，光被视为一种连续的电磁波，其光强（I）正比于电场强度的平方（I ∝ E²）。因此，经典理论预测：</p>
+                    <ul>
+                        <li>光强越强，电场越强，从金属中打出的电子应该获得更高的动能，从而更容易越过电场形成的“势垒”，导致光电流越强。</li>
+                        <li>只要光强足够大，无论光的频率如何，都应该能够打出电子，因为能量可以持续积累。</li>
+                    </ul>
+                    <p>然而，实验结果却与这些经典预测大相径庭，令人费解：</p>
+                    <ul>
+                        <li><strong class="highlight">存在截止频率</strong>：实验发现，只有当入射光的频率超过某个特定的阈值（称为<span class="concept">截止频率</span>，ν₀）时，才能产生光电流。如果光的频率低于这个阈值，无论光强多大，照射多长时间，都不会有电子被打出，也就没有光电流产生。这就像有一个“能量门槛”，光必须“跳过”它才能生效。</li>
+                        <li><strong class="highlight">电子动能与光强无关，只与频率有关</strong>：一旦光电流产生，增加光强确实会使光电流增强（因为单位时间内打出的电子数量增多），但电子的最大动能（由截止电压决定）却保持不变，它只与入射光的频率有关。这意味着，更强的光只是带来了更多的“子弹”，而不是让“子弹”飞得更快。</li>
+                        <li><strong class="highlight">瞬时效应</strong>：光电效应几乎是瞬时发生的。即使光强非常弱，只要频率达到阈值，电子也会立即被打出，没有能量积累的过程。这与经典波理论中能量需要时间积累才能达到足够强度来激发电子的观点相悖。</li>
+                    </ul>
+                    <p>这些“反常”的实验现象，让经典物理学陷入了绝境。正是在这种背景下，爱因斯坦在 1905 年（奇迹年）大胆地提出了一个革命性的<strong class="highlight">光子假说</strong>。他吸收了普朗克关于“能量子”的思想，并将其进一步发展，认为光不仅是一种波，它同时也是由一份份离散的能量包组成的，这些能量包被称为<span class="concept">光子</span>。每个光子的能量与光的频率成正比：</p>
+                    <p class="formula">E = hν = ħω</p>
+                    <p>其中 h 是普朗克常数（h = 2πħ），ν 是光的频率，ω 是光的圆频率。爱因斯坦提出，当光照射到金属表面时，可以看作是一群光子在“撞击”金属中的电子。每一次撞击都是一个“一对一”的事件：一个光子将其全部能量传递给一个电子。如果这个光子的能量（hν）大于或等于电子从金属表面逸出所需的最小能量（称为<span class="concept">逸出功</span>，W），那么电子就会脱离金属的束缚，形成光电流。如果光子能量不足，无论有多少光子（光强多大），都无法将电子打出。</p>
+                    <p>根据能量守恒定律，被光子打出的电子所获得的最大动能 K_max 为：</p>
+                    <p class="formula">K_max = (1/2)mv² = hν - W</p>
+                    <p>其中 m 是电子质量，v 是电子速度。当两极板之间的电压刚好等于截止电压 V₀ 时，电子的动能恰好被电场力做功抵消，即 K_max = qV₀（其中 q 是电子电荷量）。因此，爱因斯坦解释光电效应的著名公式为：</p>
+                    <p class="formula">(1/2)mv² = hν - W = qV₀</p>
+                    <p>这个简洁而深刻的公式完美地解释了光电效应的所有实验现象：</p>
+                    <ul>
+                        <li>当 hν < W 时，无论光强多大，电子都无法获得足够的能量逸出，因此没有光电流。这解释了<strong class="highlight">截止频率</strong>的存在。</li>
+                        <li>当 hν > W 时，电子获得动能并形成光电流。光强越大，意味着单位时间内到达的光子数量越多，因此打出的电子也越多，光电流越强。</li>
+                        <li>电子的最大动能 K_max 只取决于光子能量 hν 和逸出功 W，与光强无关。这解释了<strong class="highlight">电子动能与光强无关</strong>的现象。</li>
+                        <li>光子与电子的碰撞是瞬时过程，因此光电效应也是<strong class="highlight">瞬时发生</strong>的。</li>
+                    </ul>
+                    <p>爱因斯坦的光子理论，不仅彻底解决了光电效应的难题，更重要的是，它以无可辩驳的证据确立了光的<strong class="highlight">粒子性</strong>，为物理学界引入了“光子”这一全新的基本粒子概念。这与之前普遍接受的光的波动理论形成了鲜明对比，为后续<span class="concept">波粒二象性</span>的提出奠定了坚实的基础。</p>
+                    <div id="photoelectricAnimation" class="animation-container"></div>
+                    <div class="controls">
+                        <label for="peFrequency">光频率:</label>
+                        <input type="range" id="peFrequency" min="0.1" max="2" value="0.8" step="0.05">
+                        <label for="peIntensity">光强:</label>
+                        <input type="range" id="peIntensity" min="0.1" max="1" value="0.5" step="0.1">
+                        <button id="peReset">重置</button>
+                    </div>
+                    <p>动画演示：模拟光电效应实验。左侧是光源，右侧是金属板和收集板。光子（小球）从光源发出，撞击金属板。当光子能量（由频率滑块控制）大于逸出功时，电子（更小的点）被打出并飞向收集板，形成光电流。光强滑块控制光子发射的密度。动画将直观展示截止频率、光强与光电流、频率与电子动能的关系。</p>
+                </section>
+
+                <section id="wave-particle-duality">
+                    <h2>第四章：波粒难分，一体两面——波粒二象性</h2>
+                    <p>在普朗克和爱因斯坦分别通过“能量子”和“光子”的概念成功解释了黑体辐射和光电效应之后，物理学界对光的本质有了全新的认识。光不再仅仅是麦克斯韦方程组所描述的连续电磁波，它还表现出离散的粒子性。然而，光的波动性特征，如<span class="concept">干涉</span>和<span class="concept">衍射</span>，是如此根深蒂固，以至于我们无法完全抛弃光的波动理论。于是，一个全新的、更深刻的观念应运而生——<strong class="highlight">波粒二象性</strong>。</p>
+                    <p>要理解波粒二象性，我们首先回顾光的波动性最经典的证据——<span class="concept">双缝干涉实验</span>。在这个实验中，一束光通过一个带有两个非常靠近的平行小缝的屏障后，会在后面的屏幕上形成一系列明暗相间的条纹，这就是著名的干涉图样。这种现象可以用光的波动理论完美解释：从两个狭缝发出的光波在空间中叠加，当波峰与波峰相遇时，光强增强形成亮纹；当波峰与波谷相遇时，光强减弱形成暗纹。亮纹的位置可以通过以下公式精确计算：</p>
+                    <p class="formula">d sinθ = mλ</p>
+                    <p>其中 d 是双缝之间的距离，θ 是从双缝中点到屏幕上某一点的连线与屏幕法线之间的夹角，m 是整数（0, ±1, ±2, ...），λ 是光的波长。这个实验无可辩驳地证明了光的波动性，是经典物理的胜利。</p>
+                    <p>然而，当我们将实验条件推向极致，将光强减弱到每次只有一个光子通过双缝时，奇妙的事情发生了。根据经典物理的直觉，一个粒子要么从上缝通过，要么从下缝通过，它不应该与自身发生干涉，因此屏幕上应该只出现两个亮斑，对应两个狭缝的投影。但量子物理的惊人之处在于：即使每次只有一个光子通过，只要我们让实验持续足够长的时间，让足够多的单个光子累积起来，屏幕上最终仍然会出现清晰的干涉条纹！这表明，单个光子似乎“同时”通过了两个狭缝，并与自身发生了干涉。我们无法预测单个光子会落在屏幕上的哪个具体位置（这体现了量子力学的<span class="concept">概率性</span>），但大量光子累积起来，却会呈现出统计上的干涉图样，这正是波的特征。</p>
+                    <p>这强有力地说明，光既不是纯粹的波，也不是纯粹的粒子，而是一种兼具两者特性的量子实体——它在传播时表现出波动性，在与物质相互作用（如光电效应）时则表现出粒子性。这就是光的<strong class="highlight">波粒二象性</strong>。</p>
+                    <p>除了光电效应，另一个确立光粒子性的重要实验是<span class="concept">康普顿散射实验</span>。在 1923 年，美国物理学家阿瑟·康普顿用 X 射线轰击自由电子，发现 X 射线在散射后波长会发生改变，且波长的变化量与散射角有关。如果将 X 射线视为电磁波，经典理论无法解释这种波长的变化。但如果将 X 射线视为光子，那么这个现象就变得非常容易理解：光子与电子发生弹性碰撞，就像台球一样，光子将一部分能量和动量传递给电子，自身能量减少，根据 E = hν = hc/λ，能量减少意味着频率降低，波长变长。康普顿通过能量守恒和动量守恒定律，成功推导出了光子波长的改变（Δλ）与散射角（θ）之间的关系：</p>
+                    <p class="formula">Δλ = (h / (m_e c)) * (1 - cosθ)</p>
+                    <p>其中 h 是普朗克常数，m_e 是电子的静止质量，c 是光速。这个公式通常也写成：</p>
+                    <p class="formula">Δλ = 2λ_C sin²(θ/2)</p>
+                    <p>其中 λ_C = h / (m_e c) 是康普顿波长。这个理论预测与实验结果完美吻合，再次无可辩驳地证明了光的粒子特征。康普顿散射实验与光电效应一起，彻底颠覆了经典物理对光的理解，确立了光子作为基本粒子的地位。</p>
+                    <p>波粒二象性并非光的专属。在 1924 年，法国物理学家路易·德布罗意大胆地提出了<strong class="highlight">物质波假说</strong>，他认为所有具有动量的物质粒子（如电子、质子、原子甚至分子）也具有波动性，它们的波长由著名的<span class="concept">德布罗意波长公式</span>给出：</p>
+                    <p class="formula">λ = h / p</p>
+                    <p>其中 h 是普朗克常数，p 是粒子的动量。这一假说后来被戴维孙-革末实验和G.P.汤姆孙实验证实，他们观察到了电子的衍射现象。这进一步揭示了微观世界的统一性和奇妙性：波和粒子不再是相互排斥的概念，而是同一量子实体的两种不同表现形式。这种深刻的二象性，是量子力学最核心、也最令人着迷的特征之一。</p>
+                    <div id="dualityAnimation" class="animation-container"></div>
+                    <div class="controls">
+                        <button id="dualityToggle">切换波/粒模式</button>
+                        <label for="dualityParticleCount">粒子数量:</label>
+                        <input type="range" id="dualityParticleCount" min="1" max="100" value="1" step="1">
+                    </div>
+                    <p>动画演示：模拟双缝干涉实验。在“波模式”下，展示水波通过双缝形成干涉图样。在“粒子模式”下，每次发射一个粒子（光子或电子），观察其随机落在屏幕上的位置。随着粒子数量的增加，逐渐累积形成干涉条纹，直观展示单个粒子的不确定性与大量粒子统计行为的确定性，从而揭示波粒二象性。</p>
+                </section>
+
+                <section id="conclusion-quantum-mechanics">
+                    <h2>结语：量子力学——理解世界的钥匙</h2>
+                    <p>本篇解读，我们一同回顾了量子力学发展早期那些至关重要的实验：从双原子分子的“比热危机”揭示了能量均分定理的局限，到“紫外灾难”促使普朗克大胆提出“能量子”假说，再到爱因斯坦通过“光子”概念完美解释了“光电效应”的种种谜团，最终，双缝干涉和康普顿散射实验共同确立了微观粒子的“波粒二象性”。这些看似独立的实验现象，如同一个个精心设计的“谜题”，让经典物理学陷入了前所未有的困境，却也正是它们，如同指路明灯般，揭示了量子物理中极其重要的核心特征，如<span class="concept">能量阶梯</span>、<span class="concept">能量量子化</span>和<span class="concept">波粒二象性</span>等。</p>
+                    <p>正是受到这些颠覆性实验的启发，20世纪初期，以普朗克、爱因斯坦、玻尔、海森堡、薛定谔、狄拉克等一批天才物理学家为代表，共同发展出了革命性的<strong class="highlight">量子力学</strong>。这门新物理学不仅成功解释了经典理论无法逾越的障碍，更以其独特的数学框架和深刻的哲学内涵，彻底改变了人类对物质、能量和宇宙最基本构成要素的理解。在量子力学的基础上，物理学家们又进一步发展出了<span class="concept">量子场论</span>、<span class="concept">量子电动力学</span>、<span class="concept">量子色动力学</span>等更加深刻和完善的理论，这些理论构成了现代物理学的基石，极大地加深了人类对微观世界的理解。</p>
+                    <p>即使到了今天，对量子物理的研究仍然是物理学最前沿、最热门的课题之一，从量子计算、量子通信到量子材料科学，无不闪耀着量子力学的光芒。与相对论主要影响我们对高速、大尺度宇宙的理解不同，量子力学产生的影响在日常生活当中随处可见，它并非只存在于遥远的宇宙或高速运动的物体中，而是渗透在我们生活的方方面面。例如，我们每天使用的智能手机、电脑、激光笔、LED灯、核磁共振成像（MRI）等，其核心技术都完全建立在量子物理的发展之上。可以说，整个<strong class="highlight">半导体工业</strong>的产生和发展，从晶体管的发明到集成电路的飞跃，都离不开量子力学的理论指导。由此带来我们生活上的改变，无疑是天翻地覆的。</p>
+                    <p>量子力学告诉我们，微观世界并非我们直觉所能理解的连续、确定、可预测的世界。它充满了概率、不确定性、叠加态和纠缠等“怪异”的现象，挑战着我们根深蒂固的经典物理直觉。然而，正是这些“怪异”的现象，构成了我们所处世界的基石，赋予了物质稳定性和多样性，也解释了为什么原子不会坍缩，为什么化学反应会发生，为什么太阳会发光。理解量子力学，就是理解我们自身的存在，理解宇宙最深层的奥秘，也是理解现代科技发展脉络的关键。张朝阳先生的物理课，以其深入浅出的方式，为我们打开了这扇通往量子奇境的大门，让我们得以一窥这个既陌生又迷人的微观宇宙，感受物理学探索未知、突破极限的无穷魅力。</p>
+                </section>
+            </article>
+        </main>
+        <footer>
+            <p>&copy; 2025 量子力学诞生的背景与核心概念解读。内容灵感与核心思想源自张朝阳先生的物理课程。</p>
+            <p>本页面所有动画均为概念性、简化性演示，旨在辅助理解，不完全代表真实物理过程的精确模拟。</p>
+        </footer>
+    </div>
+
+    <script>
+        // --- 全局背景星空动画 (复用) ---
+        let sketchBackground = function(p) {
+            let stars = [];
+            const numStars = 150; // 减少一点数量，让页面更清爽
+            p.setup = function() {
+                let canvas = p.createCanvas(p.windowWidth, p.windowHeight);
+                canvas.parent('backgroundCanvasContainer');
+                for (let i = 0; i < numStars; i++) {
+                    stars.push({
+                        x: p.random(p.width),
+                        y: p.random(p.height),
+                        size: p.random(0.3, 2.0), // 减小一点尺寸
+                        alpha: p.random(40, 120) // 减小一点亮度
+                    });
+                }
+                p.noStroke();
+            };
+            p.draw = function() {
+                p.clear(); 
+                for (let star of stars) {
+                    p.fill(180, 200, 235, star.alpha * (p.sin(p.frameCount * 0.008 + star.x * 0.08) * 0.25 + 0.75) ); 
+                    p.ellipse(star.x, star.y, star.size, star.size);
+                    star.y += star.size * 0.015; 
+                    if (star.y > p.height) {
+                        star.y = 0;
+                        star.x = p.random(p.width);
+                    }
+                }
+            };
+            p.windowResized = function() {
+                p.resizeCanvas(p.windowWidth, p.height); // Changed p.windowHeight to p.height to maintain aspect ratio
+                 stars = []; 
+                for (let i = 0; i < numStars; i++) {
+                    stars.push({
+                        x: p.random(p.width),
+                        y: p.random(p.height),
+                        size: p.random(0.3, 2.0),
+                        alpha: p.random(40, 120)
+                    });
+                }
+            };
+        };
+        new p5(sketchBackground);
+
+        // --- 动画1: 比热危机与自由度冻结 ---
+        let sketchSpecificHeat = function(p) {
+            let tempState = 'room'; // 'room' or 'high'
+            let energyThreshold = 0.5; // Conceptual threshold for vibration
+            let molecule = {x: 0, y: 0, angle: 0, vibrateAmp: 0, rotateSpeed: 0.02};
+            let vibrationPhase = 0;
+
+            p.setup = function() {
+                let container = p.select('#specificHeatAnimation');
+                let canvas = p.createCanvas(container.width, container.height);
+                canvas.parent('specificHeatAnimation');
+                p.select('#shToggleTemp').mousePressed(() => {
+                    tempState = (tempState === 'room') ? 'high' : 'room';
+                    updateMoleculeState();
+                });
+                let energySlider = p.select('#shEnergyLevel');
+                energySlider.input(() => {
+                    energyThreshold = parseFloat(energySlider.value());
+                    updateMoleculeState();
+                });
+                molecule.x = p.width / 2;
+                molecule.y = p.height / 2;
+                updateMoleculeState();
+                p.noLoop(); p.redraw(); // Draw initial static frame
+            };
+
+            function updateMoleculeState() {
+                if (tempState === 'room') {
+                    molecule.vibrateAmp = (0.1 < energyThreshold) ? 0.1 : 0; // Small vibration if energy is below threshold
+                    molecule.rotateSpeed = 0.02;
+                } else { // High temp
+                    molecule.vibrateAmp = (0.5 > energyThreshold) ? 0.5 : 0.1; // Larger vibration if energy is above threshold
+                    molecule.rotateSpeed = 0.05;
+                }
+                p.redraw(); // Redraw after state change
+            }
+
+            p.draw = function() {
+                p.background(1, 4, 9);
+                p.translate(molecule.x, molecule.y);
+
+                // Draw atoms
+                let atom1X = -30;
+                let atom2X = 30;
+                let bondLength = 60;
+
+                // Vibration
+                vibrationPhase += 0.1;
+                let currentVibration = p.sin(vibrationPhase) * molecule.vibrateAmp * 20; // Scale vibration for visual
+
+                p.push();
+                p.rotate(molecule.angle); // Rotation
+                
+                // Draw bond
+                p.stroke(150, 150, 255);
+                p.strokeWeight(3);
+                p.line(atom1X - currentVibration, 0, atom2X + currentVibration, 0);
+
+                // Draw atoms
+                p.fill(255, 100, 100);
+                p.noStroke();
+                p.ellipse(atom1X - currentVibration, 0, 20, 20);
+                p.ellipse(atom2X + currentVibration, 0, 20, 20);
+                p.pop();
+
+                molecule.angle += molecule.rotateSpeed;
+
+                // Text for state
+                p.fill(255); p.textSize(16); p.textAlign(p.CENTER);
+                p.text(`当前温度: ${tempState === 'room' ? '室温 (振动冻结)' : '高温 (振动激活)'}`, 0, p.height/2 - 50);
+                p.text(`振动幅度: ${molecule.vibrateAmp.toFixed(1)}`, 0, p.height/2 - 30);
+                p.text(`旋转速度: ${molecule.rotateSpeed.toFixed(2)}`, 0, p.height/2 - 10);
+                p.text(`能量阈值: ${energyThreshold.toFixed(2)}`, 0, p.height/2 + 10);
+
+                if (p.frameCount % 60 === 0) { // Update every second for continuous animation
+                    if (tempState === 'room' && molecule.vibrateAmp > 0.01) {
+                        p.loop(); // Keep looping for subtle vibration
+                    } else if (tempState === 'high' && molecule.vibrateAmp > 0.01) {
+                        p.loop(); // Keep looping for active vibration
+                    } else {
+                        p.noLoop(); // Stop if no significant animation
+                    }
+                }
+            };
+            p.windowResized = function() {
+                let container = p.select('#specificHeatAnimation');
+                p.resizeCanvas(container.width, container.height);
+                molecule.x = p.width / 2;
+                molecule.y = p.height / 2;
+                p.redraw();
+            };
+        };
+        new p5(sketchSpecificHeat);
+
+        // --- 动画2: 黑体辐射与普朗克的“能量子” ---
+        let sketchBlackbodyRadiation = function(p) {
+            let currentView = 'quantum'; // 'classic' or 'quantum'
+            let temperature = 3000; // Kelvin
+
+            p.setup = function() {
+                let container = p.select('#blackbodyAnimation');
+                let canvas = p.createCanvas(container.width, container.height);
+                canvas.parent('blackbodyAnimation');
+                p.select('#bbToggleView').mousePressed(() => {
+                    currentView = (currentView === 'classic') ? 'quantum' : 'classic';
+                    p.redraw();
+                });
+                let tempSlider = p.select('#bbTemperature');
+                tempSlider.input(() => {
+                    temperature = parseFloat(tempSlider.value());
+                    p.redraw();
+                });
+                p.noLoop(); p.redraw(); // Draw initial static frame
+            };
+
+            p.draw = function() {
+                p.background(1, 4, 9);
+                p.translate(p.width * 0.1, p.height * 0.9); // Origin at bottom-left for graph
+
+                // Draw axes
+                p.stroke(100, 150, 200);
+                p.line(0, 0, p.width * 0.8, 0); // Frequency (ω) axis
+                p.line(0, 0, 0, -p.height * 0.8); // Intensity (I) axis
+                p.fill(200); p.noStroke(); p.textSize(12);
+                p.textAlign(p.CENTER); p.text("频率 (ω)", p.width * 0.4, 20);
+                p.textAlign(p.RIGHT); p.text("辐射强度 (I)", -10, -p.height * 0.4);
+
+                let maxFreq = p.width * 0.7; // Max frequency on graph
+                let maxIntensity = p.height * 0.7; // Max intensity on graph
+
+                p.push();
+                p.scale(1, -1); // Flip Y-axis for drawing graph upwards
+
+                // Draw classic (Rayleigh-Jeans) curve
+                if (currentView === 'classic') {
+                    p.stroke(255, 100, 100); // Red for classic
+                    p.noFill();
+                    p.beginShape();
+                    for (let i = 0; i < maxFreq; i += 1) {
+                        let omega = i / (maxFreq / 10); // Scale omega for calculation
+                        let intensity = (omega * omega) * temperature * 0.000005; // Simplified RJ formula
+                        p.vertex(i, intensity * maxIntensity);
+                    }
+                    p.endShape();
+                    p.fill(255, 100, 100); p.noStroke(); p.textSize(14); p.textAlign(p.LEFT);
+                    p.text("经典瑞利-金斯曲线 (紫外灾难)", 10, -maxIntensity + 20);
+                }
+
+                // Draw quantum (Planck) curve
+                if (currentView === 'quantum') {
+                    p.stroke(100, 255, 100); // Green for quantum
+                    p.noFill();
+                    p.beginShape();
+                    let hbar = 1; // Simplified hbar for animation
+                    let k = 1; // Simplified k for animation
+                    for (let i = 0; i < maxFreq; i += 1) {
+                        let omega = i / (maxFreq / 10); // Scale omega for calculation
+                        let intensity = (omega * omega * omega) / (p.exp((hbar * omega) / (k * temperature)) - 1) * 0.0000005; // Simplified Planck formula
+                        p.vertex(i, intensity * maxIntensity * 100); // Scale for visibility
+                    }
+                    p.endShape();
+                    p.fill(100, 255, 100); p.noStroke(); p.textSize(14); p.textAlign(p.LEFT);
+                    p.text("普朗克量子曲线 (与实验吻合)", 10, -maxIntensity + 20);
+                }
+                p.pop();
+
+                p.fill(255); p.textSize(16); p.textAlign(p.CENTER);
+                p.text(`温度: ${temperature} K`, p.width / 2, p.height - 20);
+            };
+            p.windowResized = function() {
+                let container = p.select('#blackbodyAnimation');
+                p.resizeCanvas(container.width, container.height);
+                p.redraw();
+            };
+        };
+        new p5(sketchBlackbodyRadiation);
+
+        // --- 动画3: 光电效应与爱因斯坦的“光子” ---
+        let sketchPhotoelectricEffect = function(p) {
+            let lightFrequency = 0.8; // Controls photon energy
+            let lightIntensity = 0.5; // Controls number of photons
+            let workFunction = 0.5; // W, threshold for electron emission
+            let electrons = [];
+            let maxElectrons = 50;
+            let currentCount = 0;
+
+            p.setup = function() {
+                let container = p.select('#photoelectricAnimation');
+                let canvas = p.createCanvas(container.width, container.height);
+                canvas.parent('photoelectricAnimation');
+                
+                let freqSlider = p.select('#peFrequency');
+                freqSlider.input(() => {
+                    lightFrequency = parseFloat(freqSlider.value());
+                    resetAnimation();
+                });
+                let intensitySlider = p.select('#peIntensity');
+                intensitySlider.input(() => {
+                    lightIntensity = parseFloat(intensitySlider.value());
+                    resetAnimation();
+                });
+                p.select('#peReset').mousePressed(resetAnimation);
+                
+                resetAnimation();
+                p.noLoop(); p.redraw(); // Draw initial static frame
+            };
+
+            function resetAnimation() {
+                electrons = [];
+                currentCount = 0;
+                p.loop(); // Start animation
+            }
+
+            p.draw = function() {
+                p.background(1, 4, 9);
+
+                // Draw light source
+                p.fill(255, 255, 0);
+                p.ellipse(p.width * 0.1, p.height / 2, 20, 20);
+                p.text("光源", p.width * 0.1, p.height / 2 + 25);
+
+                // Draw metal plate (cathode)
+                p.fill(100, 100, 150);
+                p.rect(p.width * 0.3, p.height * 0.2, 20, p.height * 0.6);
+                p.text("阴极 (金属)", p.width * 0.3 + 10, p.height * 0.2 - 10);
+
+                // Draw collecting plate (anode)
+                p.fill(100, 100, 150);
+                p.rect(p.width * 0.7, p.height * 0.2, 20, p.height * 0.6);
+                p.text("阳极 (收集)", p.width * 0.7 + 10, p.height * 0.2 - 10);
+
+                // Emit photons
+                if (p.frameCount % (p.floor(20 / lightIntensity)) === 0) { // More photons for higher intensity
+                    let photonEnergy = lightFrequency; // Simplified: frequency directly maps to energy
+                    if (photonEnergy > workFunction) { // Only emit electron if energy is sufficient
+                        electrons.push({
+                            x: p.width * 0.3 + 20,
+                            y: p.random(p.height * 0.2, p.height * 0.8),
+                            vx: (photonEnergy - workFunction) * 5, // Electron speed based on excess energy
+                            vy: p.random(-1, 1) * 2 // Small random vertical component
+                        });
+                    }
+                }
+
+                // Update and draw electrons
+                for (let i = electrons.length - 1; i >= 0; i--) {
+                    let e = electrons[i];
+                    e.x += e.vx;
+                    e.y += e.vy;
+
+                    p.fill(0, 200, 255); // Blue for electrons
+                    p.ellipse(e.x, e.y, 8, 8);
+
+                    if (e.x > p.width * 0.7) { // Electron reached collecting plate
+                        electrons.splice(i, 1);
+                        currentCount++;
+                    }
+                    if (e.x > p.width || e.x < 0 || e.y > p.height || e.y < 0) { // Out of bounds
+                        electrons.splice(i, 1);
+                    }
+                }
+
+                // Display info
+                p.fill(255); p.textSize(16); p.textAlign(p.LEFT);
+                p.text(`光频率 (能量): ${lightFrequency.toFixed(2)}`, 10, 30);
+                p.text(`逸出功 (阈值): ${workFunction.toFixed(2)}`, 10, 50);
+                p.text(`光电流 (电子数): ${currentCount}`, 10, 70);
+
+                if (electrons.length === 0 && p.frameCount > 100) { // Stop animation if no electrons for a while
+                    p.noLoop();
+                }
+            };
+            p.windowResized = function() {
+                let container = p.select('#photoelectricAnimation');
+                p.resizeCanvas(container.width, container.height);
+                resetAnimation();
+            };
+        };
+        new p5(sketchPhotoelectricEffect);
+
+        // --- 动画4: 波粒二象性 (双缝干涉) ---
+        let sketchDuality = function(p) {
+            let currentMode = 'wave'; // 'wave' or 'particle'
+            let particleCount = 1; // Number of particles to simulate
+            let particles = [];
+            let interferencePattern = []; // For particle mode accumulation
+            let patternWidth = 200; // Width of the screen for pattern
+            let slitY1, slitY2;
+            let slitWidth = 5;
+            let screenX;
+
+            p.setup = function() {
+                let container = p.select('#dualityAnimation');
+                let canvas = p.createCanvas(container.width, container.height);
+                canvas.parent('dualityAnimation');
+                
+                slitY1 = p.height / 2 - 30;
+                slitY2 = p.height / 2 + 30;
+                screenX = p.width * 0.8;
+
+                p.select('#dualityToggle').mousePressed(() => {
+                    currentMode = (currentMode === 'wave') ? 'particle' : 'wave';
+                    resetAnimation();
+                });
+                let particleCountSlider = p.select('#dualityParticleCount');
+                particleCountSlider.input(() => {
+                    particleCount = parseInt(particleCountSlider.value());
+                    resetAnimation();
+                });
+                
+                for (let i = 0; i < patternWidth; i++) {
+                    interferencePattern[i] = 0;
+                }
+                resetAnimation();
+                p.noLoop(); p.redraw(); // Draw initial static frame
+            };
+
+            function resetAnimation() {
+                particles = [];
+                for (let i = 0; i < patternWidth; i++) {
+                    interferencePattern[i] = 0;
+                }
+                p.loop(); // Start animation
+            }
+
+            p.draw = function() {
+                p.background(1, 4, 9);
+
+                // Draw source
+                p.fill(255, 255, 0);
+                p.ellipse(p.width * 0.1, p.height / 2, 15, 15);
+                p.text("光源", p.width * 0.1, p.height / 2 + 20);
+
+                // Draw slits
+                p.fill(50, 50, 50);
+                p.rect(p.width * 0.4, 0, slitWidth, slitY1 - 10);
+                p.rect(p.width * 0.4, slitY1 + 10, slitWidth, slitY2 - (slitY1 + 10));
+                p.rect(p.width * 0.4, slitY2 + 10, slitWidth, p.height - (slitY2 + 10));
+                p.text("双缝", p.width * 0.4 + 20, p.height / 2);
+
+                // Draw screen
+                p.stroke(150);
+                p.line(screenX, 0, screenX, p.height);
+                p.text("屏幕", screenX + 20, p.height / 2);
+
+                if (currentMode === 'wave') {
+                    // Simulate wave propagation
+                    p.noFill();
+                    p.stroke(100, 200, 255, 150);
+                    for (let i = 0; i < 10; i++) {
+                        p.ellipse(p.width * 0.1, p.height / 2, p.frameCount * 2 + i * 20, p.frameCount * 2 + i * 20);
+                    }
+                    
+                    // Draw interference pattern on screen (conceptual)
+                    p.stroke(255, 255, 0);
+                    p.strokeWeight(2);
+                    for (let y = 0; y < p.height; y += 5) {
+                        let intensity = p.sin(y * 0.1 + p.frameCount * 0.01) * p.sin(y * 0.1 + p.frameCount * 0.01); // Simple sine wave pattern
+                        p.line(screenX, y, screenX + intensity * 30, y);
+                    }
+                    p.fill(255); p.textSize(16); p.textAlign(p.CENTER);
+                    p.text("波模式 (干涉图样)", p.width / 2, 30);
+                } else { // Particle mode
+                    if (p.frameCount % 5 === 0 && particles.length < particleCount) {
+                        particles.push({
+                            x: p.width * 0.1,
+                            y: p.height / 2,
+                            vx: p.random(3, 5),
+                            vy: p.random(-1, 1) * 0.5,
+                            passedSlit: false
+                        });
+                    }
+
+                    for (let i = particles.length - 1; i >= 0; i--) {
+                        let particle = particles[i];
+                        p.fill(255, 150, 0);
+                        p.ellipse(particle.x, particle.y, 5, 5);
+
+                        particle.x += particle.vx;
+                        particle.y += particle.vy;
+
+                        // Check for slit passage
+                        if (!particle.passedSlit && particle.x > p.width * 0.4) {
+                            if ((particle.y > slitY1 - 10 && particle.y < slitY1 + 10) ||
+                                (particle.y > slitY2 - 10 && particle.y < slitY2 + 10)) {
+                                particle.passedSlit = true;
+                                // Apply a slight random deflection after passing slit
+                                particle.vy += p.random(-0.5, 0.5);
+                            } else {
+                                // If hit barrier, remove or bounce
+                                particles.splice(i, 1);
+                                continue;
+                            }
+                        }
+
+                        // If hit screen
+                        if (particle.x > screenX) {
+                            let patternY = p.map(particle.y, 0, p.height, 0, patternWidth - 1);
+                            interferencePattern[p.floor(p.constrain(patternY, 0, patternWidth - 1))] += 1;
+                            particles.splice(i, 1);
+                        }
+                    }
+
+                    // Draw accumulated pattern
+                    p.stroke(255, 255, 0);
+                    p.strokeWeight(1);
+                    let maxVal = p.max(interferencePattern);
+                    for (let i = 0; i < patternWidth; i++) {
+                        let barHeight = p.map(interferencePattern[i], 0, maxVal, 0, p.height * 0.8);
+                        p.line(screenX + 5, p.map(i, 0, patternWidth - 1, 0, p.height), screenX + 5 + barHeight, p.map(i, 0, patternWidth - 1, 0, p.height));
+                    }
+                    p.fill(255); p.textSize(16); p.textAlign(p.CENTER);
+                    p.text(`粒子模式 (数量: ${particleCount})`, p.width / 2, 30);
+                }
+                if (particles.length === 0 && p.frameCount > 100) {
+                    p.noLoop();
+                }
+            };
+            p.windowResized = function() {
+                let container = p.select('#dualityAnimation');
+                p.resizeCanvas(container.width, container.height);
+                slitY1 = p.height / 2 - 30;
+                slitY2 = p.height / 2 + 30;
+                screenX = p.width * 0.8;
+                resetAnimation();
+            };
+        };
+        new p5(sketchDuality);
+
+        // --- 动画5: 康普顿散射 (概念性) ---
+        let sketchComptonScattering = function(p) {
+            let photon = {x: 50, y: 150, vx: 5, vy: 0, energy: 100, wavelength: 10};
+            let electron = {x: 250, y: 150, vx: 0, vy: 0, energy: 0, mass: 10}; // Simplified mass
+            let scatteredPhoton = null;
+            let scatteredElectron = null;
+            let collisionOccurred = false;
+            let playing = false;
+
+            p.setup = function() {
+                let container = p.select('#comptonScatteringAnimation');
+                let canvas = p.createCanvas(container.width, container.height);
+                canvas.parent('comptonScatteringAnimation');
+                p.select('#csPlay').mousePressed(() => {
+                    resetAnimation();
+                    playing = true;
+                    p.loop();
+                });
+                resetAnimation();
+                p.noLoop(); p.redraw(); // Draw initial static frame
+            };
+
+            function resetAnimation() {
+                photon = {x: 50, y: 150, vx: 5, vy: 0, energy: 100, wavelength: 10};
+                electron = {x: 250, y: 150, vx: 0, vy: 0, energy: 0, mass: 10};
+                scatteredPhoton = null;
+                scatteredElectron = null;
+                collisionOccurred = false;
+                playing = false;
+            }
+
+            p.draw = function() {
+                p.background(1, 4, 9);
+
+                // Draw photon
+                p.fill(255, 255, 0);
+                p.ellipse(photon.x, photon.y, 10, 10);
+                p.text("入射光子", photon.x + 15, photon.y);
+
+                // Draw electron
+                p.fill(0, 200, 255);
+                p.ellipse(electron.x, electron.y, 15, 15);
+                p.text("电子", electron.x + 10, electron.y + 20);
+
+                if (playing) {
+                    // Move photon
+                    if (!collisionOccurred) {
+                        photon.x += photon.vx;
+                        photon.y += photon.vy;
+                    }
+
+                    // Check for collision
+                    let d = p.dist(photon.x, photon.y, electron.x, electron.y);
+                    if (d < 15 && !collisionOccurred) {
+                        collisionOccurred = true;
+                        // Simulate scattering (simplified energy/momentum transfer)
+                        let scatterAngle = p.random(p.PI / 4, p.PI * 3 / 4); // Random scatter angle for photon
+                        let electronAngle = scatterAngle + p.PI / 2; // Electron recoils roughly perpendicular
+
+                        let photonEnergyLoss = photon.energy * p.random(0.3, 0.7); // Photon loses some energy
+                        let electronEnergyGain = photonEnergyLoss;
+
+                        scatteredPhoton = {
+                            x: photon.x,
+                            y: photon.y,
+                            vx: p.cos(scatterAngle) * (photon.energy - photonEnergyLoss) / 10,
+                            vy: p.sin(scatterAngle) * (photon.energy - photonEnergyLoss) / 10,
+                            energy: photon.energy - photonEnergyLoss,
+                            wavelength: photon.wavelength * (photon.energy / (photon.energy - photonEnergyLoss)) // Wavelength increases
+                        };
+
+                        scatteredElectron = {
+                            x: electron.x,
+                            y: electron.y,
+                            vx: p.cos(electronAngle) * electronEnergyGain / electron.mass,
+                            vy: p.sin(electronAngle) * electronEnergyGain / electron.mass,
+                            energy: electronEnergyGain
+                        };
+                    }
+
+                    // Draw scattered particles
+                    if (scatteredPhoton) {
+                        scatteredPhoton.x += scatteredPhoton.vx;
+                        scatteredPhoton.y += scatteredPhoton.vy;
+                        p.fill(255, 255, 0);
+                        p.ellipse(scatteredPhoton.x, scatteredPhoton.y, 10, 10);
+                        p.text("散射光子", scatteredPhoton.x + 15, scatteredPhoton.y);
+                    }
+                    if (scatteredElectron) {
+                        scatteredElectron.x += scatteredElectron.vx;
+                        scatteredElectron.y += scatteredElectron.vy;
+                        p.fill(0, 200, 255);
+                        p.ellipse(scatteredElectron.x, scatteredElectron.y, 15, 15);
+                        p.text("反冲电子", scatteredElectron.x + 10, scatteredElectron.y + 20);
+                    }
+
+                    // Display info
+                    p.fill(255); p.textSize(14); p.textAlign(p.LEFT);
+                    p.text(`入射光子能量: ${photon.energy.toFixed(0)}`, 10, 30);
+                    p.text(`入射光子波长: ${photon.wavelength.toFixed(1)}`, 10, 50);
+                    if (scatteredPhoton) {
+                        p.text(`散射光子能量: ${scatteredPhoton.energy.toFixed(0)}`, 10, 70);
+                        p.text(`散射光子波长: ${scatteredPhoton.wavelength.toFixed(1)} (变长)`, 10, 90);
+                        p.text(`反冲电子能量: ${scatteredElectron.energy.toFixed(0)}`, 10, 110);
+                    }
+
+                    // Stop animation if particles out of bounds
+                    if (photon.x > p.width + 50 || (scatteredPhoton && scatteredPhoton.x > p.width + 50)) {
+                        playing = false;
+                        p.noLoop();
+                    }
+                } else {
+                    p.fill(255,255,255,150); p.textAlign(p.CENTER, p.CENTER); p.textSize(16);
+                    p.text("点击播放按钮演示康普顿散射", p.width/2, p.height - 20);
+                }
+            };
+            p.windowResized = function() {
+                let container = p.select('#comptonScatteringAnimation');
+                p.resizeCanvas(container.width, container.height);
+                resetAnimation();
+            };
+        };
+        new p5(sketchComptonScattering);
+
+    </script>
+</body>
+</html>

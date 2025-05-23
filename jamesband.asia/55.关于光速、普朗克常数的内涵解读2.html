@@ -1,0 +1,958 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>光速与普朗克常数：宇宙的和谐乐章</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=LXGW+WenKai+TC&display=swap');
+
+        body {
+            font-family: 'LXGW WenKai TC', 'Kaiti SC', 'STKaiti', 'KaiTi', serif;
+            line-height: 1.8;
+            margin: 0;
+            padding: 0;
+            background-color: #fdfaf6; /* 淡雅的背景色 */
+            color: #333;
+            font-size: 16pt; /* 对应“三号”字体大小 */
+        }
+
+        .container {
+            max-width: 1000px; /* 模拟A3纸张的宽敞感 */
+            margin: 20px auto;
+            padding: 25px 35px; /* 普通页边距 */
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #f0e4d7;
+        }
+
+        header h1 {
+            font-size: 2.8em;
+            color: #8c5b40; /* 温暖的棕色调 */
+            margin-bottom: 10px;
+        }
+
+        .author-info {
+            font-size: 1.1em;
+            color: #777;
+        }
+
+        .author-info strong {
+            color: #5c4033;
+        }
+
+        h2 {
+            font-size: 2em;
+            color: #a0522d; /* 赭色 */
+            margin-top: 40px;
+            margin-bottom: 20px;
+            border-left: 5px solid #e48743;
+            padding-left: 10px;
+        }
+
+        h3 {
+            font-size: 1.6em;
+            color: #b87333; /* 黄铜色 */
+            margin-top: 30px;
+            margin-bottom: 15px;
+        }
+        
+        h4 {
+            font-size: 1.3em;
+            color: #8B4513; /* 鞍褐色，比h3稍深沉 */
+            margin-top: 25px;
+            margin-bottom: 10px;
+        }
+
+
+        p, li {
+            margin-bottom: 15px;
+            text-align: justify;
+        }
+
+        strong, .highlight {
+            color: #c04000; /* 突出显示的颜色，更鲜明 */
+            font-weight: bold;
+        }
+        
+        .critical-discussion {
+            background-color: #fff8f0; /* 非常淡的橙黄色背景，用于强调关重讨论部分 */
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 10px;
+            margin-bottom: 10px;
+            border-left: 4px solid #d2691e; /* 巧克力色边框 */
+        }
+
+        .formula {
+            display: block;
+            text-align: center;
+            padding: 15px;
+            margin: 20px auto;
+            background-color: #f9f2e9; /* 淡黄色背景 */
+            border-left: 3px solid #e48743;
+            border-radius: 5px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 1.1em;
+            color: #5c4033;
+        }
+
+        .animation-container {
+            width: 100%;
+            max-width: 600px; /* 动画容器最大宽度 */
+            height: 400px; /* 固定高度，P5 canvas 将填充此容器 */
+            margin: 30px auto;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            overflow: hidden; /* 确保 P5 canvas 不会溢出 */
+            background: #f0f0f0;
+            position: relative; /* For absolute positioning of controls if needed */
+        }
+        
+        .animation-container canvas {
+            display: block; /* Removes extra space below canvas */
+            width: 100% !important; /* Force canvas width */
+            height: 100% !important; /* Force canvas height */
+        }
+
+
+        .controls {
+            text-align: center;
+            margin-top: 10px;
+            margin-bottom: 20px;
+        }
+
+        .controls button {
+            font-family: 'LXGW WenKai TC', 'Kaiti SC', serif;
+            background-color: #e48743; /* 按钮颜色 */
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: background-color 0.3s ease;
+        }
+
+        .controls button:hover {
+            background-color: #c07030;
+        }
+
+        .controls label {
+            margin: 0 10px;
+            font-size: 0.9em;
+        }
+        .controls input[type="range"] {
+            vertical-align: middle;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 50px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            font-size: 0.9em;
+            color: #888;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            body {
+                font-size: 14pt;
+            }
+            .container {
+                margin: 10px;
+                padding: 15px;
+            }
+            header h1 {
+                font-size: 2em;
+            }
+            h2 {
+                font-size: 1.5em;
+            }
+            h3 {
+                font-size: 1.2em;
+            }
+            h4 {
+                font-size: 1.1em;
+            }
+            .animation-container {
+                height: 300px; /* Adjust height for smaller screens */
+            }
+            .controls button {
+                padding: 8px 15px;
+                font-size: 0.9em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>光速与普朗克常数：宇宙的和谐乐章</h1>
+            <p class="author-info">作者：<strong>思晓</strong></p>
+            <p class="author-info">机构：<strong>格致探索研究院</strong></p>
+        </header>
+
+        <section id="intro">
+            <h2>引言：两颗璀璨的物理学明星</h2>
+            <p>朋友您好！您提到光速 (c) 和普朗克常数 (h) 之间那“千丝万缕的联系”，这确实是一个极具洞察力的观察。这两个常数，如同物理学夜空中最明亮的星辰，各自照亮了宏观与微观世界的深邃奥秘。光速 <strong class="highlight">c</strong>，作为宇宙信息传递的极限速度，为我们相对论时空观奠定了基石，严格规定了因果律的铁序；而普朗克常数 <strong class="highlight">h</strong>，则揭示了能量并非无限可分，而是以一份份“量子”的形式存在，开启了波澜壮阔的量子革命。它们在普朗克黑体辐射定律中的交汇，更是物理学史上浓墨重彩的一笔，不仅完美解决了“紫外灾难”，也预示着一场思想的深刻变革。</p>
+            <p>接下来，就让我们一同踏上这段探索之旅，从物理逻辑的视角，细细品味这两个常数如何在黑体辐射的舞台上共舞，以及它们如何更深层次地交织在一起，共同塑造了我们对宇宙的认知。</p>
+        </section>
+
+        <section id="speed-of-light">
+            <h2>光速 c：宇宙的信使与秩序的守护者</h2>
+            <p>光速 <strong class="highlight">c</strong> (约等于 299,792,458 米/秒) 不仅仅是一个速度值，它是宇宙结构的基本属性。爱因斯坦的狭义相对论告诉我们，光速在真空中的恒定性是自然界的一条基本原理，不随光源或观察者的运动状态而改变。这一看似简单的论断，却引发了时空观念的深刻革命：</p>
+            <ul>
+                <li><strong>时间的相对性：</strong>高速运动的时钟会变慢。</li>
+                <li><strong>长度的相对性：</strong>高速运动的物体在其运动方向上会缩短。</li>
+                <li><strong>质能等价：</strong>著名的 <span class="formula">E = m * c^2</span>，揭示了质量与能量的内在联系，其中光速的平方扮演了巨大的转换因子。</li>
+            </ul>
+            <p>更重要的是，光速的恒定性为宇宙的 <strong class="highlight">因果关系</strong> 划定了不可逾越的界限。任何物质、能量或信息的传播速度都不能超过光速。这意味着，一个事件的发生，只能影响到其“未来光锥”内的时空区域，而不能影响到光锥之外，更不能回到过去改变已经发生的事情。正是这种“光速屏障”，保证了宇宙的逻辑自洽和因果链条的单向性，使得“果”不能先于“因”。光速c为宇宙设定了信息传递和能量传播的“交通规则”。</p>
+            <p>在电磁理论中，光速 c 也扮演着核心角色，它联系着电磁波的波长 (λ) 和频率 (f)：<span class="formula">c = λ * f</span>。这一定律是理解黑体辐射中能量与波长/频率关系的基础，也是连接宏观波动现象与微观光子能量的关键桥梁。</p>
+        </section>
+        
+        <section id="light-cone-animation-section">
+            <h3>动画一：光锥与因果律</h3>
+            <p>下面的动画演示了光锥的概念。事件A发生后，其影响只能在未来的光锥内传播。事件B位于事件A的未来光锥内，可能受到A的影响。事件C位于光锥之外，与A没有因果联系。光速限制了影响传播的范围，确保了因果顺序。</p>
+            <div id="lightConeCanvasContainer" class="animation-container"></div>
+            <div class="controls">
+                <button id="playLightCone">演示信号传播</button>
+            </div>
+        </section>
+
+        <section id="planck-constant">
+            <h2>普朗克常数 h：量子世界的基石</h2>
+            <p>进入19世纪末，经典物理学大厦看似完美，但在解释黑体辐射等现象时却遇到了难以逾越的障碍。黑体是一个理想化的物体，能够吸收所有入射的电磁辐射，并在特定温度下以特定频谱发射辐射。经典理论（如瑞利-金斯定律）在预测低频（长波）区域的辐射强度时与实验符合得尚可，但在高频（短波，如紫外线）区域，理论预测的能量密度会趋于无穷大，这便是著名的 <strong class="highlight">“紫外灾难”</strong>。</p>
+            <p>1900年，马克斯·普朗克为了解决这个难题，提出了一个革命性的假设：<strong class="highlight">能量的量子化</strong>。他假设，物质振子（构成黑体壁的原子）在发射或吸收电磁辐射时，其能量交换不是连续的，而是以一份份不连续的“能量子”（quanta）进行的。每一份能量子的大小与辐射的频率 f 成正比：</p>
+            <span class="formula">E = h * f</span>
+            <p>其中，<strong class="highlight">h</strong> 就是普朗克常数 (约等于 6.626 x 10<sup>-34</sup> 焦耳·秒)。这个微小但至关重要的常数，标志着量子力学的诞生。它意味着能量具有颗粒性，是构成能量世界的基本“货币”单位。普朗克常数h为微观世界的能量交换设定了“最小交易额”。</p>
+        </section>
+
+        <section id="energy-quantization-animation-section">
+            <h3>动画二：能量量子化阶梯</h3>
+            <p>此动画形象地展示了能量的量子化特性。经典理论认为能量可以连续变化（如平滑的斜坡），而量子理论则表明能量只能取离散的值（如阶梯）。振子只能在这些特定的能级间跃迁，吸收或释放特定大小的能量包 (hf)。</p>
+            <div id="energyQuantizationCanvasContainer" class="animation-container"></div>
+            <div class="controls">
+                <button id="absorbEnergy">吸收能量包</button>
+                <button id="emitEnergy">释放能量包</button>
+            </div>
+        </section>
+
+        <section id="blackbody-radiation">
+            <h2>黑体辐射：c 与 h 的完美协奏</h2>
+            <p>普朗克结合了他的能量量子化假设和经典统计物理的方法，成功推导出了一个能够完美描述黑体辐射频谱的公式，即普朗克黑体辐射定律。其按频率分布的公式形式大致可以表示为：</p>
+            <span class="formula">B(f, T) = (2 * h * f^3 / c^2) * (1 / (exp(h * f / (k * T)) - 1))</span>
+            <p>在这个公式中，<strong class="highlight">c 和 h 的角色至关重要，它们共同决定了辐射的频谱特性：</strong></p>
+            <ul>
+                <li><strong>普朗克常数 h 的决定性作用：</strong>
+                    <p>h 的引入是解决“紫外灾难”的关键。在公式的指数项 <strong class="highlight">exp(h * f / (k * T))</strong> 中，<strong class="highlight">hf</strong> 代表一个光量子的能量。当频率 f 很高时（紫外区），单个光量子的能量 hf 远大于平均热运动能量 kT。这使得指数项变得非常巨大，从而导致分母 <strong class="highlight">(exp(hf/kT) - 1)</strong >也变得极大。因此，整个分数项 <strong class="highlight">1 / (exp(hf/kT) - 1)</strong >（即光子的平均占据数，遵循玻色-爱因斯坦统计）急剧减小，有效地抑制了高频辐射的强度。这就像在高频区域设置了一个“能量门槛”：只有当振子有足够能量产生高能量的光子时，辐射才会发生，而根据统计规律，拥有如此高能量的振子数量是极少的。如果 h 为零或极小，这个抑制效应就会消失，重新回到瑞利-金斯定律的紫外灾难。</p>
+                </li>
+                <li><strong>光速 c 的多重影响：</strong>
+                    <p>首先，c 出现在因子 <strong class="highlight">(2 * h * f^3 / c^2)</strong > 中。这一项与单位体积内、单位频率间隔的电磁振动模式（或称状态）密度有关。具体来说，模式密度正比于 <strong class="highlight">f^2 / c^3</strong >（若考虑单位波长间隔则是 <strong class="highlight">1 / λ^4</strong >，通过 <strong class="highlight">c=λf</strong > 转换）。在普朗克公式的频率形式中，<strong class="highlight">c^2</strong > 出现在分母，表明在相同频率下，如果光速更大，则这种模式下的能量贡献会相应减小。更直观地，光速 c 通过基本关系 <strong class="highlight">c = λf</strong > 将频率 f 和波长 λ 联系起来。这意味着对特定频率的讨论等价于对特定波长的讨论，而 c 是它们之间的转换因子。黑体辐射实验数据通常是按波长分布的，普朗克公式也可以写成波长形式，其中 c 会以不同的方式出现，但其桥梁作用不变。</p>
+                    <p>其次，光本身（即光子）作为能量的载体，其传播速度就是 c。整个黑体辐射现象就是电磁波（光子）的发射和吸收过程，这些过程的速率和能量转移都隐含地与 c 相关联。</p>
+                </li>
+            </ul>
+            <p>因此，普朗克定律完美地结合了 <strong class="highlight">h 所代表的能量的量子不连续性</strong > 和 <strong class="highlight">c 所代表的电磁波传播与时空特性</strong >，才得以精确描述黑体辐射这一基本物理现象。瑞利-金斯定律的失败，根源在于它只承认能量的连续性和经典电磁理论（其中 c 已存在），却忽视了能量的量子化（h 的缺失）。</p>
+        </section>
+
+        <section id="uv-catastrophe-animation-section">
+            <h3>动画三：紫外灾难与普朗克曲线</h3>
+            <p>此动画对比了瑞利-金斯定律与普朗克定律对黑体辐射频谱的预测。您可以调节温度，观察两条曲线的变化。瑞利-金斯定律在低频区尚可，但在高频（紫外）区无限上升，即“紫外灾难”。普朗克定律则与实验完美吻合。</p>
+            <div id="uvCatastropheCanvasContainer" class="animation-container"></div>
+            <div class="controls">
+                <label for="temperatureSlider">温度 (K): <span id="tempValue">3000</span> K</label>
+                <input type="range" id="temperatureSlider" min="1000" max="6000" value="3000" step="100">
+            </div>
+        </section>
+        
+        <section id="photon-emission-animation-section">
+            <h3>动画四：原子发光—光子的产生</h3>
+            <p>当原子中的电子从高能级跃迁到低能级时，会释放一个光子。这个光子携带的能量 E 等于两个能级之差，并且 E = hf。光子同时展现出粒子性（一份能量）和波动性（具有频率f和波长λ=c/f）。</p>
+            <div id="photonEmissionCanvasContainer" class="animation-container"></div>
+            <div class="controls">
+                <button id="triggerEmission">激发原子发光</button>
+            </div>
+        </section>
+
+        <section id="cavity-radiation-animation-section">
+            <h3>动画五：模拟黑体空腔辐射</h3>
+            <p>这个简化的动画模拟了一个黑体空腔内部的情况。空腔壁上的原子（振子）在特定温度下振动，并不断吸收和发射各种频率的光子。普朗克的量子化假设限制了高频光子的产生，使得能量分布趋于稳定，符合实验观测。</p>
+            <div id="cavityRadiationCanvasContainer" class="animation-container"></div>
+            <div class="controls">
+                 <button id="increaseTempCavity">升温</button>
+                 <button id="decreaseTempCavity">降温</button>
+            </div>
+        </section>
+
+        <section id="synthesis">
+            <h2>c 与 h 的交织：宇宙规律的深层统一与关重讨论</h2>
+            <p>我们已经看到，光速 c 和普朗克常数 h 在黑体辐射定律中扮演了不可或缺的角色。然而，它们之间的联系远不止于此。这不仅仅是两个常数在同一个公式中“碰巧”相遇，而是揭示了宇宙在宏观相对论层面和微观量子层面深刻的内在统一性。下面，我们将更深入地探讨这种“千丝万缕”的联系，进行一番“关重讨论”。</p>
+            
+            <div class="critical-discussion">
+                <h4>1. 共同定义基本物理现象的框架</h4>
+                <p>光速 c 和普朗克常数 h 分别是狭义相对论和量子力学的基石。前者确立了时空的特性、因果律的极限以及能量与质量的关系；后者则规定了能量的最小作用单元、物质的波粒二象性以及微观世界的不确定性。它们共同为我们理解物质、能量、空间和时间提供了一个更为完整的框架。</p>
+                <ul>
+                    <li><strong>光子特性：</strong>对于光子，其能量 <span class="formula">E = h * f</span> 由普朗克常数和频率决定，而其能量与动量 p 的关系又由光速决定 <span class="formula">E = p * c</span>。这两个公式结合起来 <span class="formula">h * f = p * c</span>，再利用 <span class="formula">c = λ * f</span>，便得到 <span class="formula">p = h / λ</span>（德布罗意关系）。这清晰地显示，<strong class="highlight">描述一个光子需要同时用到 h 和 c</strong >，它们共同刻画了光子作为能量量子以光速传播并具有波动性的本质。</li>
+                    <li><strong>物质波：</strong>德布罗意关系 <span class="formula">p = h / λ</span > 被推广到所有物质粒子，揭示了普遍的波粒二象性。虽然 c 不直接出现在此基本形式中，但对于相对论性粒子（速度接近 c 的粒子），其动量 p 的计算必须考虑相对论效应，能量 E 与动量 p 的关系也涉及 c (<span class="formula">E^2 = (p*c)^2 + (m*c^2)^2</span >)。因此，h 设定了物质波动的尺度，而 c 则规定了这种波动在相对论框架下的行为。</li>
+                    <li><strong>不确定性原理与相对论：</strong>海森堡不确定性原理 <span class="formula">Δx * Δp ≥ ħ/2</span > (ħ = h/2π) 是量子力学的核心。当考虑相对论性量子现象时，例如在量子场论中，能量的涨落 <span class="formula">ΔE * Δt ≥ ħ/2</span > 可以导致虚粒子对的产生。这些粒子对的产生和湮灭过程，其能量阈值（如产生电子-正电子对需要至少 <span class="formula">2 * m_e * c^2</span > 的能量）则由静止质量和光速 c 决定。因此，<strong class="highlight">h 提供了量子涨落的尺度，而 c 则将这些涨落与能量和质量联系起来</strong >。</li>
+                </ul>
+            </div>
+
+            <div class="critical-discussion">
+                <h4>2. 精细结构常数 α：三大基本常数的交汇点</h4>
+                <p>精细结构常数 α 是一个无量纲的物理常数，其定义中同时包含了普朗克常数 h (通常以 ħ 形式出现)、光速 c 和基本电荷 e：</p>
+                <span class="formula">α = e^2 / (4π * ε₀ * ħ * c) ≈ 1/137</span>
+                <p>(其中 ε₀ 是真空介电常数)。这个常数<strong class="highlight">衡量了电磁相互作用的强度</strong >。它的值如此之小，使得我们可以用微扰论来处理量子电动力学（QED）中的计算。α 的存在及其表达式清晰地表明，<strong class="highlight">电磁现象本质上是量子化的（由 ħ 体现）并且是相对论性的（由 c 体现）</strong >。如果 c 或 ħ 的值发生显著变化，α 的值也会随之改变，从而深刻影响原子结构（例如原子光谱的精细分裂）、化学键乃至整个宇宙的物质构成。这雄辩地证明了 c 和 h 不是孤立的，而是通过基本相互作用紧密地联系在一起。</p>
+            </div>
+
+            <div class="critical-discussion">
+                <h4>3. 普朗克单位：宇宙的自然标尺</h4>
+                <p>当我们引入第三个基本物理常数——万有引力常数 G 时，c、h (或 ħ) 和 G 可以组合起来形成一套“自然单位”，即普朗克单位。这些单位不依赖于任何人为的度量标准，被认为是宇宙中最基本的尺度：</p>
+                <ul>
+                    <li><strong>普朗克长度 L<sub>P</sub> = sqrt(ħ * G / c<sup>3</sup>) ≈ 1.6 x 10<sup>-35</sup> 米</strong></li>
+                    <li><strong>普朗克时间 T<sub>P</sub> = sqrt(ħ * G / c<sup>5</sup>) ≈ 5.4 x 10<sup>-44</sup> 秒</strong></li>
+                    <li><strong>普朗克质量 M<sub>P</sub> = sqrt(ħ * c / G) ≈ 2.2 x 10<sup>-8</sup> 千克</strong></li>
+                </ul>
+                <p>普朗克尺度被认为是<strong class="highlight">量子引力效应变得至关重要的领域</strong >。在这个尺度下，我们目前分别描述宏观引力（依赖 G 和 c）和微观量子世界（依赖 h）的理论——广义相对论和量子场论——都可能失效，需要一个更深层次的统一理论（如弦理论或圈量子引力）来描述。c 和 h (以及G) 共同定义了这个宇宙最底层的“像素”大小和“时钟滴答”。这强烈暗示着，<strong class="highlight">这三个常数并非相互独立，而是共同构成了我们宇宙时空和物质结构的基础参数</strong >。它们的值不是任意的，而是以某种深刻的方式被“设定”，从而塑造了我们所能观测到的宇宙。</p>
+            </div>
+            
+            <div class="critical-discussion">
+                <h4>4. 共同塑造可观测宇宙的特性</h4>
+                <p>光速 c 和普朗克常数 h 的具体数值，以及它们之间的相对关系，对于宇宙的形态和演化至关重要。想象一下：</p>
+                <ul>
+                    <li>如果 h 的值大得多，量子效应将在宏观尺度上显现，经典物理学的适用范围将大大缩小，世界可能变得光怪陆离，原子的稳定性、分子的结构都会截然不同。</li>
+                    <li>如果 c 的值小得多，相对论效应将在低速情况下就变得显著，我们日常经验中的时空观念将完全不同，星际旅行或许不再遥不可及，但宇宙的因果结构也会受到影响。</li>
+                </ul>
+                <p>它们的值似乎被“精细调节”到一个允许复杂结构（如恒星、行星、生命）形成和演化的范围。这种“巧合”也引发了关于人择原理等更深层次的哲学思考。</p>
+            </div>
+
+            <p>综上所述，光速 c 和普朗克常数 h 的关系远非表面化。它们不仅仅是公式中的参数，更是<strong class="highlight">宇宙“操作系统”的两个核心变量</strong >。c 设定了时空舞台的几何规则和信息传递的最高指令速率，确保了因果律的宏观有效性。h 则规定了在这个舞台上，能量、动量等基本物理量的“颗粒度”以及微观相互作用的基本法则。它们共同作用，定义了从基本粒子行为到宇宙尺度现象的广阔图景。物理学的进步，在很大程度上就是不断深化对这两个常数及其相互作用的理解过程，最终目标是找到一个能将相对论、量子力学以及引力完美统一起来的“万有理论”，而 c 和 h 无疑将在那个理论中占据核心地位。</p>
+        </section>
+
+        <section id="conclusion">
+            <h2>结语：永恒的探索</h2>
+            <p>尊敬的朋友，您最初的直觉——光速 c 和普朗克常数 h 之间存在“千丝万缕的联系”——是完全正确的，而且这种联系比初看起来要深刻得多。它们不仅在普朗克的黑体辐射公式中携手解决了物理学的一大危机，更在波粒二象性、基本相互作用强度、乃至宇宙最基本尺度的定义中，展现出它们之间不可分割的、共同塑造物理实在的本质。它们是宇宙赋予我们的两把钥匙，一把开启了宏伟壮丽的相对论宇宙，另一把则揭示了奇妙诡谲的量子世界。而这两扇大门背后的风景，以及它们之间更深层次的联系（例如在寻求量子引力理论的过程中，G、h、c 的结合所指向的普朗克尺度），最终都指向一个更加统一、更加简洁的自然规律。</p>
+            <p>对这两个常数及其背后物理意义的探索，至今仍在激励着一代又一代的物理学家。它们如同灯塔，指引着我们向着更深层次的宇宙奥秘不断前行。希望这次更为详尽和深入的“关重讨论”，能更好地满足您的好奇心，并为您带来一些启发和乐趣！</p>
+        </section>
+
+        <footer>
+            <p>&copy; 2025 格致探索研究院出品。保留所有权利。</p>
+        </footer>
+    </div>
+
+    <script>
+        // P5.js Sketch 1: Light Cone and Causality
+        const sketchLightCone = (p) => {
+            let originX, originY;
+            let signalRadius = 0;
+            let maxRadius;
+            let playing = false;
+            let signalColor;
+
+            p.setup = () => {
+                const container = document.getElementById('lightConeCanvasContainer');
+                const canvas = p.createCanvas(container.offsetWidth, container.offsetHeight);
+                canvas.parent('lightConeCanvasContainer');
+                originX = p.width / 2;
+                originY = p.height / 1.5; // Event A at the bottom center
+                maxRadius = p.height * 0.8;
+                signalColor = p.color(255, 100, 100, 150);
+                p.noLoop();
+                redrawSketch();
+            };
+            
+            function redrawSketch() {
+                p.background(240);
+                p.strokeWeight(1.5);
+
+                // Draw axes (Space X, Time T)
+                p.stroke(150);
+                p.line(originX, p.height, originX, 0); // Time axis (vertical)
+                p.line(0, originY, p.width, originY); // Space axis (horizontal)
+                p.fill(0);
+                p.noStroke();
+                p.text("时间 T", originX + 5, 15);
+                p.text("空间 X", p.width - 50, originY - 5);
+
+                // Draw light cone
+                p.stroke(0, 150, 200);
+                p.line(originX, originY, originX - (p.height - originY), 0); // Left line of future cone
+                p.line(originX, originY, originX + (p.height - originY), 0); // Right line of future cone
+                
+                // Event A
+                p.fill(255, 0, 0);
+                p.noStroke();
+                p.ellipse(originX, originY, 10, 10);
+                p.text("事件 A", originX - 15, originY + 20);
+
+                // Event B (inside future light cone)
+                let Bx = originX + 30;
+                let By = originY - 80;
+                p.fill(0, 180, 0);
+                p.ellipse(Bx, By, 8, 8);
+                p.text("事件 B (可被A影响)", Bx + 10, By + 5);
+
+                // Event C (outside light cone)
+                let Cx = originX - 100;
+                let Cy = originY - 50;
+                p.fill(100, 100, 255);
+                p.ellipse(Cx, Cy, 8, 8);
+                p.text("事件 C (与A无关)", Cx - 100, Cy + 5);
+                
+                if (playing) {
+                    p.fill(signalColor);
+                    p.noStroke();
+                    // Simulate expanding influence within the cone shape
+                    let coneTipY = 0; // Top of the canvas
+                    let timeElapsedRatio = (originY - (originY - signalRadius * 0.5)) / (originY - coneTipY) ; // How far up the cone time-wise
+                    if (originY - signalRadius * 0.5 < coneTipY) timeElapsedRatio = 1;
+
+
+                    let currentConeWidth = timeElapsedRatio * ( (originX + (p.height - originY)) - (originX - (p.height - originY)) );
+                    currentConeWidth = p.max(0, currentConeWidth);
+
+
+                    p.ellipse(originX, originY - signalRadius * 0.5, currentConeWidth, signalRadius * 0.25);
+
+
+                    signalRadius += 2; // This now controls the "height" of the signal propagation
+                    if (originY - signalRadius * 0.5 < 0) { // If signal reaches top
+                        playing = false;
+                        signalRadius = 0;
+                        p.noLoop();
+                    }
+                }
+            }
+
+            p.draw = () => {
+                if(playing) redrawSketch();
+            };
+            
+            document.getElementById('playLightCone').addEventListener('click', () => {
+                signalRadius = 0;
+                playing = true;
+                p.loop();
+            });
+
+            p.windowResized = () => {
+                const container = document.getElementById('lightConeCanvasContainer');
+                p.resizeCanvas(container.offsetWidth, container.offsetHeight);
+                originX = p.width / 2;
+                originY = p.height / 1.5;
+                maxRadius = p.height * 0.8;
+                 if (!playing) {
+                    signalRadius = 0; // Reset if not playing during resize
+                    redrawSketch();
+                } else {
+                    // If playing, it will adjust in the next draw() call via redrawSketch()
+                }
+            };
+        };
+        new p5(sketchLightCone, 'lightConeCanvasContainer');
+
+        // P5.js Sketch 2: Energy Quantization
+        const sketchEnergyQuantization = (p) => {
+            let energyLevels = [];
+            let currentLevel = 0;
+            const levelHeight = 60;
+            const maxLevels = 5;
+            let particleY;
+            let particleTargetY;
+            let particleColor;
+
+            p.setup = () => {
+                const container = document.getElementById('energyQuantizationCanvasContainer');
+                const canvas = p.createCanvas(container.offsetWidth, container.offsetHeight);
+                canvas.parent('energyQuantizationCanvasContainer');
+                for (let i = 0; i < maxLevels; i++) {
+                    energyLevels.push(p.height - (i + 1) * levelHeight - 20);
+                }
+                particleY = energyLevels[currentLevel];
+                particleTargetY = particleY;
+                particleColor = p.color(255, 150, 0);
+                p.textAlign(p.CENTER, p.CENTER);
+                p.textSize(16);
+                redrawSketch();
+                 p.noLoop(); // Static until interaction
+            };
+
+            function redrawSketch() {
+                p.background(240);
+                p.stroke(50);
+                p.strokeWeight(2);
+
+                // Draw energy levels (steps)
+                for (let i = 0; i < maxLevels; i++) {
+                    p.line(p.width * 0.3, energyLevels[i], p.width * 0.7, energyLevels[i]);
+                    p.fill(50);
+                    p.noStroke();
+                    p.text(`E${i} (${i}hf)`, p.width * 0.2, energyLevels[i]);
+                }
+                
+                // Draw particle
+                particleY = p.lerp(particleY, particleTargetY, 0.1); // Smooth transition
+                p.fill(particleColor);
+                p.stroke(0);
+                p.ellipse(p.width / 2, particleY, 30, 30);
+
+                if (p.abs(particleY - particleTargetY) < 0.1) {
+                     particleY = particleTargetY; // Snap to target
+                     p.noLoop(); // Stop animation when target reached
+                } else {
+                    p.loop(); // Continue animation
+                }
+            }
+            
+            p.draw = () => {
+                 redrawSketch();
+            };
+
+            document.getElementById('absorbEnergy').addEventListener('click', () => {
+                if (currentLevel < maxLevels - 1) {
+                    currentLevel++;
+                    particleTargetY = energyLevels[currentLevel];
+                    particleColor = p.color(0, 200, 100); // Green for absorb
+                    p.loop();
+                }
+            });
+
+            document.getElementById('emitEnergy').addEventListener('click', () => {
+                if (currentLevel > 0) {
+                    currentLevel--;
+                    particleTargetY = energyLevels[currentLevel];
+                    particleColor = p.color(255, 0, 0); // Red for emit
+                    p.loop();
+                }
+            });
+            
+            p.windowResized = () => {
+                const container = document.getElementById('energyQuantizationCanvasContainer');
+                p.resizeCanvas(container.offsetWidth, container.offsetHeight);
+                 for (let i = 0; i < maxLevels; i++) {
+                    energyLevels[i] = p.height - (i + 1) * levelHeight - 20;
+                }
+                // currentLevel might be out of sync if levels changed drastically, but usually fine
+                particleTargetY = energyLevels[currentLevel];
+                particleY = particleTargetY; // Snap to new position on resize if not animating
+                redrawSketch();
+                // if (p.abs(particleY - particleTargetY) > 0.1 && p._loop) p.loop(); else p.noLoop();
+            };
+        };
+        new p5(sketchEnergyQuantization, 'energyQuantizationCanvasContainer');
+
+        // P5.js Sketch 3: UV Catastrophe
+        const sketchUVCatastrophe = (p) => {
+            let T = 3000; // Temperature in Kelvin
+            const k_B = 1.380649e-23; // Boltzmann constant J/K
+            const h_planck = 6.62607015e-34; // Planck constant J*s
+            const c_light = 299792458;    // Speed of light m/s
+            
+            // Wavelength range for plotting (in meters)
+            const lambdaMinPlot = 100e-9; 
+            const lambdaMaxPlot = 3000e-9; 
+            
+            const tempSlider = document.getElementById('temperatureSlider');
+            const tempValueSpan = document.getElementById('tempValue');
+
+            // Rayleigh-Jeans Law: B_lambda(T) = (2 * c * k_B * T) / lambda^4
+            function rayleighJeans(lambda, T_val) {
+                if (lambda === 0) return Infinity; // or a very large number
+                return (2 * c_light * k_B * T_val) / (lambda**4);
+            }
+
+            // Planck's Law: B_lambda(T) = (2 * h * c^2 / lambda^5) * (1 / (exp(h * c / (lambda * k_B * T)) - 1))
+            function planck(lambda, T_val) {
+                if (lambda === 0) return 0;
+                const hc_lambda = (h_planck * c_light) / lambda;
+                const exponent = hc_lambda / (k_B * T_val);
+                // Prevent overflow for large exponents, exp(709) is near max float.
+                if (exponent > 700) return 0; // Effectively zero contribution
+                const denominator = Math.exp(exponent) - 1;
+                if (denominator === 0) return Infinity; // Should not happen for lambda > 0
+
+                const numerator = (2 * h_planck * c_light**2) / (lambda**5);
+                return numerator / denominator;
+            }
+            
+            p.setup = () => {
+                const container = document.getElementById('uvCatastropheCanvasContainer');
+                const canvas = p.createCanvas(container.offsetWidth, container.offsetHeight);
+                canvas.parent('uvCatastropheCanvasContainer');
+                tempSlider.addEventListener('input', () => {
+                    T = parseFloat(tempSlider.value);
+                    tempValueSpan.textContent = T;
+                    redrawSketch(); // Redraw when slider changes
+                });
+                redrawSketch(); // Initial draw
+                // p.noLoop(); // Will be redrawn by slider event
+            };
+
+            function redrawSketch(){
+                p.background(245);
+                p.strokeWeight(1);
+
+                const padding = { top: 30, right: 100, bottom: 50, left: 60 };
+                const plotWidth = p.width - padding.left - padding.right;
+                const plotHeight = p.height - padding.top - padding.bottom;
+
+                // Find max intensity for scaling
+                let maxIntensityP = 0;
+                for (let l = lambdaMinPlot; l <= lambdaMaxPlot; l += 10e-9) { // Iterate through lambda values
+                    maxIntensityP = Math.max(maxIntensityP, planck(l, T));
+                }
+                 if (maxIntensityP === 0) maxIntensityP = 1; // Avoid division by zero
+
+                // Max intensity for Rayleigh-Jeans, capped for better visualization with Planck
+                let maxIntensityRJ = Math.min(rayleighJeans(lambdaMinPlot, T), maxIntensityP * 5);
+                if (maxIntensityRJ === 0 || !isFinite(maxIntensityRJ)) maxIntensityRJ = maxIntensityP * 5;
+
+
+                // Draw axes
+                p.stroke(0);
+                // X-axis (wavelength)
+                p.line(padding.left, p.height - padding.bottom, padding.left + plotWidth, p.height - padding.bottom); 
+                // Y-axis (intensity)
+                p.line(padding.left, padding.top, padding.left, padding.top + plotHeight); 
+                
+                p.fill(0);
+                p.noStroke();
+                p.textAlign(p.CENTER, p.CENTER);
+                p.text("波长 (λ, nm)", padding.left + plotWidth / 2, p.height - padding.bottom + 20);
+                
+                // X-axis labels (nm)
+                for(let i=0; i<=5; i++){
+                    let lambda = lambdaMinPlot + i * (lambdaMaxPlot - lambdaMinPlot)/5;
+                    let x = padding.left + p.map(lambda, lambdaMinPlot, lambdaMaxPlot, 0, plotWidth);
+                    p.text((lambda * 1e9).toFixed(0), x, p.height - padding.bottom + 10);
+                }
+
+                p.push();
+                p.translate(padding.left - 30, padding.top + plotHeight / 2);
+                p.rotate(-p.HALF_PI);
+                p.text("辐射强度 (任意单位)", 0, 0);
+                p.pop();
+
+                // Plot Rayleigh-Jeans
+                p.stroke(255, 0, 0); // Red
+                p.noFill();
+                p.beginShape();
+                for (let x_px = 0; x_px <= plotWidth; x_px++) {
+                    let lambda = p.map(x_px, 0, plotWidth, lambdaMinPlot, lambdaMaxPlot);
+                    let intensity = rayleighJeans(lambda, T);
+                    let y_px = p.map(intensity, 0, maxIntensityRJ, p.height - padding.bottom, padding.top);
+                    y_px = p.constrain(y_px, padding.top, p.height - padding.bottom); 
+                    p.vertex(padding.left + x_px, y_px);
+                }
+                p.endShape();
+
+                // Plot Planck
+                p.stroke(0, 0, 255); // Blue
+                p.noFill();
+                p.beginShape();
+                for (let x_px = 0; x_px <= plotWidth; x_px++) {
+                    let lambda = p.map(x_px, 0, plotWidth, lambdaMinPlot, lambdaMaxPlot);
+                    let intensity = planck(lambda, T);
+                    let y_px = p.map(intensity, 0, maxIntensityP, p.height - padding.bottom, padding.top); 
+                    y_px = p.constrain(y_px, padding.top, p.height - padding.bottom);
+                    p.vertex(padding.left + x_px, y_px);
+                }
+                p.endShape();
+
+                // Legend
+                p.fill(255, 0, 0);
+                p.rect(padding.left + plotWidth - 90, padding.top + 10, 10, 10);
+                p.text("瑞利-金斯", padding.left + plotWidth - 40, padding.top + 15);
+                p.fill(0, 0, 255);
+                p.rect(padding.left + plotWidth - 90, padding.top + 30, 10, 10);
+                p.text("普朗克", padding.left + plotWidth - 40, padding.top + 35);
+            }
+            
+            p.draw = () => {
+                // Only redraw on slider change, handled by event listener calling redrawSketch()
+                 p.noLoop(); // Ensure draw loop doesn't run continuously
+            }
+
+            p.windowResized = () => {
+                const container = document.getElementById('uvCatastropheCanvasContainer');
+                p.resizeCanvas(container.offsetWidth, container.offsetHeight);
+                redrawSketch(); // Redraw on resize
+            };
+        };
+        new p5(sketchUVCatastrophe, 'uvCatastropheCanvasContainer');
+
+        // P5.js Sketch 4: Photon Emission
+        const sketchPhotonEmission = (p) => {
+            let atomX, atomY, atomRadius = 30;
+            let electronRadius = 8;
+            let electronAngle = 0;
+            let groundOrbitRadius = 60;
+            let excitedOrbitRadius = groundOrbitRadius + 40;
+            let currentElectronOrbitRadius = groundOrbitRadius;
+            let excited = false;
+            let photon = null; // {x, y, waveAmplitude, wavelength, speed, targetX, targetY}
+            let transitioning = false; // For electron jump
+
+            p.setup = () => {
+                const container = document.getElementById('photonEmissionCanvasContainer');
+                const canvas = p.createCanvas(container.offsetWidth, container.offsetHeight);
+                canvas.parent('photonEmissionCanvasContainer');
+                atomX = p.width / 3;
+                atomY = p.height / 2;
+                redrawSketch();
+                p.noLoop();
+            };
+
+            function redrawSketch() {
+                p.background(240);
+
+                // Draw Atom Nucleus
+                p.fill(100, 100, 255); 
+                p.ellipse(atomX, atomY, atomRadius * 2, atomRadius * 2);
+                p.fill(0);
+                p.textAlign(p.CENTER, p.CENTER);
+                p.text("原子核", atomX, atomY);
+
+                // Draw Electron Orbits
+                p.noFill();
+                p.stroke(150, 150, 150, 100); // Lighter orbits
+                p.ellipse(atomX, atomY, groundOrbitRadius * 2, groundOrbitRadius * 2); 
+                p.ellipse(atomX, atomY, excitedOrbitRadius * 2, excitedOrbitRadius * 2); 
+
+                // Smoothly transition electron orbit radius
+                if (excited && currentElectronOrbitRadius < excitedOrbitRadius) {
+                    currentElectronOrbitRadius = p.lerp(currentElectronOrbitRadius, excitedOrbitRadius, 0.1);
+                    if (Math.abs(currentElectronOrbitRadius - excitedOrbitRadius) < 0.1) currentElectronOrbitRadius = excitedOrbitRadius;
+                    p.loop(); 
+                } else if (!excited && currentElectronOrbitRadius > groundOrbitRadius && transitioning) {
+                    currentElectronOrbitRadius = p.lerp(currentElectronOrbitRadius, groundOrbitRadius, 0.1);
+                     if (Math.abs(currentElectronOrbitRadius - groundOrbitRadius) < 0.1) {
+                        currentElectronOrbitRadius = groundOrbitRadius;
+                        transitioning = false; // End transition
+                     }
+                    p.loop();
+                }
+
+
+                // Draw Electron
+                let electronX = atomX + currentElectronOrbitRadius * p.cos(electronAngle);
+                let electronY = atomY + currentElectronOrbitRadius * p.sin(electronAngle);
+                p.fill(255, 255, 0); 
+                p.stroke(50);
+                p.ellipse(electronX, electronY, electronRadius * 2, electronRadius * 2);
+
+                if (!excited && !transitioning && !photon) electronAngle += 0.02; // Orbiting in ground state
+
+                // Draw Photon if emitting
+                if (photon) {
+                    p.stroke(255, 0, 0); 
+                    p.strokeWeight(2);
+                    let photonLength = 60; // Visual length of wave packet
+                    p.beginShape();
+                    for (let i = 0; i <= photonLength; i += 3) {
+                        let waveX = photon.x + i;
+                        let waveY = photon.y + photon.waveAmplitude * p.sin((i / photon.wavelength) * p.TWO_PI + photon.x * 0.1); // Add phase shift for movement
+                        p.vertex(waveX, waveY);
+                    }
+                    p.endShape();
+                    p.fill(255,0,0, 150); // Semi-transparent particle aspect
+                    p.noStroke();
+                    p.ellipse(photon.x + photonLength/2, photon.y, 8, 8); // Particle aspect in middle of wave
+                    
+                    photon.x += photon.speed;
+                    if (photon.x > p.width) {
+                        photon = null;
+                        p.noLoop(); 
+                        redrawSketch(); 
+                    } else {
+                        p.loop(); // Keep animating photon
+                    }
+                }
+                
+                if (!photon && !transitioning && !(excited && currentElectronOrbitRadius < excitedOrbitRadius)) {
+                     p.noLoop(); // Stop if nothing is happening
+                }
+            }
+            
+            p.draw = () => {
+                 redrawSketch();
+            }
+
+            document.getElementById('triggerEmission').addEventListener('click', () => {
+                if (!photon && !transitioning) { 
+                    excited = true; 
+                    electronAngle = p.random(p.TWO_PI); 
+                    p.loop(); // Start electron jump animation
+                    
+                    setTimeout(() => {
+                        if(excited) { // Check if still in excited state (user hasn't spammed button)
+                            transitioning = true; // Start transition back to ground
+                            excited = false; 
+                            
+                            // Calculate photon start position more accurately from the excited orbit
+                            let startPhotonX = atomX + excitedOrbitRadius * p.cos(electronAngle) + electronRadius;
+                            let startPhotonY = atomY + excitedOrbitRadius * p.sin(electronAngle);
+
+                            photon = {
+                                x: startPhotonX,
+                                y: startPhotonY,
+                                waveAmplitude: 10,
+                                wavelength: 15, // Shorter wavelength for higher energy
+                                speed: 4
+                            };
+                            p.loop(); // Ensure animation continues for photon and electron drop
+                        }
+                    }, 800); // Time in excited state
+                }
+            });
+            
+            p.windowResized = () => {
+                const container = document.getElementById('photonEmissionCanvasContainer');
+                p.resizeCanvas(container.offsetWidth, container.offsetHeight);
+                atomX = p.width / 3;
+                atomY = p.height / 2;
+                if (photon && photon.x > p.width) photon = null; 
+                redrawSketch();
+                if(photon || transitioning || (excited && currentElectronOrbitRadius < excitedOrbitRadius)) p.loop(); else p.noLoop();
+            };
+        };
+        new p5(sketchPhotonEmission, 'photonEmissionCanvasContainer');
+
+        // P5.js Sketch 5: Black Body Cavity Radiation
+        const sketchCavityRadiation = (p) => {
+            let particles = [];
+            const numParticlesBase = 30;
+            let cavityTemp = 30; // Arbitrary units for temperature effect (5 to 100)
+            let numCurrentParticles = numParticlesBase;
+
+            class Particle {
+                constructor(x, y, sketch, temp) {
+                    this.p = sketch;
+                    this.pos = this.p.createVector(x, y);
+                    this.maxSpeedBase = 3; // Base max speed
+                    this.vel = p5.Vector.random2D().mult(this.p.random(0.5, this.getCurrentMaxSpeed(temp) * 0.8));
+                    this.radius = this.p.random(2, 5);
+                }
+                
+                getCurrentMaxSpeed(temp){
+                    return this.maxSpeedBase * (temp / 30);
+                }
+
+                update(temp) {
+                    let currentMaxSpeed = this.getCurrentMaxSpeed(temp);
+                    if (this.vel.mag() > currentMaxSpeed) { // If temp decreased, slow down
+                        this.vel.setMag(currentMaxSpeed);
+                    } else { // If temp increased or same, allow acceleration up to new max
+                         this.vel.add(p5.Vector.random2D().mult(0.1 * (temp/30) )); // Add small random acceleration based on temp
+                         this.vel.limit(currentMaxSpeed);
+                    }
+
+                    this.pos.add(this.vel);
+
+                    if (this.pos.x < this.radius || this.pos.x > this.p.width - this.radius) {
+                        this.vel.x *= -1;
+                        this.pos.x = this.p.constrain(this.pos.x, this.radius, this.p.width - this.radius);
+                    }
+                    if (this.pos.y < this.radius || this.pos.y > this.p.height - this.radius) {
+                        this.vel.y *= -1;
+                        this.pos.y = this.p.constrain(this.pos.y, this.radius, this.p.height - this.radius);
+                    }
+                }
+
+                display(temp) {
+                    let speed = this.vel.mag();
+                    let maxPossibleSpeedAtCurrentTemp = this.getCurrentMaxSpeed(temp);
+                    
+                    // Color mapping: low speed = blue/violet, mid speed = green/yellow, high speed = red/orange
+                    let r, g, b;
+                    if (speed < maxPossibleSpeedAtCurrentTemp / 3) { // Low energy - more blue/violet
+                        r = p.map(speed, 0, maxPossibleSpeedAtCurrentTemp / 3, 100, 50);
+                        g = p.map(speed, 0, maxPossibleSpeedAtCurrentTemp / 3, 100, 0);
+                        b = p.map(speed, 0, maxPossibleSpeedAtCurrentTemp / 3, 255, 150);
+                    } else if (speed < (2 * maxPossibleSpeedAtCurrentTemp) / 3) { // Mid energy - more green/yellow
+                        r = p.map(speed, maxPossibleSpeedAtCurrentTemp / 3, (2 * maxPossibleSpeedAtCurrentTemp) / 3, 50, 255);
+                        g = p.map(speed, maxPossibleSpeedAtCurrentTemp / 3, (2 * maxPossibleSpeedAtCurrentTemp) / 3, 0, 255);
+                        b = p.map(speed, maxPossibleSpeedAtCurrentTemp / 3, (2 * maxPossibleSpeedAtCurrentTemp) / 3, 150, 0);
+                    } else { // High energy - more red/orange
+                        r = 255;
+                        g = p.map(speed, (2 * maxPossibleSpeedAtCurrentTemp) / 3, maxPossibleSpeedAtCurrentTemp, 255, 100);
+                        b = 0;
+                    }
+
+                    this.p.fill(r, g, b, 220);
+                    this.p.noStroke();
+                    this.p.ellipse(this.pos.x, this.pos.y, this.radius * 2);
+                }
+            }
+            
+            function adjustParticles() {
+                numCurrentParticles = Math.floor(numParticlesBase + (cavityTemp - 30) / 2); // More particles at higher temp
+                numCurrentParticles = p.max(10, p.min(numCurrentParticles, 100)); // Clamp particle count
+
+                while (particles.length < numCurrentParticles) {
+                    particles.push(new Particle(p.random(p.width), p.random(p.height), p, cavityTemp));
+                }
+                while (particles.length > numCurrentParticles) {
+                    particles.pop();
+                }
+            }
+
+
+            p.setup = () => {
+                const container = document.getElementById('cavityRadiationCanvasContainer');
+                const canvas = p.createCanvas(container.offsetWidth, container.offsetHeight);
+                canvas.parent('cavityRadiationCanvasContainer');
+                adjustParticles(); // Initial particle setup
+                p.loop(); 
+            };
+
+            p.draw = () => {
+                p.background(20,20,30); // Very dark cavity
+
+                p.stroke(100);
+                p.noFill();
+                p.rect(0,0, p.width-1, p.height-1);
+
+                particles.forEach(particle => {
+                    particle.update(cavityTemp);
+                    particle.display(cavityTemp);
+                });
+                
+                p.fill(220);
+                p.noStroke();
+                p.textAlign(p.LEFT, p.TOP);
+                p.textSize(14);
+                p.text(`温度参数: ${cavityTemp.toFixed(0)} | 光子数: ${particles.length}`, 10, 10);
+            };
+
+            document.getElementById('increaseTempCavity').addEventListener('click', () => {
+                cavityTemp = p.min(cavityTemp + 10, 100);
+                adjustParticles();
+            });
+            document.getElementById('decreaseTempCavity').addEventListener('click', () => {
+                cavityTemp = p.max(cavityTemp - 10, 5);
+                adjustParticles();
+            });
+            
+            p.windowResized = () => {
+                const container = document.getElementById('cavityRadiationCanvasContainer');
+                p.resizeCanvas(container.offsetWidth, container.offsetHeight);
+                // Reset particle positions to avoid clumping or being out of bounds
+                particles = [];
+                adjustParticles();
+            };
+        };
+        new p5(sketchCavityRadiation, 'cavityRadiationCanvasContainer');
+
+    </script>
+</body>
+</html>

@@ -1,0 +1,1029 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>层束神经网络：宇宙复杂关系的物理逻辑解读</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.2/p5.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
+    <style>
+        /* 基本重置和页面设置 */
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Noto Sans SC', sans-serif;
+            font-size: 18px; /* 基础字号，参考“三号”在屏幕上的可读性 */
+            line-height: 1.8;
+            background-color: #0d1117; /* GitHub 暗黑模式背景色 */
+            color: #c9d1d9; /* GitHub 暗黑模式文字颜色 */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            overflow-x: hidden; /* 防止水平溢出 */
+        }
+
+        /* 背景动画容器 */
+        #backgroundCanvasContainer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 0;
+            pointer-events: none; /* 允许点击穿透 */
+        }
+
+        /* 内容容器 */
+        .container {
+            position: relative;
+            z-index: 1; /* 在背景动画之上 */
+            width: 90%;
+            max-width: 1000px; /* 优化阅读宽度，类似A3纸张感 */
+            margin: 40px auto; /* 增加上下边距 */
+            padding: 30px 40px;
+            background-color: rgba(22, 27, 34, 0.9); /* GitHub 暗黑模式内容区背景 */
+            border: 1px solid #30363d; /* GitHub 暗黑模式边框颜色 */
+            border-radius: 12px; /* 圆角 */
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+        }
+
+        /* 标题样式 */
+        h1, h2, h3 {
+            font-family: 'ZCOOL KuaiLe', cursive; /* 轻松活泼字体 */
+            color: #58a6ff; /* GitHub 暗黑模式链接/标题颜色 */
+            margin-bottom: 0.75em;
+            text-align: center;
+            letter-spacing: 1px;
+        }
+        h1 {
+            font-size: 2.6em; /* 主标题 */
+            color: #79c0ff; /* 更亮的蓝色 */
+            border-bottom: 2px solid #388bfd;
+            padding-bottom: 15px;
+            margin-top: 0;
+        }
+        h2 {
+            font-size: 2.0em; /* 章节标题 */
+            color: #f778ba; /* 粉色系，增加活泼感 */
+            margin-top: 2.2em;
+        }
+        h3 {
+            font-size: 1.5em;
+            color: #a371f7; /* 紫色系 */
+            margin-top: 1.6em;
+            text-align: left;
+        }
+
+        /* 段落和文本样式 */
+        p, li {
+            margin-bottom: 1.2em;
+            text-align: justify;
+            color: #adbac7; /* 柔和的文字颜色 */
+        }
+        ul, ol {
+            padding-left: 30px;
+        }
+
+        /* 强调文字 */
+        strong, .highlight {
+            color: #ffa657; /* 暖黄色强调 */
+            font-weight: bold;
+        }
+        .concept { /* 物理概念词 */
+            font-weight: 500;
+            color: #7ee787; /* 绿色概念词 */
+            padding: 3px 7px;
+            background-color: rgba(63, 185, 80, 0.15);
+            border-radius: 6px;
+            border: 1px solid rgba(63, 185, 80, 0.4);
+            font-family: 'Noto Sans SC', sans-serif; /* 概念词使用标准字体 */
+        }
+        .formula {
+            display: block;
+            text-align: center;
+            margin: 20px auto;
+            padding: 15px;
+            background-color: rgba(34, 39, 46, 0.8);
+            border-left: 4px solid #388bfd;
+            color: #c9d1d9;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 1.05em;
+            border-radius: 4px;
+            white-space: pre-wrap; /* 保证公式换行 */
+        }
+
+        /* 动画容器 */
+        .animation-container {
+            width: 100%;
+            max-width: 580px; /* 动画区域宽度 */
+            height: 360px; /* 动画区域高度 */
+            margin: 25px auto;
+            border: 1px solid #30363d;
+            border-radius: 10px;
+            overflow: hidden;
+            background-color: #010409; /* 更深的动画背景 */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: inset 0 0 12px rgba(0,0,0,0.5);
+        }
+        .animation-container canvas {
+            display: block;
+            max-width: 100%;
+            max-height: 100%;
+            border-radius: 8px;
+        }
+        
+        /* 交互按钮和控件样式 */
+        .controls {
+            text-align: center;
+            margin-bottom: 25px;
+            margin-top: 15px;
+        }
+        .controls button {
+            padding: 10px 22px;
+            font-size: 0.95em;
+            font-family: 'Noto Sans SC', sans-serif;
+            background-image: linear-gradient(to right, #388bfd, #58a6ff);
+            color: white;
+            border: none;
+            border-radius: 22px; 
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            letter-spacing: 0.5px;
+        }
+        .controls button:hover {
+            transform: translateY(-2px) scale(1.05);
+            box-shadow: 0 7px 18px rgba(56, 139, 253, 0.35);
+        }
+        .controls button:active {
+            transform: translateY(0px) scale(1);
+        }
+        .controls label {
+            color: #8b949e; /* GitHub 暗黑模式次要文字颜色 */
+            margin: 0 10px;
+            font-size: 0.9em;
+        }
+        .controls input[type="range"] {
+            vertical-align: middle;
+            cursor: grab;
+            width: 140px;
+        }
+
+        /* 作者信息 */
+        .author-info {
+            text-align: center;
+            margin: 20px 0 30px 0;
+            font-size: 0.95em;
+            color: #8b949e;
+        }
+        .author-info strong {
+            color: #79c0ff;
+        }
+
+        /* 页脚 */
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding: 25px;
+            background-color: #161b22; /* 页脚背景 */
+            color: #8b949e;
+            width: 100%;
+            font-size: 0.9em;
+            border-top: 1px solid #30363d;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            body {
+                font-size: 17px; /* 移动端稍小字号 */
+            }
+            .container {
+                width: 95%;
+                padding: 20px 25px;
+                margin: 20px auto;
+            }
+            h1 {
+                font-size: 2.1em;
+            }
+            h2 {
+                font-size: 1.7em;
+            }
+            h3 {
+                font-size: 1.3em;
+            }
+            .animation-container {
+                height: 310px; /* 移动端动画高度调整 */
+            }
+            .controls button {
+                padding: 9px 18px;
+                font-size: 0.85em;
+            }
+            .controls input[type="range"] {
+                width: 120px;
+            }
+            .formula {
+                font-size: 1em;
+                padding: 10px;
+            }
+        }
+         @media (max-width: 480px) {
+            body {
+                font-size: 16px;
+            }
+            h1 {
+                font-size: 1.7em;
+            }
+            h2 {
+                font-size: 1.4em;
+            }
+            h3 {
+                font-size: 1.15em;
+            }
+            .animation-container {
+                height: 270px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="backgroundCanvasContainer"></div>
+    <div class="container">
+        <header>
+            <h1>层束神经网络：宇宙复杂关系的物理逻辑解读</h1>
+            <div class="author-info">
+                <p>解读自 <strong>Jakob Hansen</strong> (俄亥俄州立大学数学系) 与 <strong>Thomas Gebhart</strong> (明尼苏达大学计算机科学系) 的研究论文</p>
+                <p>（发表于 NeurIPS 2020 拓扑数据分析及超越研讨会）</p>
+            </div>
+        </header>
+
+        <main>
+            <article>
+                <section id="intro-sheaf-nn">
+                    <h2>引言：超越“均匀”——探索复杂关系的神经网络</h2>
+                    <p>在人工智能的浩瀚星空中，<span class="concept">图神经网络（GNN）</span>无疑是一颗璀璨的明星。它们擅长处理那些“关系型数据”，比如社交网络、分子结构或是知识图谱。其中，<span class="concept">图卷积网络（GCN）</span>更是GNN家族中的佼佼者，它通过一种巧妙的“扩散”操作，让节点信息在邻居之间“平均”和“传播”，从而学习到图的特征。这就像物理世界中的热量扩散，或者声波在均匀介质中的传播——信息以一种相对“均匀”的方式在网络中流动。</p>
+                    <p>然而，宇宙的奥秘远不止于此。在真实世界中，节点之间的关系往往不是那么简单和“均匀”的。它们可能是<strong class="highlight">非恒定的</strong>（关系强度随情境变化）、<strong class="highlight">非对称的</strong>（A影响B的方式与B影响A的方式不同），甚至<strong class="highlight">维度各异的</strong>（关系本身携带的信息是多维的）。传统的GCN在处理这些复杂、微妙的关系时，就显得有些力不从心了。这就像我们不能用描述均匀介质中声波的物理定律，去解释复杂材料中声子的行为。</p>
+                    <p>正是在这样的背景下，Jakob Hansen和Thomas Gebhart两位学者提出了一个令人兴奋的泛化框架——<span class="concept">层束神经网络（Sheaf Neural Networks, SNN）</span>。SNN的核心在于引入了“层束拉普拉斯算子”，这是对传统“图拉普拉斯算子”的一次深刻拓展。它不仅能编码节点间的连接，还能捕捉那些隐藏在连接背后的、更丰富的“关系结构”。这为我们理解和建模宇宙中那些非均匀、非对称的复杂相互作用，打开了一扇新的大门。</p>
+                    <p>本篇解读，我们将以轻松活泼的“物理课”风格，深入浅出地剖析层束神经网络的物理逻辑。我们将探讨层束如何为图赋予更深层次的“拓扑”和“代数”结构，层束拉普拉斯算子如何成为描述复杂信息扩散的“新工具”，以及SNN如何在处理带符号图等特殊场景中展现出超越GCN的强大能力。准备好了吗？让我们一起踏上这场探索宇宙复杂关系奥秘的旅程！</p>
+                </section>
+
+                <section id="cellular-sheaves">
+                    <h2>第一章：图的“升级版”——细胞层束的物理直觉</h2>
+                    <p>要理解层束神经网络，我们首先要认识它的基石——<span class="concept">细胞层束（Cellular Sheaf）</span>。想象一下，一个图（Graph）就像一张地图，上面有城市（节点）和连接城市的道路（边）。在传统的GCN中，我们可能只关心城市里的人口数量（节点上的一个标量值），以及道路是否连接了城市。信息（比如人口变化）沿着道路扩散，简单地在邻近城市间平均。</p>
+                    <p>但如果城市之间不仅仅是简单的连接，还有更复杂的“关系”呢？比如，城市A对城市B有“经济影响力”，城市B对城市C有“文化吸引力”，而城市C对城市A有“政治制约力”。这些“影响力”、“吸引力”、“制约力”本身可能就是多维的，并且方向性很强。传统的图就无法直接表达这些丰富的语义。</p>
+                    <p>这时，细胞层束就登场了！它就像给这张地图进行了“升级”：</p>
+                    <ul>
+                        <li><strong>给每个城市（顶点v）附加一个“数据空间”F(v)</strong>：这不再仅仅是一个数字，而可能是一个向量空间，比如一个表示经济状况的向量，或者一个表示文化特征的向量。这就像每个城市都有了自己的“内部状态空间”，可以容纳更丰富的信息。在物理中，这可以类比为每个粒子或每个空间区域所拥有的<span class="concept">局部自由度</span>，比如一个原子不仅有位置，还有自旋、能级等内部量子态。</li>
+                        <li><strong>给每条道路（边e）也附加一个“数据空间”F(e)</strong>：这表示了这条“关系”本身所携带的信息。比如，道路上的交通流量、贸易额，或者两个城市间文化交流的强度。</li>
+                        <li><strong>给每个“城市-道路”对（v→e）附加一个“线性映射”Fv→e: F(v) → F(e)</strong>：这是最关键的部分！它定义了当信息从城市v“流向”道路e时，信息会如何“转化”或“投影”。这就像一个“翻译器”或“过滤器”，规定了城市v的内部状态如何通过这条道路“呈现”出来。在物理中，这可以类比为<span class="concept">相互作用规则</span>。例如，当两个粒子通过某种力相互作用时，一个粒子的状态如何影响另一个粒子，这种影响可能不是简单的传递，而是经过某种“变换”的。</li>
+                    </ul>
+                    <p>更重要的是，层束还定义了<strong class="highlight">“一致性约束”</strong>：对于连接城市u和v的道路e，从u到e的信息（Fu→e(xu)）和从v到e的信息（Fv→e(xv)）必须是“一致”的。这确保了数据在整个网络中的“协调性”。</p>
+                    <p>简而言之，细胞层束将图从一个简单的连接结构，扩展成了一个能够承载和转化复杂局部信息的“拓扑代数结构”。它不再仅仅记录“有连接”，而是记录“连接以何种方式存在，以及如何影响信息”。传统的图拉普拉斯和扩散算子，其实是层束概念中一个最简单的特例——“常数层束”，即所有数据空间都是一维的R，所有映射都是恒等映射。而层束，则允许我们表达更普遍、更精妙的节点间关系，比如带符号图（通过改变映射的符号）甚至更高维度的复杂关系。</p>
+                    <div id="sheafVsGraphAnimation" class="animation-container"></div>
+                    <div class="controls">
+                        <button id="svgToggleView">切换视图：图扩散 / 层束扩散</button>
+                        <label for="svgSpeed">扩散速度:</label>
+                        <input type="range" id="svgSpeed" min="0.01" max="0.1" value="0.03" step="0.005">
+                    </div>
+                    <p>动画演示：左侧展示一个简单的图，节点上的标量值（颜色深浅）通过边进行简单的平均扩散。右侧展示同一个图，但每个节点上有一个小方块（代表向量空间，内部有方向箭头），边上有一个变换矩阵（用颜色或形状表示）。当信息（箭头方向）从一个节点传递到另一个节点时，会根据边上的变换矩阵进行旋转或缩放。你可以切换视图，直观感受传统图扩散和层束扩散在信息处理上的差异。</p>
+                </section>
+
+                <section id="sheaf-laplacian">
+                    <h2>第二章：复杂扩散的“指挥家”——层束拉普拉斯算子</h2>
+                    <p>在物理学中，<span class="concept">拉普拉斯算子</span>是一个无处不在的“指挥家”。它描述了空间中某一点的“势能”或“浓度”如何与其周围环境的平均值偏离，从而驱动着扩散、热传导、波传播等一系列物理过程。在图论中，<span class="concept">图拉普拉斯算子</span>也扮演着类似的角色，它衡量了节点信号与其邻居信号的“差异”，是GCN中信息扩散的核心。</p>
+                    <p>然而，当我们的“舞台”从简单的图升级到复杂的<span class="concept">细胞层束</span>时，传统的图拉普拉斯算子就显得力不从心了。我们需要一个更强大的“指挥家”，能够理解并处理层束中那些非均匀、非对称的复杂关系。这就是<span class="concept">层束拉普拉斯算子（Sheaf Laplacian, LF）</span>的由来。</p>
+                    <p>层束拉普拉斯算子的构建，离不开一个关键概念——<span class="concept">协边界算子（Coboundary Operator, δ）</span>。想象一下，在层束中，每个节点都有自己的“内部状态”（向量），每条边都有自己的“转换规则”。协边界算子δ的作用，就是去衡量沿着一条边，两个相邻节点的“内部状态”经过各自的“转换规则”后，在边上的“投影”是否一致。如果它们不一致，就说明存在一个“不平衡”或“张力”。</p>
+                    <p class="formula">(δx)e = Fv Pexv - FuPexu</p>
+                    <p>这里，`x`代表节点上的数据（信号），`e = u → v`代表一条有向边，`Fv→e`和`Fu→e`是对应的线性映射。这个公式直观地表达了从节点u和v到边e的数据“投影”之间的差异。如果这个差异为零，就意味着数据在边上是“一致”的。</p>
+                    <p>有了协边界算子δ，层束拉普拉斯算子LF就可以被定义为：</p>
+                    <p class="formula">LF = δTδ</p>
+                    <p>这与传统图拉普拉斯算子通过邻接矩阵和度矩阵构建的方式异曲同工，但其内部蕴含的“差异”和“连接”概念被极大地丰富了。LF是一个<strong class="highlight">正半定线性算子</strong>，它的零特征空间（即LFx = 0的解）对应着层束的“全局截面”，也就是那些在整个层束上都“一致”的数据配置。这就像物理系统中的“稳态”或“平衡态”。</p>
+                    <p>层束拉普拉斯算子能够捕捉到传统图拉普拉斯无法描述的复杂性。例如，在一个<span class="concept">带符号图</span>中（边可以表示“正向”或“负向”关系，如信任或不信任），传统的图拉普拉斯会简单地将所有连接视为同质的。而层束拉普拉斯可以通过改变对应边上的线性映射的“符号”，来精确地表达这种“正负”关系，从而在信息扩散时产生截然不同的效果。这就像在物理系统中，吸引力和排斥力会导致粒子截然不同的运动轨迹。</p>
+                    <p>因此，层束拉普拉斯算子不仅仅是一个数学工具，它更像是一个能够理解宇宙中各种复杂“相互作用力”的“指挥家”，它能精确地计算出在这些非均匀、非对称的“力”作用下，信息或能量如何在网络中扩散和演化。</p>
+                    <div id="sheafLaplacianAnimation" class="animation-container"></div>
+                    <div class="controls">
+                        <button id="slStep">下一步</button>
+                        <button id="slReset">重置</button>
+                    </div>
+                    <p>动画演示：展示两个相邻节点（A和B），每个节点上有一个二维向量（用箭头表示）。连接它们的边上有一个“转换器”（用一个旋转矩阵表示）。动画将分步演示：1. 节点A的向量通过其映射到达边；2. 节点B的向量通过其映射到达边；3. 计算两个投影向量之间的“差异”（协边界算子δx）；4. 概念性地展示这个差异如何贡献到整个层束的“不平衡”或“能量”中，最终形成层束拉普拉斯算子。你可以点击“下一步”按钮，逐步观察这个过程。</p>
+                </section>
+
+                <section id="sheaf-diffusion">
+                    <h2>第三章：信息流动的“新引擎”——层束扩散算子</h2>
+                    <p>在物理学中，<span class="concept">扩散</span>是一个普遍存在的现象，它描述了物质、能量或信息如何从高浓度区域向低浓度区域传播，直到达到均匀分布。在图神经网络中，GCN的核心操作就是一种基于图拉普拉斯的“扩散”，它让节点信息通过邻域平均的方式传播。这可以看作是信息在“均匀介质”中的流动。</p>
+                    <p>然而，当信息在具有复杂“纹理”和“方向性”的<span class="concept">层束结构</span>中流动时，我们需要一个更精密的“引擎”来驱动这种扩散——这就是<span class="concept">层束扩散算子（Sheaf Diffusion Operator, DF）</span>。</p>
+                    <p>层束扩散算子是基于<span class="concept">层束拉普拉斯算子（LF）</span>构建的。最简单的层束扩散算子之一是 `HαF = I - αLF`，其中`I`是单位矩阵，`α`是一个缩放因子。这个形式与传统GCN中常用的扩散算子 `I - αL`（L是图拉普拉斯）非常相似，但其内部的`LF`能够捕捉更丰富的关系信息。</p>
+                    <p>这个算子可以理解为：当前节点的状态（`I`部分）加上来自邻居的“修正”（`-αLF`部分）。这个“修正”不再是简单的邻居平均，而是考虑了层束中定义的复杂转换规则和一致性约束。因此，信息在层束上的扩散，不再是盲目的“摊平”，而是有方向、有权重、有变换的“智能”流动。</p>
+                    <p>从<span class="concept">图信号处理</span>的角度来看，层束扩散算子DF可以被视为一种<strong class="highlight">“移位算子”</strong>，它能够生成类似“卷积滤波器”的效果，用于处理层束上的信号。这意味着，SNN能够像处理图像一样处理图数据，但其“卷积核”能够根据节点间的复杂关系进行自适应调整。</p>
+                    <p>论文中提到，层束神经网络在处理<strong class="highlight">带符号图</strong>（Signed Graphs）时表现出色。在带符号图中，边不仅表示连接，还带有“正”或“负”的属性，例如社交网络中的“朋友”和“敌人”关系。传统的GCN可能难以区分这两种关系，导致信息传播的混淆。而SNN通过其层束结构，可以为“负”边设置一个“反转”或“对立”的线性映射，从而让信息在传播时能够正确地反映这些符号关系。这就像在物理系统中，正电荷和负电荷在电场中会受到方向相反的力，导致截然不同的运动轨迹。</p>
+                    <p>因此，层束扩散算子为我们提供了一个强大的工具，来模拟和学习宇宙中那些非均匀、非对称的信息流动和相互作用。它让神经网络能够更深刻地理解复杂系统的内在动力学，从而在更广泛的领域中发挥作用。</p>
+                    <div id="signedGraphAnimation" class="animation-container"></div>
+                    <div class="controls">
+                        <button id="sgToggleMode">切换模式：GCN / SNN</button>
+                        <button id="sgPropagate">传播一步</button>
+                        <button id="sgReset">重置</button>
+                    </div>
+                    <p>动画演示：展示一个简单的带符号图，节点上有一个标量值（用颜色表示，例如红色代表负面情绪，蓝色代表正面情绪）。边有“+”或“-”符号。在GCN模式下，信息传播可能忽略符号，导致情绪混淆。在SNN模式下，负号边会反转情绪（例如，红色变蓝色，蓝色变红色），从而更准确地模拟信息传播。你可以点击“传播一步”观察信息如何扩散，并切换模式对比两种方法的差异。</p>
+                </section>
+
+                <section id="snn-advantages">
+                    <h2>第四章：SNN的“超能力”——处理非对称与高维关系</h2>
+                    <p>层束神经网络（SNN）之所以被称为图卷积网络（GCN）的“泛化”，并不仅仅是因为它引入了更复杂的数学工具，更重要的是它赋予了神经网络处理现实世界中更广泛、更精细关系的“超能力”。这种能力主要体现在两个方面：<strong class="highlight">处理非对称关系</strong>和<strong class="highlight">处理高维数据与关系</strong>。</p>
+                    <h3>4.1 非对称关系的精确捕捉</h3>
+                    <p>在我们的宇宙中，许多关系都是非对称的。例如，导师对学生的影响力通常大于学生对导师的影响力；捕食者对猎物的影响与猎物对捕食者的影响截然不同；在信息传播中，新闻媒体对公众的影响力远超个体对媒体的影响力。传统的GCN，由于其基于对称的图拉普拉斯算子，在处理这类非对称关系时会遇到瓶颈，它倾向于将所有关系“平均化”，从而丢失了重要的方向性信息。</p>
+                    <p>而SNN通过其<span class="concept">层束结构</span>，能够为每条边（甚至每个方向的边）定义独特的<span class="concept">线性映射</span>。这意味着，从节点A到节点B的映射可以与从B到A的映射完全不同。这就像在物理系统中，一个力场可能在不同方向上表现出不同的强度或性质。SNN能够精确地捕捉这种非对称性，从而在信息传播和特征学习时，更真实地反映现实世界的复杂动力学。</p>
+                    <div id="asymmetricRelationAnimation" class="animation-container"></div>
+                    <div class="controls">
+                        <button id="arPlayPause">播放/暂停</button>
+                        <label for="arInfluenceA">A对B的影响:</label>
+                        <input type="range" id="arInfluenceA" min="0" max="1" value="0.8" step="0.1">
+                        <label for="arInfluenceB">B对A的影响:</label>
+                        <input type="range" id="arInfluenceB" min="0" max="1" value="0.2" step="0.1">
+                    </div>
+                    <p>动画演示：展示两个节点A和B，它们之间有两条有向边（A→B和B→A）。每个节点有一个标量值（用大小表示）。你可以调整A对B的影响强度和B对A的影响强度。动画将展示信息如何根据这些非对称的影响力在节点间传播，例如，A的变化对B有显著影响，而B的变化对A影响较小。这直观地展示了SNN如何处理非对称关系。</p>
+                    <h3>4.2 高维数据与关系的灵活表达</h3>
+                    <p>除了非对称性，现实世界中的数据和关系也常常是高维的。例如，一个人的“状态”可能由多个特征（年龄、职业、兴趣等）组成的向量来描述；两个分子之间的“相互作用”可能涉及多种力（范德华力、氢键、静电力等）。传统的GCN通常将节点数据视为标量或低维向量，难以充分表达这种丰富性。</p>
+                    <p>SNN通过允许每个节点和每条边拥有<span class="concept">高维的向量空间（stalks）</span>，以及定义这些空间之间的<span class="concept">线性映射</span>，从而能够灵活地处理高维数据和关系。这意味着，SNN不仅能处理“谁和谁连接”，还能处理“连接的本质是什么，以及这种连接如何转化多维信息”。</p>
+                    <p>例如，在生物网络中，一个基因的表达状态可能是一个高维向量，而基因之间的调控关系（边）可能是一个复杂的矩阵变换，它决定了上游基因的表达如何非线性地影响下游基因的表达。SNN能够将这些复杂的生物学机制编码到其层束结构中，从而更准确地预测基因功能或疾病发展。</p>
+                    <p>这种处理高维数据和关系的能力，使得SNN在更广泛的领域中具有巨大的潜力，例如物理模拟、复杂系统建模、多模态数据融合等。它让神经网络能够更深入地“理解”和“操作”那些传统方法难以触及的复杂信息流。</p>
+                    <div id="highDimDataAnimation" class="animation-container"></div>
+                    <div class="controls">
+                        <button id="hddPlayPause">播放/暂停</button>
+                        <label for="hddRotation">旋转角度:</label>
+                        <input type="range" id="hddRotation" min="0" max="360" value="0" step="5">
+                    </div>
+                    <p>动画演示：展示一个简单的图，但每个节点上有一个二维向量（用一个可旋转的箭头表示）。连接节点的边上有一个“变换矩阵”（用一个方块表示，内部有旋转和缩放的示意）。动画将展示当信息（箭头）从一个节点传递到另一个节点时，它如何根据边上的变换矩阵进行旋转和缩放。你可以调整旋转角度滑块，观察变换的效果，直观感受高维数据在层束上的演化。</p>
+                </section>
+
+                <section id="conclusion-sheaf-nn">
+                    <h2>结语：层束神经网络——洞察宇宙复杂性的新视角</h2>
+                    <p>从简单的图卷积网络到精妙的层束神经网络，我们见证了人工智能在理解和建模复杂关系方面的一次飞跃。正如张朝阳先生的物理课引导我们从光速极限和时空结构中洞察宇宙的因果律，层束神经网络也为我们提供了一个全新的视角，去理解那些在传统图结构中被“隐藏”或“简化”的复杂相互作用。</p>
+                    <p>层束（Sheaf）的概念，赋予了图更丰富的“局部自由度”和“相互作用规则”，使得每个节点不仅能承载信息，还能通过边上的“线性映射”与邻居进行更精细的“信息转化”。而<span class="concept">层束拉普拉斯算子</span>，则成为了描述这种复杂信息扩散的“指挥家”，它能够精确捕捉非对称、带符号甚至高维的关系，从而驱动着信息在网络中以一种“智能”而非“均匀”的方式流动。</p>
+                    <p>SNN在处理带符号图等场景中的优异表现，正是其“超能力”的体现。它让我们能够更真实地模拟社交网络中的情绪传播、生物系统中的基因调控、甚至物理世界中复杂材料的性质。这不仅仅是数学上的泛化，更是对现实世界复杂性的一种深刻洞察和有效建模。</p>
+                    <p>未来，层束神经网络有望在更多领域发挥其独特优势，例如：</p>
+                    <ul>
+                        <li><strong>物理学</strong>：模拟复杂材料中的电子行为、量子纠缠网络的演化、非均匀介质中的波传播。</li>
+                        <li><strong>生物学</strong>：理解蛋白质相互作用网络、神经回路中的信息处理、疾病传播的复杂路径。</li>
+                        <li><strong>社会科学</strong>：分析社会情绪的动态、经济系统中的供需关系、政治影响力网络的演变。</li>
+                    </ul>
+                    <p>层束神经网络提醒我们，宇宙的奥秘常常隐藏在那些看似微不足道的“关系”之中。通过赋予这些关系更丰富的结构和更精细的描述，我们就能构建出更强大、更智能的人工智能模型，从而更好地理解和改造这个复杂而美妙的世界。</p>
+                </section>
+            </article>
+        </main>
+        <footer>
+            <p>&copy; 2025 层束神经网络物理逻辑解读。内容灵感与核心思想源自 Jakob Hansen 和 Thomas Gebhart 的研究论文。</p>
+            <p>本页面所有动画均为概念性、简化性演示，旨在辅助理解，不完全代表真实物理过程的精确模拟。</p>
+        </footer>
+    </div>
+
+    <script>
+        // --- 全局背景星空动画 (复用) ---
+        let sketchBackground = function(p) {
+            let stars = [];
+            const numStars = 150; // 减少一点数量，让页面更清爽
+            p.setup = function() {
+                let canvas = p.createCanvas(p.windowWidth, p.windowHeight);
+                canvas.parent('backgroundCanvasContainer');
+                for (let i = 0; i < numStars; i++) {
+                    stars.push({
+                        x: p.random(p.width),
+                        y: p.random(p.height),
+                        size: p.random(0.3, 2.0), // 减小一点尺寸
+                        alpha: p.random(40, 120) // 减小一点亮度
+                    });
+                }
+                p.noStroke();
+            };
+            p.draw = function() {
+                p.clear(); 
+                for (let star of stars) {
+                    p.fill(180, 200, 235, star.alpha * (p.sin(p.frameCount * 0.008 + star.x * 0.08) * 0.25 + 0.75) ); 
+                    p.ellipse(star.x, star.y, star.size, star.size);
+                    star.y += star.size * 0.015; 
+                    if (star.y > p.height) {
+                        star.y = 0;
+                        star.x = p.random(p.width);
+                    }
+                }
+            };
+            p.windowResized = function() {
+                p.resizeCanvas(p.windowWidth, p.windowHeight);
+                 stars = []; 
+                for (let i = 0; i < numStars; i++) {
+                    stars.push({
+                        x: p.random(p.width),
+                        y: p.random(p.height),
+                        size: p.random(0.3, 2.0),
+                        alpha: p.random(40, 120)
+                    });
+                }
+            };
+        };
+        new p5(sketchBackground);
+
+        // --- 动画1: 图与层束的对比 ---
+        let sketchSheafVsGraph = function(p) {
+            let nodes = [];
+            let edges = [];
+            let nodeCount = 5;
+            let radius = 100;
+            let centerX, centerY;
+            let propagationSpeed = 0.03;
+            let graphMode = true; // true for graph diffusion, false for sheaf diffusion
+            let propagationProgress = 0;
+            let playing = true;
+
+            p.setup = function() {
+                let container = p.select('#sheafVsGraphAnimation');
+                let canvas = p.createCanvas(container.width, container.height);
+                canvas.parent('sheafVsGraphAnimation');
+                centerX = p.width / 2;
+                centerY = p.height / 2;
+
+                // Create nodes in a circle
+                for (let i = 0; i < nodeCount; i++) {
+                    let angle = p.TWO_PI / nodeCount * i;
+                    nodes.push({
+                        x: centerX + radius * p.cos(angle),
+                        y: centerY + radius * p.sin(angle),
+                        value: p.random(0, 1), // Scalar value for graph mode
+                        vector: p.createVector(p.cos(angle), p.sin(angle)), // Vector for sheaf mode
+                        targetValue: 0,
+                        targetVector: p.createVector(0,0)
+                    });
+                }
+
+                // Create edges (simple cycle for now)
+                for (let i = 0; i < nodeCount; i++) {
+                    edges.push({
+                        from: i,
+                        to: (i + 1) % nodeCount,
+                        transform: p.random() > 0.5 ? p.createMatrix(p.cos(p.PI/4), -p.sin(p.PI/4), p.sin(p.PI/4), p.cos(p.PI/4)) : p.createMatrix(1,0,0,1) // Example: rotate 45 deg or identity
+                    });
+                }
+
+                p.select('#svgToggleView').mousePressed(() => {
+                    graphMode = !graphMode;
+                    resetAnimation();
+                });
+                let speedSlider = p.select('#svgSpeed');
+                speedSlider.input(() => {
+                    propagationSpeed = parseFloat(speedSlider.value());
+                });
+                resetAnimation();
+            };
+
+            function resetAnimation() {
+                propagationProgress = 0;
+                for (let node of nodes) {
+                    node.value = p.random(0, 1);
+                    node.vector = p.createVector(p.random(-1,1), p.random(-1,1)).normalize();
+                    node.targetValue = node.value;
+                    node.targetVector = node.vector.copy();
+                }
+                p.loop();
+            }
+
+            p.draw = function() {
+                p.background(1, 4, 9);
+
+                if (playing) {
+                    propagationProgress += propagationSpeed;
+                    if (propagationProgress >= 1) {
+                        // Apply diffusion step
+                        let newValues = [];
+                        let newVectors = [];
+                        for (let i = 0; i < nodeCount; i++) {
+                            let sumValue = nodes[i].value;
+                            let sumVector = nodes[i].vector.copy();
+                            let neighborCount = 1;
+
+                            for (let edge of edges) {
+                                if (edge.from === i) { // Outgoing edge
+                                    let neighborNode = nodes[edge.to];
+                                    if (graphMode) {
+                                        sumValue += neighborNode.value;
+                                        neighborCount++;
+                                    } else {
+                                        // Apply transformation for sheaf diffusion
+                                        let transformedVector = p.createVector(
+                                            edge.transform.mat[0] * neighborNode.vector.x + edge.transform.mat[1] * neighborNode.vector.y,
+                                            edge.transform.mat[2] * neighborNode.vector.x + edge.transform.mat[3] * neighborNode.vector.y
+                                        );
+                                        sumVector.add(transformedVector);
+                                    }
+                                } else if (edge.to === i) { // Incoming edge
+                                     let neighborNode = nodes[edge.from];
+                                    if (graphMode) {
+                                        sumValue += neighborNode.value;
+                                        neighborCount++;
+                                    } else {
+                                        // Apply inverse transformation for sheaf diffusion (simplified for demo)
+                                        // In real sheaf, this is more complex with adjoints
+                                        let invTransform = p.createMatrix(edge.transform.mat[3], -edge.transform.mat[1], -edge.transform.mat[2], edge.transform.mat[0]); // Adjoint for 2x2 rotation
+                                        let transformedVector = p.createVector(
+                                            invTransform.mat[0] * neighborNode.vector.x + invTransform.mat[1] * neighborNode.vector.y,
+                                            invTransform.mat[2] * neighborNode.vector.x + invTransform.mat[3] * neighborNode.vector.y
+                                        );
+                                        sumVector.add(transformedVector);
+                                    }
+                                }
+                            }
+                            if (graphMode) {
+                                newValues[i] = sumValue / neighborCount;
+                            } else {
+                                newVectors[i] = sumVector.normalize(); // Normalize for visual clarity
+                            }
+                        }
+
+                        for (let i = 0; i < nodeCount; i++) {
+                            if (graphMode) {
+                                nodes[i].value = newValues[i];
+                            } else {
+                                nodes[i].vector = newVectors[i];
+                            }
+                        }
+                        propagationProgress = 0; // Reset for next step
+                    }
+                }
+
+                // Draw edges
+                p.stroke(50, 70, 100);
+                p.strokeWeight(1);
+                for (let edge of edges) {
+                    let fromNode = nodes[edge.from];
+                    let toNode = nodes[edge.to];
+                    p.line(fromNode.x, fromNode.y, toNode.x, toNode.y);
+                }
+
+                // Draw nodes
+                for (let node of nodes) {
+                    p.stroke(150, 180, 255);
+                    p.strokeWeight(2);
+                    if (graphMode) {
+                        p.fill(p.lerpColor(p.color(0, 0, 100), p.color(255, 255, 0), node.value)); // Color based on scalar value
+                        p.ellipse(node.x, node.y, 30, 30);
+                        p.fill(255); p.noStroke(); p.textAlign(p.CENTER, p.CENTER); p.textSize(12);
+                        p.text(node.value.toFixed(2), node.x, node.y);
+                    } else {
+                        p.fill(20, 40, 60); // Dark background for vector space
+                        p.rectMode(p.CENTER);
+                        p.rect(node.x, node.y, 40, 40, 5); // Node as a square for vector space
+                        
+                        // Draw vector inside the square
+                        p.push();
+                        p.translate(node.x, node.y);
+                        p.stroke(255, 100, 100);
+                        p.strokeWeight(2);
+                        p.line(0, 0, node.vector.x * 15, node.vector.y * 15);
+                        p.fill(255, 100, 100);
+                        p.triangle(node.vector.x * 15, node.vector.y * 15, 
+                                   node.vector.x * 15 - node.vector.y * 5, node.vector.y * 15 + node.vector.x * 5,
+                                   node.vector.x * 15 + node.vector.y * 5, node.vector.y * 15 - node.vector.x * 5);
+                        p.pop();
+                    }
+                }
+
+                p.fill(255,255,255,150); p.textAlign(p.CENTER, p.CENTER); p.textSize(16);
+                p.text(graphMode ? "图扩散模式" : "层束扩散模式", centerX, p.height - 20);
+            };
+        };
+        new p5(sketchSheafVsGraph);
+
+        // --- 动画2: 层束拉普拉斯的构建 ---
+        let sketchSheafLaplacian = function(p) {
+            let nodeA = {x: 150, y: 180, vector: p.createVector(1, 0.5)};
+            let nodeB = {x: 450, y: 180, vector: p.createVector(-0.8, 0.2)};
+            let transformAB = p.createMatrix(p.cos(p.PI/6), -p.sin(p.PI/6), p.sin(p.PI/6), p.cos(p.PI/6)); // Rotate 30 deg
+            let transformBA = p.createMatrix(p.cos(-p.PI/6), -p.sin(-p.PI/6), p.sin(-p.PI/6), p.cos(-p.PI/6)); // Rotate -30 deg
+            let step = 0; // 0: initial, 1: A to edge, 2: B to edge, 3: difference, 4: Laplacian concept
+            let playing = false;
+
+            p.setup = function() {
+                let container = p.select('#sheafLaplacianAnimation');
+                let canvas = p.createCanvas(container.width, container.height);
+                canvas.parent('sheafLaplacianAnimation');
+                p.select('#slStep').mousePressed(() => {
+                    step = (step + 1) % 5; // Cycle through steps
+                    if (step === 0) resetAnimation();
+                    p.redraw();
+                });
+                p.select('#slReset').mousePressed(resetAnimation);
+                resetAnimation();
+            };
+
+            function resetAnimation() {
+                step = 0;
+                nodeA.vector = p.createVector(p.random(-1,1), p.random(-1,1)).normalize();
+                nodeB.vector = p.createVector(p.random(-1,1), p.random(-1,1)).normalize();
+                p.noLoop(); p.redraw();
+            }
+
+            function drawVector(vec, x, y, label, color) {
+                p.push();
+                p.translate(x, y);
+                p.stroke(color);
+                p.strokeWeight(2);
+                p.line(0, 0, vec.x * 30, vec.y * 30);
+                p.fill(color);
+                p.triangle(vec.x * 30, vec.y * 30, 
+                           vec.x * 30 - vec.y * 5, vec.y * 30 + vec.x * 5,
+                           vec.x * 30 + vec.y * 5, vec.y * 30 - vec.x * 5);
+                p.fill(255); p.noStroke(); p.textSize(12); p.textAlign(p.CENTER, p.BOTTOM);
+                p.text(label, 0, -35);
+                p.pop();
+            }
+
+            function applyTransform(vec, mat) {
+                return p.createVector(
+                    mat.mat[0] * vec.x + mat.mat[1] * vec.y,
+                    mat.mat[2] * vec.x + mat.mat[3] * vec.y
+                );
+            }
+
+            p.draw = function() {
+                p.background(1, 4, 9);
+
+                // Draw nodes
+                p.fill(20, 40, 60); p.stroke(150, 180, 255); p.strokeWeight(2);
+                p.ellipse(nodeA.x, nodeA.y, 50, 50); p.text("节点 A", nodeA.x, nodeA.y + 35);
+                p.ellipse(nodeB.x, nodeB.y, 50, 50); p.text("节点 B", nodeB.x, nodeB.y + 35);
+
+                // Draw edge
+                p.stroke(50, 70, 100); p.strokeWeight(2);
+                p.line(nodeA.x, nodeA.y, nodeB.x, nodeB.y);
+                p.fill(100, 200, 100); p.noStroke(); p.textSize(12); p.textAlign(p.CENTER, p.CENTER);
+                p.text("边 e", (nodeA.x + nodeB.x)/2, (nodeA.y + nodeB.y)/2 - 15);
+
+                // Draw initial vectors
+                drawVector(nodeA.vector, nodeA.x, nodeA.y, "x_A", p.color(255, 100, 100));
+                drawVector(nodeB.vector, nodeB.x, nodeB.y, "x_B", p.color(100, 100, 255));
+
+                let projA, projB, diffVector;
+                let edgeMidX = (nodeA.x + nodeB.x) / 2;
+                let edgeMidY = (nodeA.y + nodeB.y) / 2;
+
+                if (step >= 1) {
+                    projA = applyTransform(nodeA.vector, transformAB);
+                    drawVector(projA, edgeMidX - 50, edgeMidY + 50, "F_A->e(x_A)", p.color(255, 150, 0));
+                    p.text("F_A->e", nodeA.x + 30, nodeA.y - 10); // Label for transform
+                }
+                if (step >= 2) {
+                    projB = applyTransform(nodeB.vector, transformBA);
+                    drawVector(projB, edgeMidX + 50, edgeMidY + 50, "F_B->e(x_B)", p.color(0, 200, 255));
+                    p.text("F_B->e", nodeB.x - 30, nodeB.y - 10); // Label for transform
+                }
+                if (step >= 3) {
+                    diffVector = p.Vector.sub(projB, projA); // (δx)e = Fv Pexv −FuPexu
+                    drawVector(diffVector, edgeMidX, edgeMidY - 50, "(δx)e", p.color(255, 0, 0));
+                    p.fill(255); p.textSize(14); p.textAlign(p.CENTER);
+                    p.text("计算差异 (不一致性)", edgeMidX, edgeMidY - 100);
+                }
+                if (step >= 4) {
+                    p.fill(255); p.textSize(16); p.textAlign(p.CENTER);
+                    p.text("LF = δTδ", p.width/2, p.height - 50);
+                    p.text("差异累积形成层束拉普拉斯", p.width/2, p.height - 30);
+                }
+
+                p.fill(255,255,255,150); p.textAlign(p.CENTER, p.CENTER); p.textSize(16);
+                p.text(`当前步骤: ${step}`, p.width/2, p.height - 20);
+            };
+        };
+        new p5(sketchSheafLaplacian);
+
+        // --- 动画3: 带符号图上的信息传播 ---
+        let sketchSignedGraph = function(p) {
+            let nodes = [];
+            let edges = [];
+            let nodeCount = 5;
+            let radius = 100;
+            let centerX, centerY;
+            let graphMode = true; // true for GCN, false for SNN
+            let propagationProgress = 0;
+            let playing = false;
+
+            p.setup = function() {
+                let container = p.select('#signedGraphAnimation');
+                let canvas = p.createCanvas(container.width, container.height);
+                canvas.parent('signedGraphAnimation');
+                centerX = p.width / 2;
+                centerY = p.height / 2;
+
+                // Create nodes in a circle
+                for (let i = 0; i < nodeCount; i++) {
+                    let angle = p.TWO_PI / nodeCount * i;
+                    nodes.push({
+                        x: centerX + radius * p.cos(angle),
+                        y: centerY + radius * p.sin(angle),
+                        value: p.random(-1, 1), // Sentiment value (-1 to 1)
+                        newValue: 0
+                    });
+                }
+
+                // Create edges with signs
+                edges.push({from: 0, to: 1, sign: 1});
+                edges.push({from: 1, to: 2, sign: -1});
+                edges.push({from: 2, to: 3, sign: 1});
+                edges.push({from: 3, to: 4, sign: -1});
+                edges.push({from: 4, to: 0, sign: 1});
+                edges.push({from: 0, to: 2, sign: -1}); // Additional edge
+
+                p.select('#sgToggleMode').mousePressed(() => {
+                    graphMode = !graphMode;
+                    resetAnimation();
+                });
+                p.select('#sgPropagate').mousePressed(() => {
+                    propagateStep();
+                });
+                p.select('#sgReset').mousePressed(resetAnimation);
+                resetAnimation();
+            };
+
+            function resetAnimation() {
+                for (let node of nodes) {
+                    node.value = p.random(-1, 1);
+                    node.newValue = node.value;
+                }
+                playing = false;
+                p.noLoop(); p.redraw();
+            }
+
+            function propagateStep() {
+                let nextValues = nodes.map(node => node.value); // Start with current values
+
+                for (let i = 0; i < nodeCount; i++) {
+                    let sum = nodes[i].value;
+                    let count = 1; // Include self
+
+                    for (let edge of edges) {
+                        let neighborIndex = -1;
+                        let effectiveSign = 1;
+
+                        if (edge.from === i) { // Outgoing
+                            neighborIndex = edge.to;
+                            effectiveSign = edge.sign;
+                        } else if (edge.to === i) { // Incoming
+                            neighborIndex = edge.from;
+                            effectiveSign = edge.sign; // Assuming symmetric effect for simplicity in GCN/SNN comparison
+                        }
+
+                        if (neighborIndex !== -1) {
+                            if (graphMode) { // GCN: simple average, ignores sign
+                                sum += nodes[neighborIndex].value;
+                            } else { // SNN: applies sign
+                                sum += nodes[neighborIndex].value * effectiveSign;
+                            }
+                            count++;
+                        }
+                    }
+                    nextValues[i] = sum / count;
+                }
+
+                for (let i = 0; i < nodeCount; i++) {
+                    nodes[i].value = nextValues[i];
+                }
+                p.redraw();
+            }
+
+            p.draw = function() {
+                p.background(1, 4, 9);
+
+                // Draw edges
+                p.strokeWeight(2);
+                for (let edge of edges) {
+                    let fromNode = nodes[edge.from];
+                    let toNode = nodes[edge.to];
+                    p.stroke(edge.sign === 1 ? p.color(100, 200, 100) : p.color(200, 100, 100)); // Green for +, Red for -
+                    p.line(fromNode.x, fromNode.y, toNode.x, toNode.y);
+                    
+                    // Draw sign label
+                    p.fill(255); p.noStroke(); p.textSize(12); p.textAlign(p.CENTER, p.CENTER);
+                    p.text(edge.sign === 1 ? "+" : "-", (fromNode.x + toNode.x)/2, (fromNode.y + toNode.y)/2 - 10);
+                }
+
+                // Draw nodes
+                for (let node of nodes) {
+                    let nodeColor = p.lerpColor(p.color(255, 0, 0), p.color(0, 0, 255), p.map(node.value, -1, 1, 0, 1)); // Red for -1, Blue for 1
+                    p.fill(nodeColor);
+                    p.stroke(200);
+                    p.ellipse(node.x, node.y, 40, 40);
+                    p.fill(255); p.noStroke(); p.textAlign(p.CENTER, p.CENTER); p.textSize(14);
+                    p.text(node.value.toFixed(2), node.x, node.y);
+                }
+
+                p.fill(255,255,255,150); p.textAlign(p.CENTER, p.CENTER); p.textSize(16);
+                p.text(graphMode ? "GCN模式 (忽略符号)" : "SNN模式 (考虑符号)", centerX, p.height - 20);
+            };
+        };
+        new p5(sketchSignedGraph);
+
+        // --- 动画4: 非对称关系的精确捕捉 ---
+        let sketchAsymmetricRelation = function(p) {
+            let nodeA = {x: 150, y: 180, value: 0.5, newValue: 0.5};
+            let nodeB = {x: 450, y: 180, value: 0.5, newValue: 0.5};
+            let influenceAtoB = 0.8; // A's influence on B
+            let influenceBtoA = 0.2; // B's influence on A
+            let playing = true;
+            let propagationProgress = 0;
+            let propagationSpeed = 0.02;
+
+            p.setup = function() {
+                let container = p.select('#asymmetricRelationAnimation');
+                let canvas = p.createCanvas(container.width, container.height);
+                canvas.parent('asymmetricRelationAnimation');
+                
+                p.select('#arPlayPause').mousePressed(() => { playing = !playing; if(playing) p.loop(); else p.noLoop(); });
+                let sliderA = p.select('#arInfluenceA');
+                sliderA.input(() => { influenceAtoB = parseFloat(sliderA.value()); });
+                let sliderB = p.select('#arInfluenceB');
+                sliderB.input(() => { influenceBtoA = parseFloat(sliderB.value()); });
+                resetAnimation();
+            };
+
+            function resetAnimation() {
+                nodeA.value = p.random(0.2, 0.8);
+                nodeB.value = p.random(0.2, 0.8);
+                nodeA.newValue = nodeA.value;
+                nodeB.newValue = nodeB.value;
+                propagationProgress = 0;
+                if (playing) p.loop(); else p.noLoop(); p.redraw();
+            }
+
+            p.draw = function() {
+                p.background(1, 4, 9);
+
+                if (playing) {
+                    propagationProgress += propagationSpeed;
+                    if (propagationProgress >= 1) {
+                        // Apply asymmetric influence
+                        let nextA = nodeA.value;
+                        let nextB = nodeB.value;
+
+                        // A influences B
+                        nextB = p.lerp(nextB, nodeA.value, influenceAtoB);
+                        // B influences A
+                        nextA = p.lerp(nextA, nodeB.value, influenceBtoA);
+
+                        nodeA.value = nextA;
+                        nodeB.value = nextB;
+                        propagationProgress = 0;
+                    }
+                }
+
+                // Draw nodes
+                p.stroke(150, 180, 255); p.strokeWeight(2);
+                p.fill(p.lerpColor(p.color(0, 0, 100), p.color(255, 255, 0), nodeA.value));
+                p.ellipse(nodeA.x, nodeA.y, 40 + nodeA.value * 30, 40 + nodeA.value * 30);
+                p.fill(255); p.noStroke(); p.textAlign(p.CENTER, p.CENTER); p.textSize(14);
+                p.text("A: " + nodeA.value.toFixed(2), nodeA.x, nodeA.y);
+
+                p.fill(p.lerpColor(p.color(0, 0, 100), p.color(255, 255, 0), nodeB.value));
+                p.ellipse(nodeB.x, nodeB.y, 40 + nodeB.value * 30, 40 + nodeB.value * 30);
+                p.fill(255); p.noStroke(); p.textAlign(p.CENTER, p.CENTER); p.textSize(14);
+                p.text("B: " + nodeB.value.toFixed(2), nodeB.x, nodeB.y);
+
+                // Draw arrows for influence
+                p.stroke(100, 200, 100); p.strokeWeight(2);
+                p.line(nodeA.x + 20, nodeA.y, nodeB.x - 20, nodeB.y);
+                drawArrow(nodeA.x + 20, nodeA.y, nodeB.x - 20, nodeB.y, influenceAtoB * 15);
+                p.text(`A->B: ${influenceAtoB.toFixed(1)}`, (nodeA.x + nodeB.x)/2, nodeA.y - 20);
+
+                p.stroke(200, 100, 100); p.strokeWeight(2);
+                p.line(nodeB.x - 20, nodeB.y + 10, nodeA.x + 20, nodeA.y + 10);
+                drawArrow(nodeB.x - 20, nodeB.y + 10, nodeA.x + 20, nodeA.y + 10, influenceBtoA * 15);
+                p.text(`B->A: ${influenceBtoA.toFixed(1)}`, (nodeA.x + nodeB.x)/2, nodeA.y + 30);
+            };
+
+            function drawArrow(x1, y1, x2, y2, size) {
+                p.push();
+                p.translate(x2, y2);
+                let angle = p.atan2(y2 - y1, x2 - x1);
+                p.rotate(angle);
+                p.fill(p.stroke());
+                p.triangle(0, size / 2, 0, -size / 2, size, 0);
+                p.pop();
+            }
+        };
+        new p5(sketchAsymmetricRelation);
+
+        // --- 动画5: 高维数据在层束上的演化 ---
+        let sketchHighDimData = function(p) {
+            let nodes = [];
+            let edges = [];
+            let nodeCount = 3;
+            let radius = 100;
+            let centerX, centerY;
+            let playing = true;
+            let rotationAngleSlider = 0;
+
+            p.setup = function() {
+                let container = p.select('#highDimDataAnimation');
+                let canvas = p.createCanvas(container.width, container.height);
+                canvas.parent('highDimDataAnimation');
+                centerX = p.width / 2;
+                centerY = p.height / 2;
+
+                // Create nodes
+                for (let i = 0; i < nodeCount; i++) {
+                    let angle = p.TWO_PI / nodeCount * i;
+                    nodes.push({
+                        x: centerX + radius * p.cos(angle),
+                        y: centerY + radius * p.sin(angle),
+                        vector: p.createVector(p.cos(angle + p.PI/4), p.sin(angle + p.PI/4)).normalize(), // Initial random vector
+                        transform: p.createMatrix(1,0,0,1) // Identity for now
+                    });
+                }
+
+                // Create edges (cycle)
+                for (let i = 0; i < nodeCount; i++) {
+                    edges.push({
+                        from: i,
+                        to: (i + 1) % nodeCount,
+                        transform: p.createMatrix(p.cos(p.PI/6), -p.sin(p.PI/6), p.sin(p.PI/6), p.cos(p.PI/6)) // Rotate 30 deg
+                    });
+                }
+
+                p.select('#hddPlayPause').mousePressed(() => { playing = !playing; if(playing) p.loop(); else p.noLoop(); });
+                let rotationSlider = p.select('#hddRotation');
+                rotationSlider.input(() => {
+                    rotationAngleSlider = p.radians(parseFloat(rotationSlider.value()));
+                    // Update transform for one edge for demonstration
+                    edges[0].transform = p.createMatrix(p.cos(rotationAngleSlider), -p.sin(rotationAngleSlider), p.sin(rotationAngleSlider), p.cos(rotationAngleSlider));
+                    p.redraw();
+                });
+                p.noLoop(); p.redraw();
+            };
+
+            function drawVector(vec, x, y, color) {
+                p.push();
+                p.translate(x, y);
+                p.stroke(color);
+                p.strokeWeight(2);
+                p.line(0, 0, vec.x * 20, vec.y * 20);
+                p.fill(color);
+                p.triangle(vec.x * 20, vec.y * 20, 
+                           vec.x * 20 - vec.y * 5, vec.y * 20 + vec.x * 5,
+                           vec.x * 20 + vec.y * 5, vec.y * 20 - vec.x * 5);
+                p.pop();
+            }
+
+            function applyTransform(vec, mat) {
+                return p.createVector(
+                    mat.mat[0] * vec.x + mat.mat[1] * vec.y,
+                    mat.mat[2] * vec.x + mat.mat[3] * vec.y
+                );
+            }
+
+            p.draw = function() {
+                p.background(1, 4, 9);
+
+                // Draw edges
+                p.stroke(50, 70, 100); p.strokeWeight(1);
+                for (let edge of edges) {
+                    let fromNode = nodes[edge.from];
+                    let toNode = nodes[edge.to];
+                    p.line(fromNode.x, fromNode.y, toNode.x, toNode.y);
+                    
+                    // Draw transform matrix representation (simplified)
+                    p.fill(100, 150, 200, 150); p.noStroke();
+                    p.rect((fromNode.x + toNode.x)/2 - 10, (fromNode.y + toNode.y)/2 - 10, 20, 20, 3);
+                    p.fill(255); p.textSize(10); p.textAlign(p.CENTER, p.CENTER);
+                    p.text("T", (fromNode.x + toNode.x)/2, (fromNode.y + toNode.y)/2);
+                }
+
+                // Draw nodes and vectors
+                for (let node of nodes) {
+                    p.fill(20, 40, 60); p.stroke(150, 180, 255); p.strokeWeight(2);
+                    p.ellipse(node.x, node.y, 50, 50);
+                    drawVector(node.vector, node.x, node.y, p.color(255, 100, 100));
+                }
+
+                // Simulate propagation (simplified for visual demo)
+                if (playing) {
+                    let newVectors = nodes.map(node => node.vector.copy());
+                    for (let edge of edges) {
+                        let fromNode = nodes[edge.from];
+                        let toNode = nodes[edge.to];
+                        // Propagate from 'from' to 'to'
+                        let transformedVec = applyTransform(fromNode.vector, edge.transform);
+                        // Simple averaging for demo, in real SNN it's more complex
+                        newVectors[edge.to].add(transformedVec.mult(0.1)); // Add a fraction of transformed vector
+                        newVectors[edge.to].normalize();
+                    }
+                    for (let i = 0; i < nodeCount; i++) {
+                        nodes[i].vector = newVectors[i];
+                    }
+                }
+
+                p.fill(255,255,255,150); p.textAlign(p.CENTER, p.CENTER); p.textSize(16);
+                p.text("高维数据在层束上的演化", centerX, p.height - 20);
+            };
+        };
+        new p5(sketchHighDimData);
+
+    </script>
+</body>
+</html>

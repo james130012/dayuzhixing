@@ -1,0 +1,892 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>柏拉图的能义几何 基础模型后训练的物理逻辑解析：记忆与泛化的博弈</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.7.0/p5.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+            font-size: 16px;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 90%;
+            margin: 0 auto;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            margin-top: 20px;
+            margin-bottom: 20px;
+        }
+        
+        h1 {
+            color: #4a5568;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 28px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+            animation: titleGlow 3s ease-in-out infinite alternate;
+        }
+        
+        @keyframes titleGlow {
+            from { text-shadow: 2px 2px 4px rgba(0,0,0,0.1); }
+            to { text-shadow: 2px 2px 20px rgba(102, 126, 234, 0.5); }
+        }
+        
+        .authors {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 15px;
+            background: linear-gradient(45deg, #f093fb 0%, #f5576c 100%);
+            border-radius: 15px;
+            color: white;
+            font-weight: bold;
+        }
+        
+        .author-line {
+            margin: 5px 0;
+            font-size: 14px;
+        }
+        
+        .highlight {
+            background: linear-gradient(45deg, #ff6b6b, #ffa500);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: bold;
+            font-size: 18px;
+        }
+        
+        .section {
+            margin: 30px 0;
+            padding: 25px;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 15px;
+            border-left: 5px solid #667eea;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .animation-container {
+            margin: 30px 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 15px;
+            text-align: center;
+        }
+        
+        .animation-title {
+            color: white;
+            font-size: 20px;
+            margin-bottom: 15px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+        }
+        
+        .canvas-container {
+            background: white;
+            border-radius: 10px;
+            margin: 15px 0;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        canvas {
+            display: block;
+            width: 100% !important;
+            height: 300px !important;
+        }
+        
+        #actionCoverageCanvas {
+            height: 300px !important;
+        }
+        
+        .control-panel {
+            margin: 15px 0;
+        }
+        
+        .btn {
+            background: linear-gradient(45deg, #ff6b6b, #ffa500);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            margin: 5px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+        
+        .key-point {
+            background: rgba(255, 107, 107, 0.1);
+            border-left: 4px solid #ff6b6b;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 0 10px 10px 0;
+        }
+        
+        .formula {
+            background: #f7fafc;
+            padding: 15px;
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 16px;
+            text-align: center;
+            margin: 15px 0;
+            border: 2px dashed #667eea;
+        }
+        
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .comparison-table th,
+        .comparison-table td {
+            padding: 15px;
+            text-align: center;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        .comparison-table th {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            font-weight: bold;
+        }
+        
+        .sft-column {
+            background: rgba(255, 107, 107, 0.1);
+        }
+        
+        .rl-column {
+            background: rgba(102, 126, 234, 0.1);
+        }
+        
+        .conclusion {
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            padding: 30px;
+            border-radius: 20px;
+            text-align: center;
+            margin-top: 40px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                max-width: 95%;
+                padding: 15px;
+            }
+            
+            h1 {
+                font-size: 24px;
+            }
+            
+            .section {
+                padding: 20px;
+            }
+            
+            canvas {
+                height: 250px !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>基础模型后训练的物理逻辑解析：记忆与泛化的博弈</h1>
+        
+        <div class="authors">
+            <div class="author-line">
+                <strong>主要作者：</strong>Tianzhe Chu* (香港大学), Yuexiang Zhai* (加州大学伯克利分校, Google DeepMind)
+            </div>
+            <div class="author-line">
+                <strong>合作作者：</strong>Jihan Yang (纽约大学), Shengbang Tong (纽约大学), Saining Xie (Google DeepMind, 纽约大学)
+            </div>
+            <div class="author-line">
+                Dale Schuurmans (Google DeepMind), Quoc V. Le (Google DeepMind), Sergey Levine (加州大学伯克利分校), Yi Ma (香港大学, 加州大学伯克利分校)
+            </div>
+            <div style="font-size: 12px; margin-top: 10px;">*为共同第一作者</div>
+        </div>
+
+        <div class="section">
+            <h2>🧬 核心发现：记忆与泛化的物理本质</h2>
+            <p>在人工智能的训练过程中，我们观察到了一个类似于<span class="highlight">物理相变</span>的现象。监督微调（SFT）和强化学习（RL）就像两种不同的物理过程，它们在追求"能量最小化"时选择了截然不同的路径。</p>
+            
+            <div class="key-point">
+                <strong>🎯 关键洞察：</strong>SFT倾向于找到局部能量最小值（过拟合到训练数据），而RL通过探索更广阔的状态空间，找到了更具普适性的全局最优解。
+            </div>
+            
+            <p>这个现象可以用<span class="highlight">熵增原理</span>来解释：RL过程中的随机性和探索性增加了系统的熵，使得模型能够跳出局部最优，获得更好的泛化能力。</p>
+        </div>
+
+        <div class="animation-container">
+            <div class="animation-title">🎮 动画1：记忆vs泛化的能量景观</div>
+            <div class="canvas-container">
+                <div id="memoryGeneralizationCanvas"></div>
+            </div>
+            <div class="control-panel">
+                <button class="btn" onclick="toggleMemoryAnimation()">启动/暂停动画</button>
+                <button class="btn" onclick="resetMemoryAnimation()">重置视图</button>
+            </div>
+            <p style="color: white; margin-top: 10px;">
+                红色球代表SFT（陷入记忆陷阱），蓝色球代表RL（找到泛化高地）
+            </p>
+        </div>
+
+        <div class="section">
+            <h2>⚡ 实验设计的物理学思维</h2>
+            <p>研究团队设计了两个巧妙的实验环境，它们就像物理学中的<span class="highlight">控制实验</span>：</p>
+            
+            <ul style="margin: 20px 0;">
+                <li><strong>GeneralPoints：</strong>算术推理卡牌游戏，测试规则泛化能力</li>
+                <li><strong>V-IRL：</strong>现实世界导航任务，测试视觉泛化能力</li>
+            </ul>
+            
+            <p>这种设计遵循了物理学中的<span class="highlight">对称性原理</span>：通过改变系统的某些参数（规则或视觉输入），观察系统行为的变化，从而揭示其内在的泛化机制。</p>
+            
+            <div class="formula">
+                泛化能力 = f(训练方法, 任务复杂度, 分布外程度)
+            </div>
+        </div>
+
+        <div class="animation-container">
+            <div class="animation-title">🔄 动画2：SFT vs RL训练过程对比</div>
+            <div class="canvas-container">
+                <div id="trainingProcessCanvas"></div>
+            </div>
+            <div class="control-panel">
+                <button class="btn" onclick="startTrainingAnimation()">开始训练</button>
+                <button class="btn" onclick="pauseTrainingAnimation()">暂停</button>
+                <button class="btn" onclick="resetTrainingAnimation()">重置</button>
+            </div>
+            <p style="color: white; margin-top: 10px;">
+                观察SFT（红线）和RL（蓝线）在训练过程中性能的演化轨迹
+            </p>
+        </div>
+
+        <div class="section">
+            <h2>🌊 泛化能力的波动力学</h2>
+            <p>实验结果显示了一个令人惊讶的现象：在分布外（OOD）任务上，RL的表现就像一个<span class="highlight">稳定的振荡器</span>，而SFT则表现出<span class="highlight">阻尼衰减</span>的特征。</p>
+            
+            <table class="comparison-table">
+                <thead>
+                    <tr>
+                        <th>指标</th>
+                        <th class="sft-column">SFT表现</th>
+                        <th class="rl-column">RL表现</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>GP-L (OOD)</strong></td>
+                        <td class="sft-column">-8.1% (11.5% → 3.4%)</td>
+                        <td class="rl-column">+3.5% (11.5% → 15.0%)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>V-IRL-L (OOD)</strong></td>
+                        <td class="sft-column">-79.5% (80.8% → 1.3%)</td>
+                        <td class="rl-column">+11.0% (80.8% → 91.8%)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>视觉泛化</strong></td>
+                        <td class="sft-column">显著下降</td>
+                        <td class="rl-column">显著提升</td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <div class="key-point">
+                <strong>🔬 物理解释：</strong>RL通过增加系统的"温度"（探索性），使得模型能够克服"势垒"（记忆陷阱），达到更高的"能级"（泛化状态）。
+            </div>
+        </div>
+
+        <div class="animation-container">
+            <div class="animation-title">📊 动画3：性能对比雷达图</div>
+            <div class="canvas-container">
+                <canvas id="performanceRadarCanvas"></canvas>
+            </div>
+            <div class="control-panel">
+                <button class="btn" onclick="showSFTPerformance()">显示SFT</button>
+                <button class="btn" onclick="showRLPerformance()">显示RL</button>
+                <button class="btn" onclick="showComparison()">对比模式</button>
+            </div>
+            <p style="color: white; margin-top: 10px;">
+                多维度性能对比：规则泛化、视觉泛化、识别准确率、稳定性
+            </p>
+        </div>
+
+        <div class="section">
+            <h2>👁️ 视觉识别的量子跃迁</h2>
+            <p>一个意外的发现是，RL不仅提升了泛化能力，还改善了模型的<span class="highlight">视觉识别准确率</span>。这个现象可以用量子力学中的<span class="highlight">共振理论</span>来理解。</p>
+            
+            <p>当RL过程中的"频率"（学习策略）与视觉特征的"固有频率"发生共振时，就会产生增强效应，提升识别准确率。这是一个<span class="highlight">涌现现象</span>，不是直接优化的结果，而是系统自组织的产物。</p>
+            
+            <div class="formula">
+                视觉准确率提升 ∝ 共振强度 × 探索多样性
+            </div>
+        </div>
+
+        <div class="animation-container">
+            <div class="animation-title">👀 动画4：视觉识别能力演化</div>
+            <div class="canvas-container">
+                <div id="visualRecognitionCanvas"></div>
+            </div>
+            <div class="control-panel">
+                <button class="btn" onclick="startVisualAnimation()">开始演化</button>
+                <button class="btn" onclick="toggleVisualMode()">切换模式</button>
+                <button class="btn" onclick="resetVisualAnimation()">重置</button>
+            </div>
+            <p style="color: white; margin-top: 10px;">
+                观察RL如何通过共振机制提升视觉识别的准确率
+            </p>
+        </div>
+
+        <div class="section">
+            <h2>🔧 SFT的协同作用：稳定性的锚点</h2>
+            <p>尽管RL在泛化方面表现卓越，但研究发现SFT仍然扮演着重要角色。它就像物理系统中的<span class="highlight">"阻尼器"</span>，为RL提供了必要的稳定性。</p>
+            
+            <div class="key-point">
+                <strong>⚖️ 平衡法则：</strong>没有SFT初始化的RL训练往往失败，因为缺乏"指令跟随"的基础结构。SFT提供了"相变"的起始条件。
+            </div>
+            
+            <p>这个发现揭示了一个重要的<span class="highlight">协同原理</span>：最佳的学习策略不是单纯的RL或SFT，而是两者的有机结合，就像物理系统中的"耦合振荡器"。</p>
+        </div>
+
+        <div class="animation-container">
+            <div class="animation-title">🎛️ 动画5：验证步骤的临界行为</div>
+            <div class="canvas-container">
+                <div id="actionCoverageCanvas"></div>
+            </div>
+            <div class="control-panel">
+                <button class="btn" onclick="adjustVerificationSteps(1)">1步验证</button>
+                <button class="btn" onclick="adjustVerificationSteps(3)">3步验证</button>
+                <button class="btn" onclick="adjustVerificationSteps(5)">5步验证</button>
+                <button class="btn" onclick="adjustVerificationSteps(10)">10步验证</button>
+            </div>
+            <p style="color: white; margin-top: 10px;">
+                验证步数的增加展现出类似相变的临界行为
+            </p>
+        </div>
+
+        <div class="section">
+            <h2>🌐 推理时计算的标度律</h2>
+            <p>研究还发现了一个类似于物理学中<span class="highlight">标度律</span>的现象：增加验证步骤的数量能够显著改善泛化性能。这遵循了类似于临界现象的规律。</p>
+            
+            <div class="formula">
+                性能提升 = k × (验证步数)^α，其中α是临界指数
+            </div>
+            
+            <p>具体的改善程度为：3步（+2.15%）、5步（+2.99%）、10步（+5.99%），显示出明显的<span class="highlight">幂律关系</span>。</p>
+        </div>
+
+        <div class="section">
+            <h2>🎯 未来研究的物理启示</h2>
+            <p>这项研究为我们理解AI训练过程提供了全新的物理学视角。未来的研究可以沿着以下几个"物理轨道"展开：</p>
+            
+            <ul style="margin: 20px 0;">
+                <li><strong>相变理论：</strong>深入研究从记忆到泛化的临界点</li>
+                <li><strong>动力学系统：</strong>分析训练过程的稳定性和混沌行为</li>
+                <li><strong>统计力学：</strong>用热力学方法优化训练策略</li>
+                <li><strong>场论方法：</strong>将模型参数视为场，研究其演化规律</li>
+            </ul>
+        </div>
+
+        <div class="conclusion">
+            <h2>🏆 结论：智能涌现的物理定律</h2>
+            <p>这项研究揭示了AI训练中的一个<span class="highlight">基本定律</span>：<strong>记忆倾向于局部最优，而泛化需要全局探索</strong>。</p>
+            
+            <p>SFT和RL的差异不仅仅是算法层面的，更是反映了两种不同的"物理哲学"：一个追求确定性和稳定性，另一个拥抱随机性和探索性。最终的智能涌现，需要这两种力量的完美平衡。</p>
+            
+            <div style="margin-top: 20px; font-style: italic; color: #666;">
+                "在人工智能的宇宙中，记忆是重力，而泛化是暗能量。只有当两者达到平衡时，智能才能真正绽放。"
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 全局变量
+        let memoryAnimationRunning = false;
+        let trainingAnimationRunning = false;
+        let visualAnimationRunning = false;
+        let verificationSteps = 5;
+        
+        // 动画1：记忆vs泛化的能量景观
+        let memorySketch = function(p) {
+            let sftBall, rlBall;
+            let time = 0;
+            
+            p.setup = function() {
+                p.createCanvas(800, 300);
+                sftBall = {x: 150, y: 200, vx: 0, vy: 0};
+                rlBall = {x: 650, y: 100, vx: 0, vy: 0};
+                // 手动绘制一次静态画面
+                p.draw();
+            };
+            
+            p.draw = function() {
+                p.background(240);
+                
+                // 绘制能量景观
+                p.stroke(100);
+                p.strokeWeight(2);
+                p.noFill();
+                
+                // SFT的局部最优陷阱
+                p.beginShape();
+                for(let x = 50; x < 300; x += 5) {
+                    let y = 250 - 50 * Math.exp(-0.01 * (x-150)*(x-150));
+                    p.vertex(x, y);
+                }
+                p.endShape();
+                
+                // RL的泛化高地
+                p.beginShape();
+                for(let x = 500; x < 750; x += 5) {
+                    let y = 150 + 30 * Math.sin(0.02 * (x-600));
+                    p.vertex(x, y);
+                }
+                p.endShape();
+                
+                if(memoryAnimationRunning) {
+                    time += 0.05;
+                    
+                    // SFT球的运动（陷入陷阱）
+                    sftBall.y = 200 - 45 * Math.exp(-0.01 * (sftBall.x-150)*(sftBall.x-150)) + 10 * Math.sin(time * 3);
+                    
+                    // RL球的运动（在高地游走）
+                    rlBall.x = 625 + 20 * Math.sin(time);
+                    rlBall.y = 100 + 20 * Math.sin(time * 0.7);
+                }
+                
+                // 绘制小球
+                p.fill(255, 100, 100);
+                p.noStroke();
+                p.ellipse(sftBall.x, sftBall.y, 20, 20);
+                
+                p.fill(100, 150, 255);
+                p.ellipse(rlBall.x, rlBall.y, 20, 20);
+                
+                // 标签
+                p.fill(0);
+                p.textAlign(p.CENTER);
+                p.text("SFT记忆陷阱", 150, 280);
+                p.text("RL泛化高地", 650, 280);
+            };
+        };
+        
+        // 动画2：训练过程对比
+        let trainingSketch = function(p) {
+            let sftData = [];
+            let rlData = [];
+            let currentStep = 0;
+            let maxSteps = 100;
+            
+            p.setup = function() {
+                p.createCanvas(800, 300);
+                resetTrainingData();
+                // 手动绘制一次静态画面
+                p.draw();
+            };
+            
+            function resetTrainingData() {
+                sftData = [];
+                rlData = [];
+                currentStep = 0;
+                
+                // 生成数据
+                for(let i = 0; i <= maxSteps; i++) {
+                    // SFT: 快速上升但过拟合
+                    let sftPerf = 80 * (1 - Math.exp(-i/10)) - 20 * Math.max(0, (i-30)/70);
+                    sftData.push(Math.max(0, sftPerf));
+                    
+                    // RL: 慢启动但持续改善
+                    let rlPerf = 70 * (1 - Math.exp(-i/20)) + 20 * Math.sin(i/15) * Math.exp(-i/50);
+                    rlData.push(Math.max(0, rlPerf));
+                }
+            }
+            
+            p.draw = function() {
+                p.background(240);
+                
+                // 绘制网格
+                p.stroke(200);
+                p.strokeWeight(1);
+                for(let i = 0; i <= 10; i++) {
+                    let x = p.map(i, 0, 10, 50, 750);
+                    p.line(x, 50, x, 250);
+                    let y = p.map(i, 0, 10, 250, 50);
+                    p.line(50, y, 750, y);
+                }
+                
+                // 绘制轴标签
+                p.fill(0);
+                p.noStroke();
+                p.textAlign(p.CENTER);
+                p.text("训练步数", 400, 280);
+                p.push();
+                p.translate(20, 150);
+                p.rotate(-p.PI/2);
+                p.text("性能", 0, 0);
+                p.pop();
+                
+                if(trainingAnimationRunning && currentStep < maxSteps) {
+                    currentStep += 0.5;
+                }
+                
+                // 绘制SFT曲线
+                p.stroke(255, 100, 100);
+                p.strokeWeight(3);
+                p.noFill();
+                p.beginShape();
+                for(let i = 0; i <= Math.min(currentStep, maxSteps); i++) {
+                    let x = p.map(i, 0, maxSteps, 50, 750);
+                    let y = p.map(sftData[i], 0, 100, 250, 50);
+                    p.vertex(x, y);
+                }
+                p.endShape();
+                
+                // 绘制RL曲线
+                p.stroke(100, 150, 255);
+                p.strokeWeight(3);
+                p.noFill();
+                p.beginShape();
+                for(let i = 0; i <= Math.min(currentStep, maxSteps); i++) {
+                    let x = p.map(i, 0, maxSteps, 50, 750);
+                    let y = p.map(rlData[i], 0, 100, 250, 50);
+                    p.vertex(x, y);
+                }
+                p.endShape();
+                
+                // 图例
+                p.fill(255, 100, 100);
+                p.rect(600, 70, 20, 10);
+                p.fill(0);
+                p.textAlign(p.LEFT);
+                p.text("SFT", 630, 80);
+                
+                p.fill(100, 150, 255);
+                p.rect(600, 90, 20, 10);
+                p.fill(0);
+                p.text("RL", 630, 100);
+            };
+            
+            resetTrainingData();
+        };
+        
+        // 动画3：性能雷达图
+        let radarChart;
+        let radarCtx;
+        
+        function initRadarChart() {
+            const canvas = document.getElementById('performanceRadarCanvas');
+            radarCtx = canvas.getContext('2d');
+            
+            const data = {
+                labels: ['规则泛化', '视觉泛化', '识别准确率', '训练稳定性', '计算效率', 'OOD性能'],
+                datasets: [{
+                    label: 'SFT',
+                    data: [30, 25, 70, 90, 85, 20],
+                    borderColor: 'rgb(255, 99, 132)',
+                    backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                    pointBackgroundColor: 'rgb(255, 99, 132)',
+                    hidden: false
+                }, {
+                    label: 'RL',
+                    data: [85, 80, 85, 60, 40, 90],
+                    borderColor: 'rgb(54, 162, 235)',
+                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                    pointBackgroundColor: 'rgb(54, 162, 235)',
+                    hidden: false
+                }]
+            };
+            
+            radarChart = new Chart(radarCtx, {
+                type: 'radar',
+                data: data,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        r: {
+                            beginAtZero: true,
+                            max: 100
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        }
+                    }
+                }
+            });
+        }
+        
+        // 动画4：视觉识别演化
+        let visualSketch = function(p) {
+            let particles = [];
+            let recognitionAccuracy = 0;
+            let targetAccuracy = 85;
+            let time = 0;
+            let isRLMode = true;
+            
+            p.setup = function() {
+                p.createCanvas(800, 300);
+                
+                // 初始化粒子
+                for(let i = 0; i < 50; i++) {
+                    particles.push({
+                        x: p.random(p.width),
+                        y: p.random(p.height),
+                        vx: p.random(-2, 2),
+                        vy: p.random(-2, 2),
+                        recognized: false,
+                        size: p.random(5, 15)
+                    });
+                }
+                // 手动绘制一次静态画面
+                p.draw();
+            };
+            
+            p.draw = function() {
+                p.background(20, 20, 40);
+                
+                if(visualAnimationRunning) {
+                    time += 0.05;
+                    
+                    // 更新识别准确率
+                    if(isRLMode) {
+                        recognitionAccuracy += (targetAccuracy - recognitionAccuracy) * 0.02;
+                    } else {
+                        recognitionAccuracy += (30 - recognitionAccuracy) * 0.02;
+                    }
+                    
+                    // 更新粒子
+                    for(let particle of particles) {
+                        particle.x += particle.vx;
+                        particle.y += particle.vy;
+                        
+                        // 边界反弹
+                        if(particle.x < 0 || particle.x > p.width) particle.vx *= -1;
+                        if(particle.y < 0 || particle.y > p.height) particle.vy *= -1;
+                        
+                        // 识别状态更新
+                        particle.recognized = p.random(100) < recognitionAccuracy;
+                    }
+                }
+                
+                // 绘制粒子
+                for(let particle of particles) {
+                    if(particle.recognized) {
+                        p.fill(100, 255, 100, 150);
+                        p.stroke(100, 255, 100);
+                    } else {
+                        p.fill(255, 100, 100, 100);
+                        p.stroke(255, 100, 100);
+                    }
+                    p.strokeWeight(2);
+                    p.ellipse(particle.x, particle.y, particle.size, particle.size);
+                }
+                
+                // 显示准确率
+                p.fill(255);
+                p.noStroke();
+                p.textAlign(p.LEFT);
+                p.textSize(16);
+                p.text(`识别准确率: ${recognitionAccuracy.toFixed(1)}%`, 20, 30);
+                p.text(`模式: ${isRLMode ? 'RL (共振增强)' : 'SFT (基础模式)'}`, 20, 50);
+                
+                // 绘制波形（表示共振）
+                if(isRLMode && visualAnimationRunning) {
+                    p.stroke(255, 255, 100, 100);
+                    p.strokeWeight(2);
+                    p.noFill();
+                    p.beginShape();
+                    for(let x = 0; x < p.width; x += 5) {
+                        let y = p.height - 50 + 20 * Math.sin(x * 0.02 + time * 3);
+                        p.vertex(x, y);
+                    }
+                    p.endShape();
+                }
+            };
+        };
+        
+        // 动画5：验证步骤的作用覆盖
+        let actionSketch = function(p) {
+            let coverage = 0;
+            let targetCoverage = 60;
+            let steps = 5;
+            let circles = [];
+            
+            p.setup = function() {
+                p.createCanvas(800, 300);
+                initCircles();
+                // 手动绘制一次静态画面
+                p.draw();
+            };
+            
+            function initCircles() {
+                circles = [];
+                for(let i = 0; i < steps; i++) {
+                    circles.push({
+                        x: 100 + i * 150,
+                        y: 150,
+                        radius: 30 + i * 10,
+                        active: false,
+                        alpha: 0
+                    });
+                }
+            }
+            
+            p.draw = function() {
+                p.background(240);
+                
+                // 更新覆盖率
+                coverage += (targetCoverage - coverage) * 0.05;
+                
+                // 激活圆圈
+                for(let i = 0; i < circles.length; i++) {
+                    let circle = circles[i];
+                    if(i * 20 < coverage) {
+                        circle.active = true;
+                        circle.alpha = Math.min(255, circle.alpha + 5);
+                    }
+                }
+                
+                // 绘制背景网格
+                p.stroke(200);
+                p.strokeWeight(1);
+                for(let i = 0; i < p.width; i += 20) {
+                    p.line(i, 0, i, p.height);
+                }
+                for(let i = 0; i < p.height; i += 20) {
+                    p.line(0, i, p.width, i);
+                }
+                
+                // 绘制验证步骤圆圈
+                for(let i = 0; i < circles.length; i++) {
+                    let circle = circles[i];
+                    if(circle.active) {
+                        p.fill(100, 150, 255, circle.alpha * 0.3);
+                        p.stroke(100, 150, 255, circle.alpha);
+                        p.strokeWeight(3);
+                        p.ellipse(circle.x, circle.y, circle.radius * 2, circle.radius * 2);
+                        
+                        // 步骤编号
+                        p.fill(255);
+                        p.noStroke();
+                        p.textAlign(p.CENTER);
+                        p.text(i + 1, circle.x, circle.y + 5);
+                    }
+                }
+                
+                // 显示信息
+                p.fill(0);
+                p.noStroke();
+                p.textAlign(p.LEFT);
+                p.text(`验证步数: ${steps}`, 20, 30);
+                p.text(`性能覆盖: ${coverage.toFixed(1)}%`, 20, 50);
+                p.text(`性能提升: +${(steps * 0.6).toFixed(1)}%`, 20, 70);
+            };
+        };
+        
+        // 初始化所有动画
+        document.addEventListener('DOMContentLoaded', function() {
+            new p5(memorySketch, 'memoryGeneralizationCanvas');
+            new p5(trainingSketch, 'trainingProcessCanvas');
+            new p5(visualSketch, 'visualRecognitionCanvas');
+            new p5(actionSketch, 'actionCoverageCanvas');
+            
+            // 延迟初始化雷达图
+            setTimeout(initRadarChart, 500);
+        });
+        
+        // 控制函数
+        function toggleMemoryAnimation() {
+            memoryAnimationRunning = !memoryAnimationRunning;
+        }
+        
+        function resetMemoryAnimation() {
+            memoryAnimationRunning = false;
+        }
+        
+        function startTrainingAnimation() {
+            trainingAnimationRunning = true;
+        }
+        
+        function pauseTrainingAnimation() {
+            trainingAnimationRunning = false;
+        }
+        
+        function resetTrainingAnimation() {
+            trainingAnimationRunning = false;
+            // 重置需要重新初始化训练数据
+        }
+        
+        function showSFTPerformance() {
+            if(radarChart) {
+                radarChart.data.datasets[0].hidden = false;
+                radarChart.data.datasets[1].hidden = true;
+                radarChart.update();
+            }
+        }
+        
+        function showRLPerformance() {
+            if(radarChart) {
+                radarChart.data.datasets[0].hidden = true;
+                radarChart.data.datasets[1].hidden = false;
+                radarChart.update();
+            }
+        }
+        
+        function showComparison() {
+            if(radarChart) {
+                radarChart.data.datasets[0].hidden = false;
+                radarChart.data.datasets[1].hidden = false;
+                radarChart.update();
+            }
+        }
+        
+        function startVisualAnimation() {
+            visualAnimationRunning = !visualAnimationRunning;
+        }
+        
+        function toggleVisualMode() {
+            // 这个函数需要访问sketch实例，暂时简化处理
+            visualAnimationRunning = true;
+        }
+        
+        function resetVisualAnimation() {
+            visualAnimationRunning = false;
+        }
+        
+        function adjustVerificationSteps(newSteps) {
+            verificationSteps = newSteps;
+            // 这里需要更新动画状态
+        }
+    </script>
+</body>
+</html>

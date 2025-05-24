@@ -1,0 +1,1210 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pixel Reasoner：像素空间推理的革命性突破</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.2/p5.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
+    <style>
+        /* 基本重置和页面设置 */
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Noto Sans SC', sans-serif;
+            font-size: 18px; /* 基础字号，参考"三号"在屏幕上的可读性 */
+            line-height: 1.8;
+            background-color: #0d1117; /* GitHub 暗黑模式背景色 */
+            color: #c9d1d9; /* GitHub 暗黑模式文字颜色 */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            overflow-x: hidden; /* 防止水平溢出 */
+        }
+
+        /* 背景动画容器 */
+        #backgroundCanvasContainer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 0;
+            pointer-events: none; /* 允许点击穿透 */
+        }
+
+        /* 内容容器 */
+        .container {
+            position: relative;
+            z-index: 1; /* 在背景动画之上 */
+            width: 90%;
+            max-width: 1000px; /* 优化阅读宽度，类似A3纸张感 */
+            margin: 40px auto; /* 增加上下边距 */
+            padding: 30px 40px;
+            background-color: rgba(22, 27, 34, 0.9); /* GitHub 暗黑模式内容区背景 */
+            border: 1px solid #30363d; /* GitHub 暗黑模式边框颜色 */
+            border-radius: 12px; /* 圆角 */
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+        }
+
+        /* 标题样式 */
+        h1, h2, h3 {
+            font-family: 'ZCOOL KuaiLe', cursive; /* 轻松活泼字体 */
+            color: #58a6ff; /* GitHub 暗黑模式链接/标题颜色 */
+            margin-bottom: 0.75em;
+            text-align: center;
+            letter-spacing: 1px;
+        }
+        h1 {
+            font-size: 2.6em; /* 主标题 */
+            color: #79c0ff; /* 更亮的蓝色 */
+            border-bottom: 2px solid #388bfd;
+            padding-bottom: 15px;
+            margin-top: 0;
+        }
+        h2 {
+            font-size: 2.0em; /* 章节标题 */
+            color: #f778ba; /* 粉色系，增加活泼感 */
+            margin-top: 2.2em;
+        }
+        h3 {
+            font-size: 1.5em;
+            color: #a371f7; /* 紫色系 */
+            margin-top: 1.6em;
+            text-align: left;
+        }
+
+        /* 段落和文本样式 */
+        p, li {
+            margin-bottom: 1.2em;
+            text-align: justify;
+            color: #adbac7; /* 柔和的文字颜色 */
+        }
+        ul, ol {
+            padding-left: 30px;
+        }
+
+        /* 强调文字 */
+        strong, .highlight {
+            color: #ffa657; /* 暖黄色强调 */
+            font-weight: bold;
+        }
+        .concept { /* 技术概念词 */
+            font-weight: 500;
+            color: #7ee787; /* 绿色概念词 */
+            padding: 3px 7px;
+            background-color: rgba(63, 185, 80, 0.15);
+            border-radius: 6px;
+            border: 1px solid rgba(63, 185, 80, 0.4);
+            font-family: 'Noto Sans SC', sans-serif;
+        }
+        .formula {
+            display: block;
+            text-align: center;
+            margin: 20px auto;
+            padding: 15px;
+            background-color: rgba(34, 39, 46, 0.8);
+            border-left: 4px solid #388bfd;
+            color: #c9d1d9;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 1.05em;
+            border-radius: 4px;
+            white-space: pre-wrap;
+        }
+
+        /* 动画容器 */
+        .animation-container {
+            width: 100%;
+            max-width: 580px;
+            height: 360px;
+            margin: 25px auto;
+            border: 1px solid #30363d;
+            border-radius: 10px;
+            overflow: hidden;
+            background-color: #010409;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: inset 0 0 12px rgba(0,0,0,0.5);
+        }
+        .animation-container canvas {
+            display: block;
+            max-width: 100%;
+            max-height: 100%;
+            border-radius: 8px;
+        }
+        
+        /* 图表容器 */
+        .chart-container {
+            width: 100%;
+            max-width: 580px;
+            height: 360px;
+            margin: 25px auto;
+            border: 1px solid #30363d;
+            border-radius: 10px;
+            background-color: #010409;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        
+        /* 交互按钮和控件样式 */
+        .controls {
+            text-align: center;
+            margin-bottom: 25px;
+            margin-top: 15px;
+        }
+        .controls button {
+            padding: 10px 22px;
+            font-size: 0.95em;
+            font-family: 'Noto Sans SC', sans-serif;
+            background-image: linear-gradient(to right, #388bfd, #58a6ff);
+            color: white;
+            border: none;
+            border-radius: 22px; 
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            letter-spacing: 0.5px;
+        }
+        .controls button:hover {
+            transform: translateY(-2px) scale(1.05);
+            box-shadow: 0 7px 18px rgba(56, 139, 253, 0.35);
+        }
+        .controls button:active {
+            transform: translateY(0px) scale(1);
+        }
+        .controls label {
+            color: #8b949e;
+            margin: 0 10px;
+            font-size: 0.9em;
+        }
+        .controls input[type="range"] {
+            vertical-align: middle;
+            cursor: grab;
+            width: 140px;
+        }
+
+        /* 作者信息 */
+        .author-info {
+            text-align: center;
+            margin: 20px 0 30px 0;
+            font-size: 0.95em;
+            color: #8b949e;
+        }
+        .author-info strong {
+            color: #79c0ff;
+        }
+
+        /* 页脚 */
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding: 25px;
+            background-color: #161b22;
+            color: #8b949e;
+            width: 100%;
+            font-size: 0.9em;
+            border-top: 1px solid #30363d;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            body {
+                font-size: 17px;
+            }
+            .container {
+                width: 95%;
+                padding: 20px 25px;
+                margin: 20px auto;
+            }
+            h1 {
+                font-size: 2.1em;
+            }
+            h2 {
+                font-size: 1.7em;
+            }
+            h3 {
+                font-size: 1.3em;
+            }
+            .animation-container, .chart-container {
+                height: 310px;
+            }
+            .controls button {
+                padding: 9px 18px;
+                font-size: 0.85em;
+            }
+            .controls input[type="range"] {
+                width: 120px;
+            }
+            .formula {
+                font-size: 1em;
+                padding: 10px;
+            }
+        }
+        @media (max-width: 480px) {
+            body {
+                font-size: 16px;
+            }
+            h1 {
+                font-size: 1.7em;
+            }
+            h2 {
+                font-size: 1.4em;
+            }
+            h3 {
+                font-size: 1.15em;
+            }
+            .animation-container, .chart-container {
+                height: 270px;
+            }
+        }
+
+        /* 特殊样式 */
+        .performance-highlight {
+            background: linear-gradient(135deg, rgba(88, 166, 255, 0.1), rgba(247, 120, 186, 0.1));
+            border: 1px solid rgba(88, 166, 255, 0.3);
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .comparison-box {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin: 20px 0;
+        }
+        
+        .comparison-item {
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .traditional {
+            background-color: rgba(255, 100, 100, 0.1);
+            border: 1px solid rgba(255, 100, 100, 0.3);
+        }
+        
+        .pixel-reasoning {
+            background-color: rgba(100, 255, 100, 0.1);
+            border: 1px solid rgba(100, 255, 100, 0.3);
+        }
+
+        @media (max-width: 768px) {
+            .comparison-box {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="backgroundCanvasContainer"></div>
+    <div class="container">
+        <header>
+            <h1>Pixel Reasoner：像素空间推理的革命性突破</h1>
+            <div class="author-info">
+                <p><strong>Alex Su</strong>¹³, <strong>Haozhe Wang</strong>²*, <strong>Weiming Ren</strong>¹⁴, <strong>Fangzhen Lin</strong>², <strong>Wenhu Chen</strong>¹⁴</p>
+                <p>¹滑铁卢大学 ²香港科技大学 ³中国科学技术大学 ⁴Vector Institute</p>
+                <p><em>*项目负责人</em></p>
+            </div>
+        </header>
+
+        <main>
+            <article>
+                <section id="intro">
+                    <h2>引言：从文本到像素的推理跃迁</h2>
+                    <p>在人工智能的发展历程中，<span class="concept">链式思维推理</span>（Chain-of-Thought）已经成为提升大语言模型性能的关键技术。然而，当我们将目光投向视觉密集型任务时，传统的纯文本推理方式却显露出明显的局限性。想象一下，当你试图通过文字描述一幅复杂图像中的细微细节时，是否常常感到词不达意？这正是当前<span class="concept">视觉语言模型</span>（VLMs）面临的核心挑战。</p>
+                    
+                    <p>Alex Su、Haozhe Wang等研究者在其开创性论文中提出了<strong class="highlight">Pixel Reasoner</strong>——一个革命性的框架，它首次将推理过程从纯文本空间扩展到<span class="concept">像素空间</span>。这不仅仅是技术上的创新，更是思维范式的根本转变：让AI不再只是"描述"所见，而是能够像人类一样"操作"视觉内容进行深层推理。</p>
+
+                    <div class="comparison-box">
+                        <div class="comparison-item traditional">
+                            <h4>传统文本推理</h4>
+                            <p>仅通过文字描述视觉内容<br>间接、可能遗漏关键细节</p>
+                        </div>
+                        <div class="comparison-item pixel-reasoning">
+                            <h4>像素空间推理</h4>
+                            <p>直接操作视觉内容<br>精确、保留完整信息</p>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="reasoning-paradigm">
+                    <h2>第一章：推理范式的革命性转变</h2>
+                    <p>传统的视觉语言模型在处理复杂视觉任务时，往往采用"看一眼，说一通"的模式：模型观察整幅图像，然后通过文本描述其观察结果并进行推理。这种方式就像一个人被蒙住眼睛，仅通过他人的描述来解决视觉问题——信息的传递过程中必然会有损失。</p>
+                    
+                    <p><span class="concept">Pixel Reasoner</span>打破了这一限制，引入了<span class="concept">像素空间推理</span>的全新概念。在这个框架中，模型不仅能够"看"，更能够"做"——它可以主动地缩放图像的特定区域（<strong>ZOOM-IN</strong>），选择视频中的关键帧（<strong>SELECT-FRAME</strong>），就像人类在仔细观察时会自然而然地做的那样。</p>
+
+                    <div id="reasoningParadigmAnimation" class="animation-container"></div>
+                    <div class="controls">
+                        <button id="rpToggleMode">切换推理模式</button>
+                        <label for="rpComplexity">任务复杂度:</label>
+                        <input type="range" id="rpComplexity" min="1" max="5" value="3" step="1">
+                    </div>
+                    <p>动画演示：对比传统文本推理与像素空间推理处理视觉任务的不同方式。传统方式直接从图像到文本答案，而像素空间推理包含中间的视觉操作步骤。</p>
+                </section>
+
+                <section id="training-methodology">
+                    <h2>第二章：两阶段训练的智慧设计</h2>
+                    <p>培养一个能够进行像素空间推理的AI系统，面临着前所未有的挑战。研究团队巧妙地设计了一个<span class="concept">两阶段训练方法</span>，就像教授一个学生先学会基本工具的使用，再通过实践来掌握高级技能。</p>
+                    
+                    <h3>阶段一：温启动指令调优</h3>
+                    <p>在第一阶段，研究者们精心构建了7,500个<span class="concept">推理轨迹</span>，这些轨迹就像是专家级的示范。模型在这一阶段学会了：</p>
+                    <ul>
+                        <li><strong>视觉操作掌握</strong>：如何正确使用ZOOM-IN和SELECT-FRAME等操作</li>
+                        <li><strong>自我纠错能力</strong>：当操作出现错误时如何调整和修正</li>
+                        <li><strong>任务适应性</strong>：何时需要使用视觉操作，何时纯文本推理已足够</li>
+                    </ul>
+
+                    <h3>阶段二：好奇心驱动的强化学习</h3>
+                    <p>第二阶段是真正的创新所在。研究团队发现了一个被他们称为<span class="concept">"学习陷阱"</span>的现象：由于模型在文本推理方面已经相当熟练，而像素空间推理还是新手，模型往往会"偷懒"，回避使用新学会的视觉操作。</p>
+
+                    <div id="trainingStagesAnimation" class="animation-container"></div>
+                    <div class="controls">
+                        <button id="tsPlayPause">播放/暂停训练过程</button>
+                        <label for="tsStage">训练阶段:</label>
+                        <input type="range" id="tsStage" min="0" max="100" value="0" step="1">
+                    </div>
+                    <p>动画演示：展示两阶段训练过程，第一阶段建立基础能力，第二阶段通过强化学习优化性能。可以看到模型能力的逐步提升。</p>
+                </section>
+
+                <section id="curiosity-mechanism">
+                    <h2>第三章：好奇心机制的精妙设计</h2>
+                    <p>为了解决"学习陷阱"问题，研究团队引入了一个极其巧妙的<span class="concept">好奇心驱动奖励机制</span>。这个机制的设计哲学来源于人类学习的本质：我们总是对新事物充满好奇，即使初期可能会犯错。</p>
+                    
+                    <p class="formula">R'(x,y) = R(x,y) + α·R_curiosity(x,y) + β·R_penalty(y)</p>
+                    
+                    <p>其中：</p>
+                    <ul>
+                        <li><strong>R(x,y)</strong>：基础正确性奖励</li>
+                        <li><strong>R_curiosity(x,y)</strong>：好奇心奖励，鼓励探索像素空间推理</li>
+                        <li><strong>R_penalty(y)</strong>：效率惩罚，避免过度使用视觉操作</li>
+                    </ul>
+
+                    <p>这个机制的核心思想是：当模型对某类查询的<span class="concept">像素空间推理使用率</span>（RaPR）低于预设阈值时，系统会给予额外的好奇心奖励，鼓励模型继续尝试和探索。同时，为了防止模型滥用视觉操作，系统还设置了效率惩罚机制。</p>
+
+                    <div id="curiosityMechanismAnimation" class="animation-container"></div>
+                    <div class="controls">
+                        <button id="cmToggleReward">切换奖励类型</button>
+                        <label for="cmCuriosity">好奇心强度:</label>
+                        <input type="range" id="cmCuriosity" min="0" max="1" value="0.5" step="0.1">
+                    </div>
+                    <p>动画演示：好奇心奖励机制的工作原理。显示不同奖励成分如何影响模型的行为选择，以及RaPR（像素空间推理使用率）的动态变化。</p>
+                </section>
+
+                <section id="visual-operations">
+                    <h2>第四章：视觉操作的艺术</h2>
+                    <p>Pixel Reasoner的核心优势在于其丰富的<span class="concept">视觉操作能力</span>。目前系统主要支持两种关键操作：</p>
+                    
+                    <h3>ZOOM-IN：精确的空间聚焦</h3>
+                    <p>当面对信息密集的图像时，ZOOM-IN操作允许模型聚焦于特定区域，就像使用放大镜一样。这种操作对于处理包含大量细节的信息图表、文档图像或复杂场景特别有效。</p>
+                    
+                    <h3>SELECT-FRAME：时间维度的智能采样</h3>
+                    <p>对于视频内容，SELECT-FRAME操作使模型能够从16帧的序列中智能选择最相关的8帧进行分析。这种选择性注意机制大大提高了视频理解的效率和准确性。</p>
+
+                    <div id="visualOperationsAnimation" class="animation-container"></div>
+                    <div class="controls">
+                        <button id="voZoomIn">演示ZOOM-IN</button>
+                        <button id="voSelectFrame">演示SELECT-FRAME</button>
+                        <button id="voReset">重置演示</button>
+                    </div>
+                    <p>动画演示：展示ZOOM-IN和SELECT-FRAME操作的具体工作方式。ZOOM-IN显示如何聚焦图像特定区域，SELECT-FRAME显示如何从视频序列中选择关键帧。</p>
+                </section>
+
+                <section id="performance-results">
+                    <h2>第五章：突破性的性能表现</h2>
+                    <p>Pixel Reasoner的实验结果令人瞩目。这个仅有70亿参数的模型在多个视觉推理基准测试中刷新了开源模型的记录，甚至在某些任务上超越了闭源的商业模型。</p>
+                    
+                    <div class="performance-highlight">
+                        <h4>🏆 性能亮点</h4>
+                        <ul>
+                            <li><strong>V* Bench</strong>: 84.3% (超越Gemini-2.5-Pro的79.2%)</li>
+                            <li><strong>TallyQA-Complex</strong>: 73.8%</li>
+                            <li><strong>InfographicsVQA</strong>: 84.0%</li>
+                            <li><strong>MVBench</strong>: 67.8%</li>
+                        </ul>
+                    </div>
+
+                    <div class="chart-container">
+                        <canvas id="performanceChart"></canvas>
+                    </div>
+                    <div class="controls">
+                        <button id="pcToggleDataset">切换数据集</button>
+                        <button id="pcToggleComparison">显示/隐藏对比</button>
+                    </div>
+                    <p>图表展示：Pixel Reasoner与其他先进模型在各个基准测试上的性能对比。可以清晰看到像素空间推理带来的显著性能提升。</p>
+                </section>
+
+                <section id="implications-future">
+                    <h2>第六章：深远影响与未来展望</h2>
+                    <p>Pixel Reasoner的成功不仅仅是技术上的突破，更代表了人工智能发展的一个重要里程碑。它向我们展示了<span class="concept">多模态推理</span>的新可能性，为未来的AI系统设计提供了宝贵的启示。</p>
+                    
+                    <h3>技术贡献的深层意义</h3>
+                    <p>这项研究的核心贡献在于打破了文本与视觉之间的壁垒。传统的AI系统往往将不同模态的信息割裂处理，而Pixel Reasoner实现了真正的<span class="concept">多模态协同推理</span>。这种设计理念的转变，为构建更加智能、更接近人类认知方式的AI系统奠定了基础。</p>
+                    
+                    <h3>应用前景展望</h3>
+                    <p>像素空间推理技术的应用前景极其广阔：</p>
+                    <ul>
+                        <li><strong>医疗影像分析</strong>：精确定位和分析医学图像中的关键区域</li>
+                        <li><strong>自动驾驶</strong>：实时理解和推理复杂的交通场景</li>
+                        <li><strong>教育辅助</strong>：帮助学生理解复杂的图表和视觉材料</li>
+                        <li><strong>工业检测</strong>：自动识别和分析产品缺陷</li>
+                    </ul>
+
+                    <div id="futureApplicationsAnimation" class="animation-container"></div>
+                    <div class="controls">
+                        <button id="faNextApplication">下一个应用场景</button>
+                        <label for="faSpeed">演示速度:</label>
+                        <input type="range" id="faSpeed" min="0.5" max="2" value="1" step="0.1">
+                    </div>
+                    <p>动画演示：展示像素空间推理在不同应用场景中的潜在用途，从医疗诊断到自动驾驶等多个领域的应用前景。</p>
+                </section>
+
+                <section id="conclusion">
+                    <h2>结语：推理能力的新纪元</h2>
+                    <p>Pixel Reasoner的诞生标志着人工智能推理能力发展的一个新纪元。通过将推理过程扩展到像素空间，这项技术不仅解决了传统方法的局限性，更为AI系统与视觉世界的交互开辟了全新的可能性。</p>
+                    
+                    <p>正如Alex Su、Haozhe Wang等研究者所展示的，真正的智能不仅在于理解所见，更在于能够主动地探索、操作和推理。<strong class="highlight">像素空间推理</strong>正是这种智能的体现——它让AI不再是被动的观察者，而成为了主动的思考者。</p>
+                    
+                    <p>随着这项技术的不断完善和扩展，我们有理由相信，未来的AI系统将能够以更加自然、更加智能的方式理解和交互我们的视觉世界。这不仅是技术的进步，更是人工智能向着真正理解世界迈出的重要一步。</p>
+                </section>
+            </article>
+        </main>
+
+        <footer>
+            <p>&copy; 2025 Pixel Reasoner技术解读。基于Alex Su等人的原创研究论文。</p>
+            <p>本页面所有动画均为概念性演示，旨在辅助理解核心技术原理。</p>
+        </footer>
+    </div>
+
+    <script>
+        // --- 全局背景星空动画 ---
+        let sketchBackground = function(p) {
+            let stars = [];
+            const numStars = 120;
+            p.setup = function() {
+                let canvas = p.createCanvas(p.windowWidth, p.windowHeight);
+                canvas.parent('backgroundCanvasContainer');
+                for (let i = 0; i < numStars; i++) {
+                    stars.push({
+                        x: p.random(p.width),
+                        y: p.random(p.height),
+                        size: p.random(0.5, 2.5),
+                        alpha: p.random(30, 100),
+                        speed: p.random(0.01, 0.03)
+                    });
+                }
+                p.noStroke();
+            };
+            p.draw = function() {
+                p.clear(); 
+                for (let star of stars) {
+                    p.fill(180, 200, 255, star.alpha * (p.sin(p.frameCount * star.speed + star.x * 0.1) * 0.3 + 0.7));
+                    p.ellipse(star.x, star.y, star.size, star.size);
+                    star.y += star.size * 0.02;
+                    if (star.y > p.height) {
+                        star.y = 0;
+                        star.x = p.random(p.width);
+                    }
+                }
+            };
+            p.windowResized = function() {
+                p.resizeCanvas(p.windowWidth, p.windowHeight);
+                stars = [];
+                for (let i = 0; i < numStars; i++) {
+                    stars.push({
+                        x: p.random(p.width),
+                        y: p.random(p.height),
+                        size: p.random(0.5, 2.5),
+                        alpha: p.random(30, 100),
+                        speed: p.random(0.01, 0.03)
+                    });
+                }
+            };
+        };
+        new p5(sketchBackground);
+
+        // --- 动画1: 推理范式对比 ---
+        let sketchReasoningParadigm = function(p) {
+            let mode = 'traditional'; // 'traditional' or 'pixel'
+            let complexity = 3;
+            let animationStep = 0;
+            let maxSteps = 100;
+            
+            p.setup = function() {
+                let container = p.select('#reasoningParadigmAnimation');
+                if (container) {
+                    let canvas = p.createCanvas(container.width, container.height);
+                    canvas.parent('reasoningParadigmAnimation');
+                    
+                    p.select('#rpToggleMode').mousePressed(() => {
+                        mode = (mode === 'traditional') ? 'pixel' : 'traditional';
+                        animationStep = 0;
+                        p.redraw();
+                    });
+                    
+                    p.select('#rpComplexity').input(() => {
+                        complexity = parseInt(p.select('#rpComplexity').value());
+                        animationStep = 0;
+                        p.redraw();
+                    });
+                    
+                    p.noLoop();
+                    p.redraw();
+                }
+            };
+            
+            p.draw = function() {
+                p.background(1, 4, 9);
+                
+                if (mode === 'traditional') {
+                    drawTraditionalReasoning();
+                } else {
+                    drawPixelReasoning();
+                }
+                
+                animationStep = (animationStep + 1) % maxSteps;
+            };
+            
+            function drawTraditionalReasoning() {
+                p.fill(255, 100, 100, 150);
+                p.noStroke();
+                p.rect(50, 50, 120, 80);
+                p.fill(255);
+                p.textAlign(p.CENTER);
+                p.text("输入图像", 110, 95);
+                
+                // Arrow
+                p.stroke(255);
+                p.line(170, 90, 220, 90);
+                p.triangle(220, 90, 210, 85, 210, 95);
+                
+                p.fill(100, 150, 255, 150);
+                p.noStroke();
+                p.rect(240, 50, 120, 80);
+                p.fill(255);
+                p.text("文本推理", 300, 95);
+                
+                // Arrow
+                p.stroke(255);
+                p.line(360, 90, 410, 90);
+                p.triangle(410, 90, 400, 85, 400, 95);
+                
+                p.fill(150, 255, 150, 150);
+                p.noStroke();
+                p.rect(430, 50, 120, 80);
+                p.fill(255);
+                p.text("最终答案", 490, 95);
+                
+                p.fill(255, 200, 200);
+                p.textAlign(p.CENTER);
+                p.text("传统文本推理模式", p.width/2, 200);
+                p.text("可能遗漏视觉细节", p.width/2, 220);
+            }
+            
+            function drawPixelReasoning() {
+                p.fill(255, 100, 100, 150);
+                p.noStroke();
+                p.rect(30, 30, 100, 60);
+                p.fill(255);
+                p.textAlign(p.CENTER);
+                p.textSize(10);
+                p.text("输入图像", 80, 65);
+                
+                // Arrow down
+                p.stroke(255);
+                p.line(80, 90, 80, 120);
+                p.triangle(80, 120, 75, 110, 85, 110);
+                
+                p.fill(255, 255, 100, 150);
+                p.noStroke();
+                p.rect(30, 130, 100, 60);
+                p.fill(255);
+                p.text("像素操作\n(ZOOM/SELECT)", 80, 165);
+                
+                // Arrow right
+                p.stroke(255);
+                p.line(130, 160, 180, 160);
+                p.triangle(180, 160, 170, 155, 170, 165);
+                
+                p.fill(100, 150, 255, 150);
+                p.noStroke();
+                p.rect(190, 130, 100, 60);
+                p.fill(255);
+                p.text("视觉推理", 240, 165);
+                
+                // Arrow right
+                p.stroke(255);
+                p.line(290, 160, 340, 160);
+                p.triangle(340, 160, 330, 155, 330, 165);
+                
+                p.fill(150, 255, 150, 150);
+                p.noStroke();
+                p.rect(350, 130, 100, 60);
+                p.fill(255);
+                p.text("精确答案", 400, 165);
+                
+                // Feedback loop
+                p.stroke(100, 255, 255);
+                p.noFill();
+                p.arc(240, 100, 100, 50, 0, p.PI);
+                p.triangle(190, 100, 200, 95, 200, 105);
+                
+                p.fill(200, 255, 200);
+                p.textAlign(p.CENTER);
+                p.textSize(12);
+                p.text("像素空间推理模式", p.width/2, 250);
+                p.text("直接操作视觉内容，保留完整信息", p.width/2, 270);
+            }
+        };
+        new p5(sketchReasoningParadigm);
+
+        // --- 动画2: 训练阶段演示 ---
+        let sketchTrainingStages = function(p) {
+            let playing = false;
+            let stage = 0;
+            let maxStage = 100;
+            
+            p.setup = function() {
+                let container = p.select('#trainingStagesAnimation');
+                if (container) {
+                    let canvas = p.createCanvas(container.width, container.height);
+                    canvas.parent('trainingStagesAnimation');
+                    
+                    p.select('#tsPlayPause').mousePressed(() => {
+                        playing = !playing;
+                        if (playing) p.loop();
+                        else p.noLoop();
+                    });
+                    
+                    p.select('#tsStage').input(() => {
+                        stage = parseInt(p.select('#tsStage').value());
+                        p.redraw();
+                    });
+                    
+                    p.noLoop();
+                    p.redraw();
+                }
+            };
+            
+            p.draw = function() {
+                p.background(1, 4, 9);
+                
+                if (playing) {
+                    stage = (stage + 0.5) % maxStage;
+                    p.select('#tsStage').value(stage);
+                }
+                
+                drawTrainingProgress();
+            };
+            
+            function drawTrainingProgress() {
+                let centerY = p.height / 2;
+                let phaseWidth = p.width * 0.4;
+                
+                // Phase 1: Instruction Tuning
+                p.fill(100, 150, 255, 100);
+                if (stage < 50) {
+                    p.fill(100, 150, 255, 200);
+                }
+                p.rect(50, centerY - 60, phaseWidth, 120);
+                p.fill(255);
+                p.textAlign(p.CENTER);
+                p.text("阶段一:\n指令调优", 50 + phaseWidth/2, centerY - 10);
+                p.text("学习视觉操作基础", 50 + phaseWidth/2, centerY + 20);
+                
+                // Arrow
+                p.stroke(255);
+                p.line(50 + phaseWidth, centerY, 50 + phaseWidth + 30, centerY);
+                p.triangle(50 + phaseWidth + 30, centerY, 50 + phaseWidth + 20, centerY - 5, 50 + phaseWidth + 20, centerY + 5);
+                
+                // Phase 2: RL
+                p.fill(255, 150, 100, 100);
+                if (stage >= 50) {
+                    p.fill(255, 150, 100, 200);
+                }
+                p.noStroke();
+                p.rect(110 + phaseWidth, centerY - 60, phaseWidth, 120);
+                p.fill(255);
+                p.text("阶段二:\n强化学习", 110 + phaseWidth + phaseWidth/2, centerY - 10);
+                p.text("好奇心驱动优化", 110 + phaseWidth + phaseWidth/2, centerY + 20);
+                
+                // Performance curve
+                p.stroke(100, 255, 100);
+                p.noFill();
+                p.beginShape();
+                for (let i = 0; i <= stage; i++) {
+                    let x = p.map(i, 0, maxStage, 50, p.width - 50);
+                    let y = centerY + 80 - (i < 50 ? i * 1.5 : 50 * 1.5 + (i - 50) * 0.8);
+                    p.vertex(x, y);
+                }
+                p.endShape();
+                
+                p.fill(255);
+                p.textAlign(p.LEFT);
+                p.text("模型性能", 50, centerY + 100);
+                
+                // Current stage indicator
+                p.fill(255, 255, 0);
+                p.ellipse(p.map(stage, 0, maxStage, 50, p.width - 50), centerY + 80 - (stage < 50 ? stage * 1.5 : 50 * 1.5 + (stage - 50) * 0.8), 8, 8);
+            }
+        };
+        new p5(sketchTrainingStages);
+
+        // --- 动画3: 好奇心机制 ---
+        let sketchCuriosityMechanism = function(p) {
+            let rewardType = 'curiosity';
+            let curiosityStrength = 0.5;
+            let rapr = 0.3; // Rate of Pixel-space Reasoning
+            let time = 0;
+            
+            p.setup = function() {
+                let container = p.select('#curiosityMechanismAnimation');
+                if (container) {
+                    let canvas = p.createCanvas(container.width, container.height);
+                    canvas.parent('curiosityMechanismAnimation');
+                    
+                    p.select('#cmToggleReward').mousePressed(() => {
+                        rewardType = (rewardType === 'curiosity') ? 'penalty' : 'curiosity';
+                        p.redraw();
+                    });
+                    
+                    p.select('#cmCuriosity').input(() => {
+                        curiosityStrength = parseFloat(p.select('#cmCuriosity').value());
+                        p.redraw();
+                    });
+                    
+                    p.loop();
+                }
+            };
+            
+            p.draw = function() {
+                p.background(1, 4, 9);
+                time += 0.02;
+                
+                drawRewardMechanism();
+            };
+            
+            function drawRewardMechanism() {
+                let centerX = p.width / 2;
+                let centerY = p.height / 2;
+                
+                // RaPR visualization
+                rapr = 0.3 + 0.3 * p.sin(time) * curiosityStrength;
+                
+                p.fill(100, 150, 255);
+                p.textAlign(p.CENTER);
+                p.text(`像素空间推理使用率 (RaPR): ${(rapr * 100).toFixed(1)}%`, centerX, 50);
+                
+                // Threshold line
+                p.stroke(255, 100, 100);
+                let thresholdY = centerY - 50;
+                p.line(50, thresholdY, p.width - 50, thresholdY);
+                p.fill(255, 100, 100);
+                p.text("目标阈值 (30%)", p.width - 100, thresholdY - 10);
+                
+                // Current RaPR bar
+                let barHeight = p.map(rapr, 0, 1, 0, 150);
+                p.fill(100, 255, 100);
+                if (rapr < 0.3) p.fill(255, 255, 100); // Curiosity activated
+                p.rect(centerX - 50, centerY + 50 - barHeight, 100, barHeight);
+                
+                // Reward components
+                if (rewardType === 'curiosity') {
+                    p.fill(255, 255, 100);
+                    p.text("好奇心奖励", centerX, centerY + 80);
+                    if (rapr < 0.3) {
+                        let bonus = (0.3 - rapr) * curiosityStrength * 100;
+                        p.text(`奖励加成: +${bonus.toFixed(1)}`, centerX, centerY + 100);
+                    } else {
+                        p.text("无额外奖励", centerX, centerY + 100);
+                    }
+                } else {
+                    p.fill(255, 150, 150);
+                    p.text("效率惩罚机制", centerX, centerY + 80);
+                    p.text("避免过度使用视觉操作", centerX, centerY + 100);
+                }
+                
+                // Dynamic arrows showing reward flow
+                if (rapr < 0.3 && rewardType === 'curiosity') {
+                    p.stroke(255, 255, 0);
+                    for (let i = 0; i < 3; i++) {
+                        let arrowY = centerY - 20 + i * 10 + p.sin(time * 3 + i) * 5;
+                        p.line(centerX - 80, arrowY, centerX - 60, arrowY);
+                        p.triangle(centerX - 60, arrowY, centerX - 70, arrowY - 3, centerX - 70, arrowY + 3);
+                    }
+                }
+            }
+        };
+        new p5(sketchCuriosityMechanism);
+
+        // --- 动画4: 视觉操作演示 ---
+        let sketchVisualOperations = function(p) {
+            let operation = 'none';
+            let zoomProgress = 0;
+            let selectedFrames = [];
+            let frameSequence = [];
+            
+            p.setup = function() {
+                let container = p.select('#visualOperationsAnimation');
+                if (container) {
+                    let canvas = p.createCanvas(container.width, container.height);
+                    canvas.parent('visualOperationsAnimation');
+                    
+                    // Initialize frame sequence
+                    for (let i = 0; i < 16; i++) {
+                        frameSequence.push({
+                            x: 50 + (i % 8) * 60,
+                            y: 50 + Math.floor(i / 8) * 60,
+                            selected: false,
+                            importance: p.random(0.2, 1)
+                        });
+                    }
+                    
+                    p.select('#voZoomIn').mousePressed(() => {
+                        operation = 'zoom';
+                        zoomProgress = 0;
+                        p.loop();
+                    });
+                    
+                    p.select('#voSelectFrame').mousePressed(() => {
+                        operation = 'select';
+                        selectedFrames = [];
+                        p.loop();
+                    });
+                    
+                    p.select('#voReset').mousePressed(() => {
+                        operation = 'none';
+                        zoomProgress = 0;
+                        selectedFrames = [];
+                        frameSequence.forEach(frame => frame.selected = false);
+                        p.redraw();
+                    });
+                    
+                    p.noLoop();
+                    p.redraw();
+                }
+            };
+            
+            p.draw = function() {
+                p.background(1, 4, 9);
+                
+                if (operation === 'zoom') {
+                    drawZoomOperation();
+                } else if (operation === 'select') {
+                    drawFrameSelection();
+                } else {
+                    drawDefaultView();
+                }
+            };
+            
+            function drawDefaultView() {
+                p.fill(255);
+                p.textAlign(p.CENTER);
+                p.text("点击按钮演示视觉操作", p.width/2, p.height/2);
+            }
+            
+            function drawZoomOperation() {
+                // Original image
+                p.fill(100, 150, 200, 150);
+                p.rect(50, 50, 200, 150);
+                p.fill(255);
+                p.textAlign(p.CENTER);
+                p.text("原始图像", 150, 130);
+                
+                // Zoom target area
+                let targetX = 120;
+                let targetY = 90;
+                let targetSize = 60;
+                
+                p.stroke(255, 255, 0);
+                p.noFill();
+                p.rect(targetX, targetY, targetSize, targetSize);
+                
+                // Zoom progress
+                zoomProgress += 0.02;
+                if (zoomProgress > 1) {
+                    p.noLoop();
+                    zoomProgress = 1;
+                }
+                
+                // Zoomed view
+                let zoomSize = p.lerp(60, 150, zoomProgress);
+                let zoomX = 350;
+                let zoomY = 100;
+                
+                p.fill(255, 200, 100, 150);
+                p.noStroke();
+                p.rect(zoomX, zoomY, zoomSize, zoomSize);
+                p.fill(255);
+                p.text("ZOOM-IN结果", zoomX + zoomSize/2, zoomY + zoomSize + 20);
+                
+                // Arrow
+                p.stroke(255);
+                p.line(250, 125, 330, 125);
+                p.triangle(330, 125, 320, 120, 320, 130);
+                
+                // Details in zoomed area
+                if (zoomProgress > 0.5) {
+                    p.fill(255, 100, 100);
+                    p.ellipse(zoomX + 30, zoomY + 40, 10, 10);
+                    p.fill(100, 255, 100);
+                    p.rect(zoomX + 60, zoomY + 60, 20, 15);
+                    p.fill(255);
+                    p.textSize(10);
+                    p.text("细节可见", zoomX + zoomSize/2, zoomY + zoomSize + 35);
+                }
+            }
+            
+            function drawFrameSelection() {
+                p.fill(255);
+                p.textAlign(p.CENTER);
+                p.text("视频帧序列 (16帧)", p.width/2, 30);
+                
+                // Draw frame sequence
+                for (let i = 0; i < frameSequence.length; i++) {
+                    let frame = frameSequence[i];
+                    
+                    // Select frames based on importance
+                    if (selectedFrames.length < 8 && p.frameCount % 20 === i % 20) {
+                        if (frame.importance > 0.6 && !frame.selected) {
+                            frame.selected = true;
+                            selectedFrames.push(i);
+                        }
+                    }
+                    
+                    if (frame.selected) {
+                        p.fill(100, 255, 100, 180);
+                        p.stroke(255, 255, 0);
+                    } else {
+                        p.fill(100, 100, 100, 150);
+                        p.noStroke();
+                    }
+                    
+                    p.rect(frame.x, frame.y, 50, 40);
+                    
+                    // Frame importance indicator
+                    p.fill(255, 255 * frame.importance, 0);
+                    p.ellipse(frame.x + 45, frame.y + 5, 8, 8);
+                    
+                    p.fill(255);
+                    p.textSize(10);
+                    p.text(i + 1, frame.x + 25, frame.y + 25);
+                }
+                
+                p.fill(255);
+                p.textAlign(p.CENTER);
+                p.text(`已选择: ${selectedFrames.length}/8 帧`, p.width/2, p.height - 50);
+                
+                if (selectedFrames.length >= 8) {
+                    p.text("SELECT-FRAME 完成", p.width/2, p.height - 30);
+                    p.noLoop();
+                }
+            }
+        };
+        new p5(sketchVisualOperations);
+
+        // --- 性能图表 (使用Chart.js) ---
+        let performanceChart;
+        let currentDataset = 'V*';
+        let showComparison = true;
+        
+        function initPerformanceChart() {
+            const ctx = document.getElementById('performanceChart');
+            if (!ctx) return;
+            
+            const datasets = {
+                'V*': [84.3, 79.2, 73.2, 70.4, 74.8],
+                'TallyQA': [73.8, 74.0, 73.8, 68.6, 0],
+                'InfoVQA': [84.0, 84.0, 86.5, 80.7, 0],
+                'MVBench': [67.8, 0, 0, 63.8, 0]
+            };
+            
+            const labels = ['Pixel Reasoner', 'Gemini-2.5-Pro', 'Gemini-2.0-Flash', 'Qwen2.5-VL', 'SEAL'];
+            const colors = ['#4CAF50', '#FF9800', '#2196F3', '#9C27B0', '#F44336'];
+            
+            performanceChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: currentDataset + ' Benchmark',
+                        data: datasets[currentDataset],
+                        backgroundColor: colors,
+                        borderColor: colors,
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: '#c9d1d9'
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            ticks: {
+                                color: '#c9d1d9'
+                            },
+                            grid: {
+                                color: '#30363d'
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                color: '#c9d1d9'
+                            },
+                            grid: {
+                                color: '#30363d'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Initialize chart when page loads
+        window.addEventListener('load', function() {
+            setTimeout(initPerformanceChart, 100);
+            
+            document.getElementById('pcToggleDataset')?.addEventListener('click', function() {
+                const datasets = ['V*', 'TallyQA', 'InfoVQA', 'MVBench'];
+                const currentIndex = datasets.indexOf(currentDataset);
+                currentDataset = datasets[(currentIndex + 1) % datasets.length];
+                
+                const dataValues = {
+                    'V*': [84.3, 79.2, 73.2, 70.4, 74.8],
+                    'TallyQA': [73.8, 74.0, 73.8, 68.6, 0],
+                    'InfoVQA': [84.0, 84.0, 86.5, 80.7, 0],
+                    'MVBench': [67.8, 0, 0, 63.8, 0]
+                };
+                
+                if (performanceChart) {
+                    performanceChart.data.datasets[0].label = currentDataset + ' Benchmark';
+                    performanceChart.data.datasets[0].data = dataValues[currentDataset];
+                    performanceChart.update();
+                }
+            });
+            
+            document.getElementById('pcToggleComparison')?.addEventListener('click', function() {
+                showComparison = !showComparison;
+                // Toggle comparison logic here
+            });
+        });
+
+        // --- 动画5: 未来应用展望 ---
+        let sketchFutureApplications = function(p) {
+            let currentApp = 0;
+            let applications = [
+                {name: '医疗影像', color: [255, 100, 100], icon: '🏥'},
+                {name: '自动驾驶', color: [100, 255, 100], icon: '🚗'},
+                {name: '教育辅助', color: [100, 100, 255], icon: '📚'},
+                {name: '工业检测', color: [255, 255, 100], icon: '🏭'}
+            ];
+            let animSpeed = 1;
+            let particles = [];
+            
+            p.setup = function() {
+                let container = p.select('#futureApplicationsAnimation');
+                if (container) {
+                    let canvas = p.createCanvas(container.width, container.height);
+                    canvas.parent('futureApplicationsAnimation');
+                    
+                    p.select('#faNextApplication').mousePressed(() => {
+                        currentApp = (currentApp + 1) % applications.length;
+                        particles = [];
+                        initParticles();
+                    });
+                    
+                    p.select('#faSpeed').input(() => {
+                        animSpeed = parseFloat(p.select('#faSpeed').value());
+                    });
+                    
+                    initParticles();
+                    p.loop();
+                }
+            };
+            
+            function initParticles() {
+                particles = [];
+                for (let i = 0; i < 20; i++) {
+                    particles.push({
+                        x: p.random(p.width),
+                        y: p.random(p.height),
+                        vx: p.random(-2, 2),
+                        vy: p.random(-2, 2),
+                        size: p.random(3, 8),
+                        life: p.random(100, 200)
+                    });
+                }
+            }
+            
+            p.draw = function() {
+                p.background(1, 4, 9);
+                
+                let app = applications[currentApp];
+                
+                // Center application display
+                p.fill(app.color[0], app.color[1], app.color[2], 150);
+                p.ellipse(p.width/2, p.height/2, 150, 150);
+                
+                p.fill(255);
+                p.textAlign(p.CENTER);
+                p.textSize(16);
+                p.text(app.icon, p.width/2, p.height/2 - 10);
+                p.textSize(14);
+                p.text(app.name, p.width/2, p.height/2 + 20);
+                
+                // Animated particles
+                for (let i = particles.length - 1; i >= 0; i--) {
+                    let pt = particles[i];
+                    
+                    p.fill(app.color[0], app.color[1], app.color[2], pt.life);
+                    p.ellipse(pt.x, pt.y, pt.size, pt.size);
+                    
+                    pt.x += pt.vx * animSpeed;
+                    pt.y += pt.vy * animSpeed;
+                    pt.life -= 2 * animSpeed;
+                    
+                    if (pt.life <= 0 || pt.x < 0 || pt.x > p.width || pt.y < 0 || pt.y > p.height) {
+                        particles.splice(i, 1);
+                        particles.push({
+                            x: p.random(p.width),
+                            y: p.random(p.height),
+                            vx: p.random(-2, 2),
+                            vy: p.random(-2, 2),
+                            size: p.random(3, 8),
+                            life: p.random(100, 200)
+                        });
+                    }
+                }
+                
+                // Application description
+                p.fill(200, 200, 200);
+                p.textAlign(p.CENTER);
+                p.textSize(12);
+                let descriptions = [
+                    "精确定位病灶区域，辅助医疗诊断",
+                    "实时理解复杂交通场景，提升安全性",
+                    "解析复杂图表和视觉材料，个性化教学",
+                    "自动识别产品缺陷，提高质量控制"
+                ];
+                p.text(descriptions[currentApp], p.width/2, p.height - 30);
+            }
+        };
+        new p5(sketchFutureApplications);
+
+    </script>
+</body>
+</html>

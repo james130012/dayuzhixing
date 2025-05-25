@@ -1,0 +1,1218 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>张朝阳物理课：波粒二象性的量子世界</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.2/p5.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
+    <style>
+        /* 基本重置和页面设置 */
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Noto Sans SC', sans-serif;
+            font-size: 18px;
+            line-height: 1.8;
+            background-color: #0d1117;
+            color: #c9d1d9;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* 背景动画容器 */
+        #backgroundCanvasContainer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        /* 内容容器 */
+        .container {
+            position: relative;
+            z-index: 1;
+            width: 90%;
+            max-width: 1000px;
+            margin: 40px auto;
+            padding: 30px 40px;
+            background-color: rgba(22, 27, 34, 0.9);
+            border: 1px solid #30363d;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+        }
+
+        /* 标题样式 */
+        h1, h2, h3 {
+            font-family: 'ZCOOL KuaiLe', cursive;
+            color: #58a6ff;
+            margin-bottom: 0.75em;
+            text-align: center;
+            letter-spacing: 1px;
+        }
+
+        h1 {
+            font-size: 2.6em;
+            color: #79c0ff;
+            border-bottom: 2px solid #388bfd;
+            padding-bottom: 15px;
+            margin-top: 0;
+        }
+
+        h2 {
+            font-size: 2.0em;
+            color: #f778ba;
+            margin-top: 2.2em;
+        }
+
+        h3 {
+            font-size: 1.5em;
+            color: #a371f7;
+            margin-top: 1.6em;
+            text-align: left;
+        }
+
+        /* 段落和文本样式 */
+        p, li {
+            margin-bottom: 1.2em;
+            text-align: justify;
+            color: #adbac7;
+        }
+
+        ul, ol {
+            padding-left: 30px;
+        }
+
+        /* 强调文字 */
+        strong, .highlight {
+            color: #ffa657;
+            font-weight: bold;
+        }
+
+        .concept {
+            font-weight: 500;
+            color: #7ee787;
+            padding: 3px 7px;
+            background-color: rgba(63, 185, 80, 0.15);
+            border-radius: 6px;
+            border: 1px solid rgba(63, 185, 80, 0.4);
+            font-family: 'Noto Sans SC', sans-serif;
+        }
+
+        .formula {
+            display: block;
+            text-align: center;
+            margin: 20px auto;
+            padding: 15px;
+            background-color: rgba(34, 39, 46, 0.8);
+            border-left: 4px solid #388bfd;
+            color: #c9d1d9;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 1.05em;
+            border-radius: 4px;
+            white-space: pre-wrap;
+        }
+
+        /* 动画容器 */
+        .animation-container {
+            width: 100%;
+            max-width: 580px;
+            height: 360px;
+            margin: 25px auto;
+            border: 1px solid #30363d;
+            border-radius: 10px;
+            overflow: hidden;
+            background-color: #010409;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: inset 0 0 12px rgba(0,0,0,0.5);
+        }
+
+        .animation-container canvas {
+            display: block;
+            max-width: 100%;
+            max-height: 100%;
+            border-radius: 8px;
+            width: 100% !important;
+            height: 100% !important;
+        }
+
+        /* 交互按钮和控件样式 */
+        .controls {
+            text-align: center;
+            margin-bottom: 25px;
+            margin-top: 15px;
+        }
+
+        .controls button {
+            padding: 10px 22px;
+            font-size: 0.95em;
+            font-family: 'Noto Sans SC', sans-serif;
+            background-image: linear-gradient(to right, #388bfd, #58a6ff);
+            color: white;
+            border: none;
+            border-radius: 22px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            letter-spacing: 0.5px;
+        }
+
+        .controls button:hover {
+            transform: translateY(-2px) scale(1.05);
+            box-shadow: 0 7px 18px rgba(56, 139, 253, 0.35);
+        }
+
+        .controls button:active {
+            transform: translateY(0px) scale(1);
+        }
+
+        .controls label {
+            color: #8b949e;
+            margin: 0 10px;
+            font-size: 0.9em;
+        }
+
+        .controls input[type="range"] {
+            vertical-align: middle;
+            cursor: grab;
+            width: 140px;
+        }
+
+        /* 作者信息 */
+        .author-info {
+            text-align: center;
+            margin: 20px 0 30px 0;
+            font-size: 0.95em;
+            color: #8b949e;
+        }
+
+        .author-info strong {
+            color: #79c0ff;
+        }
+
+        /* 页脚 */
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding: 25px;
+            background-color: #161b22;
+            color: #8b949e;
+            width: 100%;
+            font-size: 0.9em;
+            border-top: 1px solid #30363d;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            body {
+                font-size: 17px;
+            }
+            .container {
+                width: 95%;
+                padding: 20px 25px;
+                margin: 20px auto;
+            }
+            h1 {
+                font-size: 2.1em;
+            }
+            h2 {
+                font-size: 1.7em;
+            }
+            h3 {
+                font-size: 1.3em;
+            }
+            .animation-container {
+                height: 310px;
+            }
+            .controls button {
+                padding: 9px 18px;
+                font-size: 0.85em;
+            }
+            .controls input[type="range"] {
+                width: 120px;
+            }
+            .formula {
+                font-size: 1em;
+                padding: 10px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            body {
+                font-size: 16px;
+            }
+            h1 {
+                font-size: 1.7em;
+            }
+            h2 {
+                font-size: 1.4em;
+            }
+            h3 {
+                font-size: 1.15em;
+            }
+            .animation-container {
+                height: 270px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="backgroundCanvasContainer"></div>
+    <div class="container">
+        <header>
+            <h1>张朝阳物理课：波粒二象性的量子世界</h1>
+            <div class="author-info">
+                <p>解读自 <strong>张朝阳</strong> 先生的物理课程精髓</p>
+                <p>（搜狐创始人、董事局主席兼CEO，麻省理工学院物理学博士）</p>
+                <p>内容来源：《张朝阳的物理课》第17讲视频</p>
+            </div>
+        </header>
+
+        <main>
+            <article>
+                <section id="intro-wave-particle">
+                    <h2>引言：微观世界的双面性</h2>
+                    <p>19世纪末，物理学家们还沉浸在经典物理学辉煌成就的光环中，然而很快他们就被许多无法用经典理论解释的现象泼了冷水。光既是波又是粒子的<span class="concept">波粒二象性</span>，成为了量子力学的核心特征，也是理解微观世界最重要的概念之一。这种二象性不仅仅是光的专利，后来发现所有物质都具有这种奇妙的性质。</p>
+
+                    <p>在张朝阳先生的物理课中，<strong class="highlight">波粒二象性</strong>被称为"量子力学的核心特点"，它揭示了微观世界与宏观世界的根本差异。当我们深入原子尺度时，粒子不再遵循牛顿力学的简单规律，而是展现出一种既像波又像粒子的奇特行为。这种二象性不是矛盾，而是自然界的深层规律。</p>
+
+                    <p>本篇解读将带您深入探索波粒二象性的三个关键实验和理论：康普顿散射如何进一步证明光的粒子性，德布罗意如何大胆提出物质波假设，以及海森堡不确定性原理如何揭示量子世界的本质限制。让我们一起踏上这场理解自然奥秘的奇妙旅程！</p>
+                </section>
+
+                <section id="compton-scattering">
+                    <h2>第一章：康普顿散射——光子存在的铁证</h2>
+                    <p>20世纪20年代初，爱因斯坦的光量子假说已经通过光电效应得到了验证，但物理学家们渴望更直接的证据来证明光的粒子性。1923年，美国物理学家<strong class="highlight">康普顿</strong>设计了一个精妙的实验，让高能X射线与电子碰撞，就像两个台球相撞一样。</p>
+
+                    <p>康普顿的天才之处在于，他意识到如果光真的是粒子（光子），那么当它们与电子碰撞时，必须遵守经典力学中的<span class="concept">动量守恒</span>和<span class="concept">能量守恒</span>定律。实验中使用能量高达10⁴ eV的X射线轰击金属中的准自由电子。</p>
+
+                    <div id="comptonScatteringAnimation" class="animation-container"></div>
+                    <div class="controls">
+                        <button id="csStartAnimation">开始康普顿散射演示</button>
+                        <label for="csAngle">散射角度:</label>
+                        <input type="range" id="csAngle" min="0" max="180" value="90" step="10">
+                        <span id="csAngleValue">90°</span>
+                    </div>
+
+                    <p>通过精确的计算，康普顿推导出了波长变化量的公式：</p>
+                    <p class="formula">Δλ = λ₂ - λ₁ = (h/m₀c)(1 - cos θ)</p>
+
+                    <p>其中λ₁是入射X射线波长，λ₂是散射X射线波长，θ是散射角度，m₀是电子静止质量，h是普朗克常数，c是光速。这个公式预言，<strong class="highlight">波长变化量只与散射角度有关</strong>，当θ=90°时，波长变化量刚好等于λc = h/(m₀c) ≈ 2.43×10⁻¹² m，这被称为康普顿波长。</p>
+
+                    <p>康普顿的实验结果与理论计算完全吻合，他因此获得了1927年诺贝尔物理学奖。这个实验不仅证明了光子具有动量p = h/λ，更重要的是验证了<span class="concept">能量守恒</span>和<span class="concept">动量守恒</span>在微观世界依然成立，为量子力学奠定了坚实的基础。</p>
+                </section>
+
+                <section id="de-broglie-waves">
+                    <h2>第二章：德布罗意的伟大猜想——物质波的诞生</h2>
+                    <p>1924年，一位名叫<strong class="highlight">路易·德布罗意</strong>的法国青年物理学家提出了一个革命性的想法：既然光既是波又是粒子，那么传统意义上的"粒子"（如电子、质子）是否也具有波动性呢？这个大胆的假设彻底改变了我们对物质本性的理解。</p>
+
+                    <p>德布罗意提出，任何运动的物体都具有波动性，其波长λ与动量p的关系为：</p>
+                    <p class="formula">λ = h/p</p>
+
+                    <p>同时，粒子的能量E与频率ν的关系为：</p>
+                    <p class="formula">E = hν = ℏω</p>
+
+                    <p>这些关系式统一了波动和粒子的描述，被称为<span class="concept">德布罗意关系</span>。根据这个理论，一个被150V电压加速的电子，其德布罗意波长约为：</p>
+
+                    <div id="deBroglieWaveAnimation" class="animation-container"></div>
+                    <div class="controls">
+                        <button id="dbToggleElectron">显示/隐藏电子波包</button>
+                        <label for="dbVoltage">加速电压(V):</label>
+                        <input type="range" id="dbVoltage" min="50" max="500" value="150" step="10">
+                        <span id="dbVoltageValue">150V</span>
+                        <div>德布罗意波长: <span id="dbWavelength">0.1 nm</span></div>
+                    </div>
+
+                    <p class="formula">λ = h/√(2mE) ≈ 1×10⁻¹⁰ m = 0.1 nm</p>
+
+                    <p>这个波长是红光波长的1/5000！德布罗意的理论预言如果成立，电子应该能够发生<span class="concept">衍射</span>和<span class="concept">干涉</span>现象。1927年，戴维孙-革末实验证实了这一预言：电子束打在镍晶体上确实产生了衍射图样，电子的波动性得到了实验验证。</p>
+
+                    <p>更令人惊讶的是单电子的双缝实验：当单个电子通过双缝时，它似乎"同时"通过了两个缝，并在屏幕上形成干涉条纹。这个实验深刻地揭示了量子世界的神秘性：<strong class="highlight">在没有观测时，粒子表现为波；一旦观测，它又变回粒子</strong>。</p>
+                </section>
+
+                <section id="electron-diffraction">
+                    <h2>第三章：电子衍射实验——波动性的直观证据</h2>
+                    <p>电子通过单缝会发生衍射吗？按照经典物理学的观点，电子作为一个粒子应该直接穿过狭缝并在屏幕上留下一个对应的痕迹。但是量子力学告诉我们，电子具有波动性，因此应该会发生衍射现象。</p>
+
+                    <p>对于单缝衍射，暗纹出现的条件是：</p>
+                    <p class="formula">a sin θ = mλ (m = ±1, ±2, ±3...)</p>
+
+                    <p>其中a是缝宽，θ是衍射角，λ是德布罗意波长。当我们用被150V电压加速的电子做单缝衍射实验时，假设单缝宽度为0.1 mm，可以计算出第一级暗纹对应的衍射角约为：</p>
+
+                    <div id="electronDiffractionAnimation" class="animation-container"></div>
+                    <div class="controls">
+                        <button id="edStartBeam">发射电子束</button>
+                        <button id="edSingleElectron">单电子模式</button>
+                        <label for="edSlitWidth">狭缝宽度(μm):</label>
+                        <input type="range" id="edSlitWidth" min="50" max="200" value="100" step="10">
+                        <span id="edSlitWidthValue">100 μm</span>
+                        <button id="edClearScreen">清除屏幕</button>
+                    </div>
+
+                    <p class="formula">θ ≈ λ/a ≈ (1×10⁻¹⁰ m)/(1×10⁻⁴ m) ≈ 1×10⁻⁶ rad</p>
+
+                    <p>这个角度虽然很小，但足以被精密仪器检测到。实验确实观察到了电子的衍射现象，证实了<span class="concept">德布罗意波</span>的存在。</p>
+
+                    <p>更加神奇的是，即使我们一次只发射一个电子，经过足够长的时间积累，屏幕上仍然会出现衍射图样。这说明<strong class="highlight">单个电子也具有波动性</strong>，它不是因为电子之间的相互作用产生的集体效应，而是每个电子自身的量子特性。</p>
+                </section>
+
+                <section id="uncertainty-principle">
+                    <h2>第四章：海森堡不确定性原理——量子世界的基本限制</h2>
+                    <p>1927年，<strong class="highlight">维尔纳·海森堡</strong>提出了量子力学中最重要的原理之一：<span class="concept">不确定性原理</span>。这个原理告诉我们，在量子世界中，某些物理量（如位置和动量）无法同时被精确确定。</p>
+
+                    <p>不确定性原理的数学表达式为：</p>
+                    <p class="formula">Δx · Δp ≥ ℏ/2</p>
+
+                    <p>其中Δx是位置的不确定度，Δp是动量的不确定度，ℏ = h/(2π)是约化普朗克常数。</p>
+
+                    <div id="uncertaintyPrincipleAnimation" class="animation-container"></div>
+                    <div class="controls">
+                        <button id="upToggleLocalization">改变电子局域化程度</button>
+                        <label for="upSlitWidth">限制宽度:</label>
+                        <input type="range" id="upSlitWidth" min="10" max="100" value="50" step="5">
+                        <span id="upSlitWidthValue">50</span>
+                        <div>Δx·Δp = <span id="upProduct">--</span></div>
+                    </div>
+
+                    <p>通过电子单缝衍射实验可以直观地理解这个原理：当电子通过狭缝时，我们对它位置的了解增加了（Δx减小），但同时它的动量在垂直方向上变得更不确定（Δp增大）。计算显示：</p>
+
+                    <p class="formula">Δx ≈ a/2, Δp ≈ p₀(λ/a)</p>
+                    <p class="formula">Δx · Δp ≈ (a/2) · p₀(λ/a) = p₀λ/2 = h/2 > ℏ/2</p>
+
+                    <p>这个结果与不确定性原理完全一致！这不是测量技术的限制，而是<strong class="highlight">自然界的基本性质</strong>。</p>
+                </section>
+
+                <section id="hydrogen-atom-stability">
+                    <h2>第五章：氢原子的稳定性——不确定性原理的应用</h2>
+                    <p>经典物理学面临一个严重问题：按照卢瑟福的原子模型，电子绕原子核运动时会不断辐射电磁波，失去能量，最终螺旋式地坠入原子核。这将导致所有原子都不稳定，但现实中原子是稳定的。</p>
+
+                    <p>量子力学通过<span class="concept">不确定性原理</span>巧妙地解决了这个问题。当电子试图接近原子核时，它的位置不确定度Δx减小，根据不确定性原理，动量不确定度Δp必须增大，这意味着电子的动能增加，从而阻止它坠入原子核。</p>
+
+                    <div id="hydrogenAtomAnimation" class="animation-container"></div>
+                    <div class="controls">
+                        <button id="haToggleModel">切换经典/量子模型</button>
+                        <label for="haRadius">原子半径:</label>
+                        <input type="range" id="haRadius" min="20" max="100" value="53" step="1">
+                        <span id="haRadiusValue">5.3×10⁻¹¹ m</span>
+                        <div>总能量: <span id="haEnergy">--</span></div>
+                    </div>
+
+                    <p>我们可以用不确定性原理估算氢原子的半径。设电子位置不确定度为a（原子半径），则动量不确定度约为Δp ≈ ℏ/a。电子的总能量为：</p>
+
+                    <p class="formula">E = Δp²/(2m) - e²/(4πε₀a) ≈ ℏ²/(2ma²) - e²/(4πε₀a)</p>
+
+                    <p>对a求导并令dE/da = 0，得到能量最小时的原子半径：</p>
+
+                    <p class="formula">a = ℏ²/(me²/4πε₀) ≈ 5.3×10⁻¹¹ m = 0.53 Å</p>
+
+                    <p>这个结果被称为<span class="concept">玻尔半径</span>，与实验值完全吻合！这表明<strong class="highlight">不确定性原理不仅解释了原子的稳定性，还能精确预测原子的尺寸</strong>。</p>
+                </section>
+
+                <section id="wave-particle-synthesis">
+                    <h2>第六章：波粒二象性的深层含义</h2>
+                    <p>通过对康普顿散射、德布罗意波和不确定性原理的深入探讨，我们看到了<span class="concept">波粒二象性</span>是如何贯穿整个量子力学的。这种二象性不是简单的"有时是波，有时是粒子"，而是一种更深层的统一。</p>
+
+                    <p>在量子力学的语言中，微观粒子的状态用<span class="concept">波函数</span>ψ来描述。波函数本身是波动的，但当我们观测时，得到的是粒子性的结果。波函数的模的平方|ψ|²给出了在某个位置找到粒子的概率密度。</p>
+
+                    <div id="waveFunctionAnimation" class="animation-container"></div>
+                    <div class="controls">
+                        <button id="wfToggleWavePacket">切换波包演化</button>
+                        <label for="wfDispersion">波包扩散:</label>
+                        <input type="range" id="wfDispersion" min="0" max="100" value="30" step="5">
+                        <button id="wfMeasure">进行测量</button>
+                    </div>
+
+                    <p>这种波粒二象性的统一描述解释了许多经典物理学无法理解的现象：</p>
+
+                    <ul>
+                        <li><strong>隧道效应</strong>：粒子可以穿越在经典力学中无法逾越的势垒</li>
+                        <li><strong>量子叠加</strong>：粒子可以同时处于多个状态的叠加</li>
+                        <li><strong>量子纠缠</strong>：两个粒子可以形成不可分割的整体</li>
+                        <li><strong>零点能</strong>：即使在绝对零度，粒子仍有最小的能量</li>
+                    </ul>
+
+                    <p><strong class="highlight">波粒二象性告诉我们，自然界在最基本的层次上既不是纯粹的波动，也不是纯粹的粒子，而是两者的统一</strong>。这种统一性是量子力学最深刻的洞察之一。</p>
+                </section>
+
+                <section id="conclusion">
+                    <h2>结语：量子世界的启示</h2>
+                    <p>从康普顿散射证明光子的存在，到德布罗意提出物质波假设，再到海森堡发现不确定性原理，<span class="concept">波粒二象性</span>的发现历程展现了20世纪初物理学革命的壮丽画卷。这些发现不仅颠覆了我们对自然界的传统认知，更为现代科技的发展奠定了基础。</p>
+
+                    <p>今天的激光器、电子显微镜、量子计算机、核磁共振等技术，都是建立在对波粒二象性深刻理解的基础之上。张朝阳先生的物理课通过这些经典实验和理论，引导我们理解了量子力学的核心思想。</p>
+
+                    <p>波粒二象性提醒我们，<strong class="highlight">自然界比我们的直觉更加丰富和奇妙</strong>。在微观世界中，传统的"非此即彼"的逻辑被"亦此亦彼"的量子逻辑所取代。这种思维方式的转变，不仅改变了物理学，也深刻影响了哲学、信息科学等众多领域。</p>
+
+                    <p>正如张朝阳先生在课程中所强调的，学习量子力学不仅是为了掌握一门学科，更是为了培养一种看待世界的新方式。在这个充满不确定性却又蕴含深刻规律的量子世界中，我们每一次的探索都是对自然奥秘的致敬。</p>
+                </section>
+            </article>
+        </main>
+
+        <footer>
+            <p>&copy; 2025 波粒二象性解读。内容灵感与核心思想源自张朝阳先生《张朝阳的物理课》第17讲。</p>
+            <p>本页面所有动画均为概念性、简化性演示，旨在辅助理解量子力学基本概念。</p>
+        </footer>
+    </div>
+
+    <script>
+        // --- 全局背景量子波动画 ---
+        let sketchBackground = function(p) {
+            let quantumParticles = [];
+            const numParticles = 100;
+            
+            p.setup = function() {
+                let canvas = p.createCanvas(p.windowWidth, p.windowHeight);
+                canvas.parent('backgroundCanvasContainer');
+                
+                for (let i = 0; i < numParticles; i++) {
+                    quantumParticles.push({
+                        x: p.random(p.width),
+                        y: p.random(p.height),
+                        size: p.random(1, 3),
+                        phase: p.random(p.TWO_PI),
+                        alpha: p.random(30, 80),
+                        speed: p.random(0.2, 0.8)
+                    });
+                }
+                p.noStroke();
+            };
+            
+            p.draw = function() {
+                p.clear();
+                for (let particle of quantumParticles) {
+                    let waveAlpha = particle.alpha * (p.sin(p.frameCount * 0.01 + particle.phase) * 0.3 + 0.7);
+                    p.fill(100, 150, 255, waveAlpha);
+                    p.ellipse(particle.x, particle.y, particle.size, particle.size);
+                    
+                    particle.y += particle.speed;
+                    particle.x += p.sin(particle.y * 0.01) * 0.5;
+                    
+                    if (particle.y > p.height) {
+                        particle.y = 0;
+                        particle.x = p.random(p.width);
+                    }
+                }
+            };
+            
+            p.windowResized = function() {
+                p.resizeCanvas(p.windowWidth, p.windowHeight);
+            };
+        };
+        new p5(sketchBackground);
+
+        // --- 动画1: 康普顿散射 ---
+        let sketchComptonScattering = function(p) {
+            let photon = {x: 0, y: 0, active: false};
+            let electron = {x: 0, y: 0, active: false};
+            let scatteredPhoton = {x: 0, y: 0, active: false};
+            let angle = 90;
+            let animationState = 'ready';
+            
+            p.setup = function() {
+                let container = p.select('#comptonScatteringAnimation');
+                let canvas = p.createCanvas(container.width, container.height);
+                canvas.parent('comptonScatteringAnimation');
+                
+                // 强制设置画布尺寸
+                canvas.canvas.style.width = '100%';
+                canvas.canvas.style.height = '100%';
+                
+                p.select('#csStartAnimation').mousePressed(startAnimation);
+                p.select('#csAngle').input(updateAngle);
+                
+                reset();
+                p.redraw();
+            };
+            
+            function updateAngle() {
+                angle = parseFloat(p.select('#csAngle').value());
+                p.select('#csAngleValue').html(angle + '°');
+                if (animationState === 'ready') p.redraw();
+            }
+            
+            function startAnimation() {
+                reset();
+                animationState = 'collision';
+                photon.active = true;
+                p.loop();
+            }
+            
+            function reset() {
+                photon = {x: 50, y: p.height/2, active: false, vx: 3, vy: 0};
+                electron = {x: p.width/2, y: p.height/2, active: true, vx: 0, vy: 0};
+                scatteredPhoton = {x: p.width/2, y: p.height/2, active: false, vx: 0, vy: 0};
+                animationState = 'ready';
+                p.noLoop();
+            }
+            
+            p.draw = function() {
+                p.background(1, 4, 9);
+                
+                // 绘制入射光子
+                if (photon.active) {
+                    p.fill(255, 255, 0);
+                    p.ellipse(photon.x, photon.y, 12, 12);
+                    p.fill(255);
+                    p.text('入射光子', photon.x - 30, photon.y - 20);
+                    
+                    if (animationState === 'collision') {
+                        photon.x += photon.vx;
+                        if (photon.x >= electron.x - 20) {
+                            animationState = 'scatter';
+                            photon.active = false;
+                            scatteredPhoton.active = true;
+                            
+                            // 计算散射后的速度
+                            let angleRad = angle * p.PI / 180;
+                            scatteredPhoton.vx = 2 * p.cos(angleRad);
+                            scatteredPhoton.vy = -2 * p.sin(angleRad);
+                            electron.vx = 1;
+                            electron.vy = 0.5;
+                        }
+                    }
+                }
+                
+                // 绘制电子
+                if (electron.active) {
+                    p.fill(0, 255, 255);
+                    p.ellipse(electron.x, electron.y, 15, 15);
+                    p.fill(255);
+                    p.text('电子', electron.x - 15, electron.y + 25);
+                    
+                    if (animationState === 'scatter') {
+                        electron.x += electron.vx;
+                        electron.y += electron.vy;
+                    }
+                }
+                
+                // 绘制散射光子
+                if (scatteredPhoton.active) {
+                    p.fill(255, 200, 0);
+                    p.ellipse(scatteredPhoton.x, scatteredPhoton.y, 10, 10);
+                    p.fill(255);
+                    p.text('散射光子', scatteredPhoton.x + 15, scatteredPhoton.y - 15);
+                    
+                    scatteredPhoton.x += scatteredPhoton.vx;
+                    scatteredPhoton.y += scatteredPhoton.vy;
+                }
+                
+                // 显示波长变化公式结果
+                if (animationState !== 'ready') {
+                    p.fill(255, 255, 0);
+                    p.textSize(14);
+                    let wavelengthChange = 2.43e-12 * (1 - p.cos(angle * p.PI / 180));
+                    p.text(`Δλ = ${wavelengthChange.toExponential(2)} m`, 20, 30);
+                    p.text(`散射角: ${angle}°`, 20, 50);
+                }
+                
+                if (scatteredPhoton.x > p.width && electron.x > p.width) {
+                    p.noLoop();
+                }
+            };
+        };
+        new p5(sketchComptonScattering);
+
+        // --- 动画2: 德布罗意波 ---
+        let sketchDeBroglieWave = function(p) {
+            let voltage = 150;
+            let showElectron = true;
+            let waveOffset = 0;
+            
+            p.setup = function() {
+                let container = p.select('#deBroglieWaveAnimation');
+                let canvas = p.createCanvas(container.width, container.height);
+                canvas.parent('deBroglieWaveAnimation');
+                
+                canvas.canvas.style.width = '100%';
+                canvas.canvas.style.height = '100%';
+                
+                p.select('#dbToggleElectron').mousePressed(() => {
+                    showElectron = !showElectron;
+                    p.redraw();
+                });
+                
+                p.select('#dbVoltage').input(updateVoltage);
+                updateVoltage();
+                p.loop();
+            };
+            
+            function updateVoltage() {
+                voltage = parseFloat(p.select('#dbVoltage').value());
+                p.select('#dbVoltageValue').html(voltage + 'V');
+                
+                // 计算德布罗意波长 λ = h/√(2mE)
+                let h = 6.626e-34;
+                let m = 9.109e-31;
+                let e = 1.602e-19;
+                let energy = voltage * e;
+                let wavelength = h / Math.sqrt(2 * m * energy);
+                let wavelengthNm = (wavelength * 1e9).toFixed(3);
+                
+                p.select('#dbWavelength').html(wavelengthNm + ' nm');
+            }
+            
+            p.draw = function() {
+                p.background(1, 4, 9);
+                waveOffset += 0.1;
+                
+                let centerY = p.height / 2;
+                
+                // 绘制德布罗意波
+                p.stroke(100, 255, 100);
+                p.strokeWeight(2);
+                p.noFill();
+                
+                p.beginShape();
+                for (let x = 0; x < p.width; x++) {
+                    let waveLength = p.map(voltage, 50, 500, 20, 5); // 电压越高，波长越短
+                    let amplitude = 30;
+                    let y = centerY + amplitude * p.sin(x / waveLength + waveOffset);
+                    p.vertex(x, y);
+                }
+                p.endShape();
+                
+                // 绘制电子波包
+                if (showElectron) {
+                    let electronX = (p.frameCount * 2) % (p.width + 50);
+                    let packetWidth = p.map(voltage, 50, 500, 60, 20);
+                    
+                    p.fill(255, 100, 100, 150);
+                    p.noStroke();
+                    
+                    for (let i = 0; i < 20; i++) {
+                        let x = electronX - packetWidth/2 + i * packetWidth/20;
+                        if (x >= 0 && x <= p.width) {
+                            let envelope = p.exp(-p.pow((x - electronX)/packetWidth * 4, 2));
+                            let waveLength = p.map(voltage, 50, 500, 20, 5);
+                            let y = centerY + 30 * envelope * p.sin(x / waveLength + waveOffset);
+                            p.ellipse(x, y, 4 * envelope, 4 * envelope);
+                        }
+                    }
+                }
+                
+                // 标签
+                p.fill(255);
+                p.noStroke();
+                p.textSize(12);
+                p.text('德布罗意物质波', 20, 30);
+                if (showElectron) {
+                    p.text('电子波包', 20, 50);
+                }
+            };
+        };
+        new p5(sketchDeBroglieWave);
+
+        // --- 动画3: 电子衍射 ---
+        let sketchElectronDiffraction = function(p) {
+            let electrons = [];
+            let detectionPoints = [];
+            let slitWidth = 100;
+            let singleElectronMode = false;
+            
+            p.setup = function() {
+                let container = p.select('#electronDiffractionAnimation');
+                let canvas = p.createCanvas(container.width, container.height);
+                canvas.parent('electronDiffractionAnimation');
+                
+                canvas.canvas.style.width = '100%';
+                canvas.canvas.style.height = '100%';
+                
+                p.select('#edStartBeam').mousePressed(startBeam);
+                p.select('#edSingleElectron').mousePressed(toggleSingleElectron);
+                p.select('#edSlitWidth').input(updateSlitWidth);
+                p.select('#edClearScreen').mousePressed(() => {
+                    detectionPoints = [];
+                    electrons = [];
+                    p.redraw();
+                });
+                
+                updateSlitWidth();
+                p.noLoop();
+                p.redraw();
+            };
+            
+            function startBeam() {
+                electrons = [];
+                for (let i = 0; i < (singleElectronMode ? 1 : 5); i++) {
+                    electrons.push({
+                        x: 50,
+                        y: p.height/2 + p.random(-20, 20),
+                        vx: 3,
+                        vy: p.random(-0.5, 0.5),
+                        active: true
+                    });
+                }
+                p.loop();
+            }
+            
+            function toggleSingleElectron() {
+                singleElectronMode = !singleElectronMode;
+                p.select('#edSingleElectron').html(singleElectronMode ? '连续模式' : '单电子模式');
+            }
+            
+            function updateSlitWidth() {
+                slitWidth = parseFloat(p.select('#edSlitWidth').value());
+                p.select('#edSlitWidthValue').html(slitWidth + ' μm');
+                if (electrons.length === 0) p.redraw();
+            }
+            
+            p.draw = function() {
+                p.background(1, 4, 9);
+                
+                // 绘制狭缝
+                let slitY1 = p.height/2 - slitWidth/4;
+                let slitY2 = p.height/2 + slitWidth/4;
+                let slitX = p.width/2 - 50;
+                
+                p.stroke(255);
+                p.strokeWeight(5);
+                p.line(slitX, 0, slitX, slitY1);
+                p.line(slitX, slitY2, slitX, p.height);
+                
+                // 绘制屏幕
+                let screenX = p.width - 80;
+                p.stroke(200);
+                p.line(screenX, 0, screenX, p.height);
+                
+                // 处理电子运动
+                for (let i = electrons.length - 1; i >= 0; i--) {
+                    let electron = electrons[i];
+                    if (!electron.active) continue;
+                    
+                    // 绘制电子
+                    p.fill(0, 255, 255);
+                    p.noStroke();
+                    p.ellipse(electron.x, electron.y, 8, 8);
+                    
+                    // 移动电子
+                    electron.x += electron.vx;
+                    electron.y += electron.vy;
+                    
+                    // 检查是否通过狭缝
+                    if (electron.x >= slitX && electron.x <= slitX + 5) {
+                        if (electron.y < slitY1 || electron.y > slitY2) {
+                            // 被狭缝阻挡
+                            electrons.splice(i, 1);
+                            continue;
+                        } else {
+                            // 通过狭缝，产生衍射
+                            let diffraction = p.random(-2, 2) * (100 / slitWidth);
+                            electron.vy += diffraction;
+                        }
+                    }
+                    
+                    // 检查是否到达屏幕
+                    if (electron.x >= screenX) {
+                        detectionPoints.push({x: screenX, y: electron.y});
+                        electrons.splice(i, 1);
+                    }
+                }
+                
+                // 绘制检测点
+                p.fill(255, 255, 0, 150);
+                for (let point of detectionPoints) {
+                    p.ellipse(point.x, point.y, 4, 4);
+                }
+                
+                // 绘制衍射图样强度分布
+                if (detectionPoints.length > 20) {
+                    let intensityMap = new Array(p.height).fill(0);
+                    for (let point of detectionPoints) {
+                        let y = Math.floor(point.y);
+                        if (y >= 0 && y < intensityMap.length) {
+                            intensityMap[y]++;
+                        }
+                    }
+                    
+                    p.stroke(255, 100, 100);
+                    p.strokeWeight(2);
+                    for (let y = 0; y < intensityMap.length; y++) {
+                        let intensity = intensityMap[y];
+                        if (intensity > 0) {
+                            p.line(screenX + 10, y, screenX + 10 + intensity * 3, y);
+                        }
+                    }
+                }
+                
+                // 标签
+                p.fill(255);
+                p.noStroke();
+                p.textSize(12);
+                p.text('电子源', 20, 30);
+                p.text('狭缝', slitX - 20, 20);
+                p.text('检测屏', screenX - 30, 20);
+                
+                if (electrons.length === 0 && detectionPoints.length === 0) {
+                    p.noLoop();
+                }
+            };
+        };
+        new p5(sketchElectronDiffraction);
+
+        // --- 动画4: 不确定性原理 ---
+        let sketchUncertaintyPrinciple = function(p) {
+            let localizationWidth = 50;
+            let wavePacket = [];
+            let showMomentum = false;
+            
+            p.setup = function() {
+                let container = p.select('#uncertaintyPrincipleAnimation');
+                let canvas = p.createCanvas(container.width, container.height);
+                canvas.parent('uncertaintyPrincipleAnimation');
+                
+                canvas.canvas.style.width = '100%';
+                canvas.canvas.style.height = '100%';
+                
+                p.select('#upToggleLocalization').mousePressed(() => {
+                    showMomentum = !showMomentum;
+                });
+                
+                p.select('#upSlitWidth').input(updateLocalization);
+                
+                generateWavePacket();
+                updateLocalization();
+                p.loop();
+            };
+            
+            function updateLocalization() {
+                localizationWidth = parseFloat(p.select('#upSlitWidth').value());
+                p.select('#upSlitWidthValue').html(localizationWidth);
+                generateWavePacket();
+                
+                // 计算 Δx·Δp
+                let deltaX = localizationWidth;
+                let deltaP = 1 / localizationWidth; // 简化关系
+                let product = (deltaX * deltaP).toFixed(2);
+                p.select('#upProduct').html(product + ' (相对单位)');
+            }
+            
+            function generateWavePacket() {
+                wavePacket = [];
+                let centerX = p.width / 2;
+                let sigma = localizationWidth;
+                
+                for (let x = 0; x < p.width; x++) {
+                    let envelope = p.exp(-p.pow((x - centerX) / sigma, 2));
+                    let k = 1 / sigma; // 波数与局域化程度成反比
+                    let amplitude = envelope * p.sin(k * x);
+                    wavePacket.push(amplitude);
+                }
+            }
+            
+            p.draw = function() {
+                p.background(1, 4, 9);
+                
+                let centerY = p.height / 2;
+                
+                if (!showMomentum) {
+                    // 显示位置波函数
+                    p.stroke(100, 255, 100);
+                    p.strokeWeight(2);
+                    p.noFill();
+                    
+                    p.beginShape();
+                    for (let x = 0; x < wavePacket.length; x++) {
+                        let y = centerY + wavePacket[x] * 50;
+                        p.vertex(x, y);
+                    }
+                    p.endShape();
+                    
+                    // 显示包络
+                    p.stroke(255, 200, 100, 150);
+                    p.strokeWeight(1);
+                    p.beginShape();
+                    for (let x = 0; x < p.width; x++) {
+                        let centerX = p.width / 2;
+                        let envelope = p.exp(-p.pow((x - centerX) / localizationWidth, 2));
+                        let y = centerY + envelope * 50;
+                        p.vertex(x, y);
+                    }
+                    p.endShape();
+                    
+                    p.beginShape();
+                    for (let x = 0; x < p.width; x++) {
+                        let centerX = p.width / 2;
+                        let envelope = p.exp(-p.pow((x - centerX) / localizationWidth, 2));
+                        let y = centerY - envelope * 50;
+                        p.vertex(x, y);
+                    }
+                    p.endShape();
+                    
+                } else {
+                    // 显示动量分布（傅里叶变换的概念展示）
+                    p.stroke(255, 100, 100);
+                    p.strokeWeight(2);
+                    p.noFill();
+                    
+                    let momentumWidth = p.width / localizationWidth * 20; // 动量展宽与位置展宽成反比
+                    
+                    p.beginShape();
+                    for (let k = 0; k < p.width; k++) {
+                        let centerK = p.width / 2;
+                        let momentumAmp = p.exp(-p.pow((k - centerK) / momentumWidth, 2));
+                        let y = centerY + momentumAmp * 80 * p.sin(k * 0.1);
+                        p.vertex(k, y);
+                    }
+                    p.endShape();
+                }
+                
+                // 标签和信息
+                p.fill(255);
+                p.noStroke();
+                p.textSize(14);
+                p.text(showMomentum ? '动量分布 |φ(p)|²' : '位置波函数 ψ(x)', 20, 30);
+                p.text(`位置不确定度 Δx: ${localizationWidth}`, 20, 50);
+                p.text(`动量不确定度 Δp ∝ 1/Δx`, 20, 70);
+                
+                p.fill(255, 255, 0);
+                p.text('点击按钮切换位置/动量表示', p.width/2 - 80, p.height - 20);
+            };
+        };
+        new p5(sketchUncertaintyPrinciple);
+
+        // --- 动画5: 氢原子稳定性 ---
+        let sketchHydrogenAtom = function(p) {
+            let atomRadius = 53;
+            let showClassical = false;
+            let electronAngle = 0;
+            let quantumElectron = [];
+            
+            p.setup = function() {
+                let container = p.select('#hydrogenAtomAnimation');
+                let canvas = p.createCanvas(container.width, container.height);
+                canvas.parent('hydrogenAtomAnimation');
+                
+                canvas.canvas.style.width = '100%';
+                canvas.canvas.style.height = '100%';
+                
+                p.select('#haToggleModel').mousePressed(() => {
+                    showClassical = !showClassical;
+                    if (showClassical) {
+                        p.select('#haToggleModel').html('切换到量子模型');
+                    } else {
+                        p.select('#haToggleModel').html('切换到经典模型');
+                        generateQuantumElectron();
+                    }
+                });
+                
+                p.select('#haRadius').input(updateRadius);
+                
+                generateQuantumElectron();
+                updateRadius();
+                p.loop();
+            };
+            
+            function updateRadius() {
+                atomRadius = parseFloat(p.select('#haRadius').value());
+                let radiusText = (atomRadius / 100 * 5.3).toFixed(1) + '×10⁻¹¹ m';
+                p.select('#haRadiusValue').html(radiusText);
+                
+                // 计算总能量 (简化)
+                let kineticTerm = 1 / (atomRadius * atomRadius);
+                let potentialTerm = -1 / atomRadius;
+                let totalEnergy = (kineticTerm + potentialTerm).toFixed(3);
+                p.select('#haEnergy').html(totalEnergy + ' (相对单位)');
+                
+                generateQuantumElectron();
+            }
+            
+            function generateQuantumElectron() {
+                quantumElectron = [];
+                let centerX = p.width / 2;
+                let centerY = p.height / 2;
+                
+                // 生成量子电子云
+                for (let i = 0; i < 200; i++) {
+                    let r = p.randomGaussian(atomRadius, atomRadius/3);
+                    let angle = p.random(p.TWO_PI);
+                    let x = centerX + r * p.cos(angle);
+                    let y = centerY + r * p.sin(angle);
+                    let alpha = p.exp(-r/atomRadius) * 255;
+                    quantumElectron.push({x: x, y: y, alpha: alpha});
+                }
+            }
+            
+            p.draw = function() {
+                p.background(1, 4, 9);
+                
+                let centerX = p.width / 2;
+                let centerY = p.height / 2;
+                
+                // 绘制原子核
+                p.fill(255, 100, 100);
+                p.noStroke();
+                p.ellipse(centerX, centerY, 15, 15);
+                p.fill(255);
+                p.textAlign(p.CENTER);
+                p.text('质子', centerX, centerY + 25);
+                
+                if (showClassical) {
+                    // 经典模型：电子轨道
+                    p.noFill();
+                    p.stroke(100, 100, 100);
+                    p.ellipse(centerX, centerY, atomRadius * 2, atomRadius * 2);
+                    
+                    // 运动的电子
+                    electronAngle += 0.05;
+                    let eX = centerX + atomRadius * p.cos(electronAngle);
+                    let eY = centerY + atomRadius * p.sin(electronAngle);
+                    
+                    p.fill(0, 255, 255);
+                    p.noStroke();
+                    p.ellipse(eX, eY, 10, 10);
+                    
+                    // 辐射线（表示能量损失）
+                    p.stroke(255, 255, 0, 100);
+                    for (let i = 0; i < 5; i++) {
+                        let angle = electronAngle + i * p.PI / 3;
+                        let x1 = eX;
+                        let y1 = eY;
+                        let x2 = eX + 20 * p.cos(angle);
+                        let y2 = eY + 20 * p.sin(angle);
+                        p.line(x1, y1, x2, y2);
+                    }
+                    
+                    p.fill(255, 0, 0);
+                    p.noStroke();
+                    p.textAlign(p.LEFT);
+                    p.text('经典模型：电子会螺旋坠入原子核', 20, 30);
+                    
+                } else {
+                    // 量子模型：电子云
+                    p.noStroke();
+                    for (let electron of quantumElectron) {
+                        p.fill(0, 255, 255, electron.alpha * 0.3);
+                        p.ellipse(electron.x, electron.y, 3, 3);
+                    }
+                    
+                    // 绘制概率密度轮廓
+                    p.noFill();
+                    p.stroke(0, 255, 255, 100);
+                    p.ellipse(centerX, centerY, atomRadius * 2, atomRadius * 2);
+                    p.ellipse(centerX, centerY, atomRadius * 1.5, atomRadius * 1.5);
+                    p.ellipse(centerX, centerY, atomRadius, atomRadius);
+                    
+                    p.fill(0, 255, 0);
+                    p.noStroke();
+                    p.textAlign(p.LEFT);
+                    p.text('量子模型：电子云稳定分布', 20, 30);
+                }
+                
+                p.fill(255);
+                p.text(`原子半径: ${(atomRadius/100*5.3).toFixed(1)}×10⁻¹¹ m`, 20, p.height - 40);
+                p.text('不确定性原理维持原子稳定', 20, p.height - 20);
+            };
+        };
+        new p5(sketchHydrogenAtom);
+
+        // --- 动画6: 波函数演化 ---
+        let sketchWaveFunction = function(p) {
+            let wavePacketX = 100;
+            let wavePacketWidth = 30;
+            let dispersion = 30;
+            let time = 0;
+            let measurementMode = false;
+            let collapsedPosition = -1;
+            
+            p.setup = function() {
+                let container = p.select('#waveFunctionAnimation');
+                let canvas = p.createCanvas(container.width, container.height);
+                canvas.parent('waveFunctionAnimation');
+                
+                canvas.canvas.style.width = '100%';
+                canvas.canvas.style.height = '100%';
+                
+                p.select('#wfToggleWavePacket').mousePressed(() => {
+                    time = 0;
+                    wavePacketX = 100;
+                    collapsedPosition = -1;
+                    measurementMode = false;
+                });
+                
+                p.select('#wfDispersion').input(() => {
+                    dispersion = parseFloat(p.select('#wfDispersion').value());
+                });
+                
+                p.select('#wfMeasure').mousePressed(() => {
+                    measurementMode = true;
+                    collapsedPosition = wavePacketX + p.randomGaussian(0, wavePacketWidth);
+                });
+                
+                p.loop();
+            };
+            
+            p.draw = function() {
+                p.background(1, 4, 9);
+                time += 0.5;
+                
+                let centerY = p.height / 2;
+                
+                if (!measurementMode) {
+                    // 波包传播和扩散
+                    wavePacketX = 100 + time;
+                    let currentWidth = wavePacketWidth + dispersion * time * 0.01;
+                    
+                    // 绘制波函数实部
+                    p.stroke(100, 255, 100);
+                    p.strokeWeight(2);
+                    p.noFill();
+                    
+                    p.beginShape();
+                    for (let x = 0; x < p.width; x++) {
+                        let envelope = p.exp(-p.pow((x - wavePacketX) / currentWidth, 2));
+                        let wave = envelope * p.sin((x - wavePacketX) * 0.2 + time * 0.1);
+                        let y = centerY + wave * 50;
+                        p.vertex(x, y);
+                    }
+                    p.endShape();
+                    
+                    // 绘制概率密度 |ψ|²
+                    p.stroke(255, 255, 0, 150);
+                    p.strokeWeight(1);
+                    p.beginShape();
+                    for (let x = 0; x < p.width; x++) {
+                        let envelope = p.exp(-p.pow((x - wavePacketX) / currentWidth, 2));
+                        let probability = envelope * envelope;
+                        let y = centerY + 100 + probability * 40;
+                        p.vertex(x, y);
+                    }
+                    p.endShape();
+                    
+                    p.fill(255);
+                    p.noStroke();
+                    p.text('波函数 ψ(x,t)', 20, 30);
+                    p.text('概率密度 |ψ|²', 20, centerY + 120);
+                    
+                } else {
+                    // 测量后波函数坍塌
+                    p.stroke(255, 100, 100);
+                    p.strokeWeight(3);
+                    p.line(collapsedPosition, centerY - 50, collapsedPosition, centerY + 50);
+                    
+                    p.fill(255, 100, 100);
+                    p.noStroke();
+                    p.ellipse(collapsedPosition, centerY, 10, 10);
+                    
+                    p.fill(255);
+                    p.text('测量后：波函数坍塌', 20, 30);
+                    p.text(`粒子位置: x = ${collapsedPosition.toFixed(0)}`, 20, 50);
+                }
+                
+                // 重置条件
+                if (wavePacketX > p.width + 50) {
+                    time = 0;
+                    wavePacketX = 100;
+                }
+            };
+        };
+        new p5(sketchWaveFunction);
+    </script>
+</body>
+</html>

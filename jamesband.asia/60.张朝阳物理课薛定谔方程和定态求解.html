@@ -1,0 +1,1529 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>张朝阳物理课：薛定谔方程——量子力学的牛顿定律</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.2/p5.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
+    <style>
+        /* 基本重置和页面设置 */
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Noto Sans SC', sans-serif;
+            font-size: 18px;
+            line-height: 1.8;
+            background-color: #0d1117;
+            color: #c9d1d9;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* 背景动画容器 */
+        #backgroundCanvasContainer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        /* 内容容器 */
+        .container {
+            position: relative;
+            z-index: 1;
+            width: 90%;
+            max-width: 1000px;
+            margin: 40px auto;
+            padding: 30px 40px;
+            background-color: rgba(22, 27, 34, 0.9);
+            border: 1px solid #30363d;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+        }
+
+        /* 标题样式 */
+        h1, h2, h3 {
+            font-family: 'ZCOOL KuaiLe', cursive;
+            color: #58a6ff;
+            margin-bottom: 0.75em;
+            text-align: center;
+            letter-spacing: 1px;
+        }
+
+        h1 {
+            font-size: 2.6em;
+            color: #79c0ff;
+            border-bottom: 2px solid #388bfd;
+            padding-bottom: 15px;
+            margin-top: 0;
+        }
+
+        h2 {
+            font-size: 2.0em;
+            color: #f778ba;
+            margin-top: 2.2em;
+        }
+
+        h3 {
+            font-size: 1.5em;
+            color: #a371f7;
+            margin-top: 1.6em;
+            text-align: left;
+        }
+
+        /* 段落和文本样式 */
+        p, li {
+            margin-bottom: 1.2em;
+            text-align: justify;
+            color: #adbac7;
+        }
+
+        ul, ol {
+            padding-left: 30px;
+        }
+
+        /* 强调文字 */
+        strong, .highlight {
+            color: #ffa657;
+            font-weight: bold;
+        }
+
+        .concept {
+            font-weight: 500;
+            color: #7ee787;
+            padding: 3px 7px;
+            background-color: rgba(63, 185, 80, 0.15);
+            border-radius: 6px;
+            border: 1px solid rgba(63, 185, 80, 0.4);
+            font-family: 'Noto Sans SC', sans-serif;
+        }
+
+        .formula {
+            display: block;
+            text-align: center;
+            margin: 20px auto;
+            padding: 15px;
+            background-color: rgba(34, 39, 46, 0.8);
+            border-left: 4px solid #388bfd;
+            color: #c9d1d9;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 1.05em;
+            border-radius: 4px;
+            white-space: pre-wrap;
+        }
+
+        /* 动画容器 */
+        .animation-container {
+            width: 100%;
+            max-width: 580px;
+            height: 360px;
+            margin: 25px auto;
+            border: 1px solid #30363d;
+            border-radius: 10px;
+            overflow: hidden;
+            background-color: #010409;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: inset 0 0 12px rgba(0,0,0,0.5);
+        }
+
+        .animation-container canvas {
+            display: block;
+            max-width: 100%;
+            max-height: 100%;
+            border-radius: 8px;
+            width: 100% !important;
+            height: 100% !important;
+        }
+
+        /* 交互按钮和控件样式 */
+        .controls {
+            text-align: center;
+            margin-bottom: 25px;
+            margin-top: 15px;
+        }
+
+        .controls button {
+            padding: 10px 22px;
+            font-size: 0.95em;
+            font-family: 'Noto Sans SC', sans-serif;
+            background-image: linear-gradient(to right, #388bfd, #58a6ff);
+            color: white;
+            border: none;
+            border-radius: 22px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            letter-spacing: 0.5px;
+        }
+
+        .controls button:hover {
+            transform: translateY(-2px) scale(1.05);
+            box-shadow: 0 7px 18px rgba(56, 139, 253, 0.35);
+        }
+
+        .controls button:active {
+            transform: translateY(0px) scale(1);
+        }
+
+        .controls label {
+            color: #8b949e;
+            margin: 0 10px;
+            font-size: 0.9em;
+        }
+
+        .controls input[type="range"] {
+            vertical-align: middle;
+            cursor: grab;
+            width: 140px;
+        }
+
+        /* 作者信息 */
+        .author-info {
+            text-align: center;
+            margin: 20px 0 30px 0;
+            font-size: 0.95em;
+            color: #8b949e;
+        }
+
+        .author-info strong {
+            color: #79c0ff;
+        }
+
+        /* 页脚 */
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding: 25px;
+            background-color: #161b22;
+            color: #8b949e;
+            width: 100%;
+            font-size: 0.9em;
+            border-top: 1px solid #30363d;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            body {
+                font-size: 17px;
+            }
+            .container {
+                width: 95%;
+                padding: 20px 25px;
+                margin: 20px auto;
+            }
+            h1 {
+                font-size: 2.1em;
+            }
+            h2 {
+                font-size: 1.7em;
+            }
+            h3 {
+                font-size: 1.3em;
+            }
+            .animation-container {
+                height: 310px;
+            }
+            .controls button {
+                padding: 9px 18px;
+                font-size: 0.85em;
+            }
+            .controls input[type="range"] {
+                width: 120px;
+            }
+            .formula {
+                font-size: 1em;
+                padding: 10px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            body {
+                font-size: 16px;
+            }
+            h1 {
+                font-size: 1.7em;
+            }
+            h2 {
+                font-size: 1.4em;
+            }
+            h3 {
+                font-size: 1.15em;
+            }
+            .animation-container {
+                height: 270px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="backgroundCanvasContainer"></div>
+    <div class="container">
+        <header>
+            <h1>张朝阳物理课：薛定谔方程——量子力学的牛顿定律</h1>
+            <div class="author-info">
+                <p>解读自 <strong>张朝朝</strong> 先生的物理课程精髓</p>
+                <p>（搜狐创始人、董事局主席兼CEO，麻省理工学院物理学博士）</p>
+                <p>内容来源：《张朝朝的物理课》第18讲、第19讲、第51讲、第52讲视频</p>
+            </div>
+        </header>
+
+        <main>
+            <article>
+                <section id="intro-schrodinger">
+                    <h2>引言：量子世界的基本法则</h2>
+                    <p>如果说牛顿第二定律F=ma是经典力学的基石，那么<span class="concept">薛定谔方程</span>就是量子力学的灵魂。这个方程不是通过严格的数学推导得出的，而是薛定谔基于物理直觉和类比方法"猜测"出来的一个伟大方程。正如张朝朝先生在课程中所强调的，薛定谔方程在量子力学中的地位，相当于经典力学中的牛顿第二定律。</p>
+
+                    <p>1926年，奥地利物理学家<strong class="highlight">埃尔温·薛定谔</strong>在德布罗意物质波理论的启发下，通过巧妙的类比和深刻的物理洞察，提出了描述量子系统演化的基本方程。这个方程不仅统一了波动性和粒子性的描述，更为整个量子力学理论体系奠定了坚实的数学基础。</p>
+
+                    <p>本篇解读将带您重走薛定谔的思维路径，从经典波动方程出发，通过德布罗意关系的巧妙运用，一步步"猜出"薛定谔方程。然后我们将深入探讨定态薛定谔方程的求解，以无限深方势阱为例展示量子化能级的产生，最后通过<span class="concept">波函数的统计诠释</span>和<span class="concept">傅里叶变换</span>的深层联系，揭示不确定性原理的数学本质。</p>
+                </section>
+
+                <section id="classical-to-quantum">
+                    <h2>第一章：从经典波动到量子波动的伟大猜想</h2>
+                    <p>薛定谔方程的诞生过程堪称物理学史上最精彩的"猜想"之一。薛定谔首先观察到，经典物理中的电磁波遵循波动方程：</p>
+
+                    <p class="formula">∂²E(x,t)/∂t² = c² ∂²E(x,t)/∂x²</p>
+
+                    <p>这个方程有平面波解E ∝ cos(kx - ωt)，其中圆频率ω和波数k满足色散关系ω = ck。德布罗意的天才洞察是将这种波粒关系推广到所有物质：</p>
+
+                    <p class="formula">E = ℏω,  p = ℏk</p>
+
+                    <p>这就是著名的<span class="concept">德布罗意关系</span>。薛定谔意识到，如果电子也是波，那么它们也应该遵循某种波动方程。</p>
+
+                    <div id="classicalToQuantumAnimation" class="animation-container"></div>
+                    <div class="controls">
+                        <button id="ctqStartDeduction">开始推导过程</button>
+                        <button id="ctqShowWave">显示经典波动</button>
+                        <button id="ctqShowMatter">显示物质波</button>
+                        <button id="ctqReset">重置演示</button>
+                    </div>
+
+                    <p>关键的洞察来自于对平面波ψ(x,t) ∝ e^(i(kx-ωt))的微分操作。当我们对时间求偏导时：</p>
+
+                    <p class="formula">iℏ ∂ψ/∂t = Eψ</p>
+
+                    <p>对空间求偏导时：</p>
+
+                    <p class="formula">ℏ/i ∂ψ/∂x = pψ</p>
+
+                    <p>这启发薛定谔定义了<span class="concept">动量算符</span>：p̂ = ℏ/i ∂/∂x = -iℏ ∂/∂x。结合非相对论的能量关系E = p²/(2m)，薛定谔巧妙地"猜出"了自由粒子的波动方程：</p>
+
+                    <p class="formula">iℏ ∂ψ/∂t = -ℏ²/(2m) ∂²ψ/∂x²</p>
+
+                    <p>加上势能项后，就得到了完整的薛定谔方程！</p>
+                </section>
+
+                <section id="time-independent">
+                    <h2>第二章：分离变量法与定态薛定谔方程</h2>
+                    <p>当系统的势能不依赖于时间时，即U = U(x)，我们可以使用<span class="concept">分离变量法</span>来求解薛定谔方程。这种方法将时间和空间变量分离，是解决量子力学问题的核心技巧之一。</p>
+
+                    <p>假设波函数可以写成时间和空间部分的乘积：</p>
+                    <p class="formula">ψ(x,t) = ψ(x)f(t)</p>
+
+                    <p>将此形式代入薛定谔方程，经过巧妙的数学处理，我们可以将原方程分离为两个独立的方程：</p>
+
+                    <div id="separationVariablesAnimation" class="animation-container"></div>
+                    <div class="controls">
+                        <button id="svStartSeparation">开始分离变量</button>
+                        <label for="svEnergyLevel">能量水平:</label>
+                        <input type="range" id="svEnergyLevel" min="1" max="5" value="1" step="1">
+                        <span id="svEnergyValue">E₁</span>
+                    </div>
+
+                    <p>时间部分的方程解为：</p>
+                    <p class="formula">f(t) = e^(-iEt/ℏ)</p>
+
+                    <p>空间部分则给出了著名的<span class="concept">定态薛定谔方程</span>：</p>
+                    <p class="formula">[-ℏ²/(2m) ∂²/∂x² + U(x)]ψ(x) = Eψ(x)</p>
+
+                    <p>这个方程的左边正是<span class="concept">哈密顿算符</span>Ĥ，因此定态薛定谔方程实际上是哈密顿算符的本征方程。能量E是本征值，波函数ψ(x)是对应的本征函数。这种数学结构揭示了量子力学的深层对称性和优美性。</p>
+
+                    <p>求解薛定谔方程的关键就在于找到这些本征函数和本征值，它们完全确定了量子系统的所有可能状态和相应的能量。</p>
+                </section>
+
+                <section id="infinite-square-well">
+                    <h2>第三章：无限深方势阱——量子化能级的诞生</h2>
+                    <p>为了具体展示如何求解定态薛定谔方程，我们以<span class="concept">无限深方势阱</span>为例。这个模型虽然简单，却包含了量子力学的所有核心特征：波函数、边界条件、能量量子化。</p>
+
+                    <p>无限深方势阱的势能定义为：</p>
+                    <p class="formula">U(x) = 0  (0 < x < a)
+U(x) = ∞  (x ≤ 0 或 x ≥ a)</p>
+
+                    <p>这个模型描述了被完全束缚在一个"盒子"中的粒子，如金属中的自由电子。在势阱内部，定态薛定谔方程变为：</p>
+
+                    <p class="formula">-ℏ²/(2m) d²ψ/dx² = Eψ</p>
+
+                    <div id="infiniteWellAnimation" class="animation-container"></div>
+                    <div class="controls">
+                        <button id="iwToggleStates">切换量子态</button>
+                        <label for="iwQuantumNumber">量子数n:</label>
+                        <input type="range" id="iwQuantumNumber" min="1" max="5" value="1" step="1">
+                        <span id="iwQuantumValue">n=1</span>
+                        <button id="iwShowProbability">显示概率密度</button>
+                    </div>
+
+                    <p>关键的物理洞察在于<span class="concept">边界条件</span>：由于势阱外的势能无穷大，粒子不可能存在于阱外，因此波函数在边界处必须为零：</p>
+
+                    <p class="formula">ψ(0) = 0,  ψ(a) = 0</p>
+
+                    <p>这些边界条件导致了波函数的量子化。解的一般形式为ψ(x) = A sin(kx) + B cos(kx)，应用边界条件后得到：</p>
+
+                    <p class="formula">ψₙ(x) = √(2/a) sin(nπx/a)  (n = 1,2,3,...)</p>
+
+                    <p>相应的能量也被量子化：</p>
+
+                    <p class="formula">Eₙ = n²π²ℏ²/(2ma²)</p>
+
+                    <p>这个结果揭示了量子力学的根本特征：<strong class="highlight">能量的分立性</strong>。粒子只能处于特定的能量状态，不能取任意值。这种量子化现象是经典物理学完全无法解释的，它源于波函数必须满足的边界条件。</p>
+                </section>
+
+                <section id="statistical-interpretation">
+                    <h2>第四章：波函数的统计诠释——量子世界的概率本质</h2>
+                    <p>薛定谔虽然猜出了波动方程，但他最初并不清楚波函数的物理意义。这个问题的解答来自<strong class="highlight">马克斯·玻恩</strong>的天才洞察——<span class="concept">统计诠释</span>。</p>
+
+                    <p>根据玻恩的统计诠释，波函数的模方|ψ(x,t)|²代表在位置x找到粒子的<span class="concept">概率密度</span>：</p>
+
+                    <p class="formula">P(x,t) = |ψ(x,t)|² = ψ*(x,t)ψ(x,t)</p>
+
+                    <p>这意味着在x到x+dx区间内找到粒子的概率为|ψ(x,t)|²dx。波函数必须满足<span class="concept">归一化条件</span>：</p>
+
+                    <p class="formula">∫_{-∞}^{+∞} |ψ(x,t)|² dx = 1</p>
+
+                    <div id="statisticalInterpretationAnimation" class="animation-container"></div>
+                    <div class="controls">
+                        <button id="siStartMeasurement">开始测量演示</button>
+                        <button id="siShowDoubleSlits">双缝干涉演示</button>
+                        <label for="siMeasurements">测量次数:</label>
+                        <input type="range" id="siMeasurements" min="10" max="1000" value="100" step="10">
+                        <span id="siMeasurementValue">100</span>
+                    </div>
+
+                    <p>统计诠释深刻地改变了我们对现实的理解。在量子世界中，我们无法预测单次测量的确切结果，只能预测大量测量的统计分布。这不是由于我们知识的不完备，而是自然界的基本特性。</p>
+
+                    <p>这种概率性质在<span class="concept">双缝干涉实验</span>中得到了完美体现。即使电子是一个一个发射的，经过足够长时间的积累，仍然会在屏幕上形成干涉条纹。这表明：</p>
+
+                    <ul>
+                        <li><strong>单个粒子的干涉</strong>：干涉不是粒子之间的相互作用，而是粒子与自身的干涉</li>
+                        <li><strong>波函数的叠加</strong>：粒子的波函数同时通过两个狭缝，在屏幕上相干叠加</li>
+                        <li><strong>概率的体现</strong>：干涉条纹反映了找到粒子的概率分布</li>
+                    </ul>
+
+                    <p>这种"粒子与自身干涉"的图景彻底颠覆了经典物理学的因果观念，展现了量子世界的神秘莫测。</p>
+                </section>
+
+                <section id="fourier-uncertainty">
+                    <h2>第五章：傅里叶变换与不确定性原理的数学本质</h2>
+                    <p><span class="concept">傅里叶变换</span>在量子力学中扮演着特殊角色，它不仅是数学工具，更揭示了不确定性原理的深层数学根源。每一个波函数都可以用动量本征态展开：</p>
+
+                    <p class="formula">ψ(x) = (1/√(2π)) ∫ φ(k)e^(ikx) dk</p>
+
+                    <p>这里φ(k)是动量空间的波函数，而e^(ikx)正是动量算符的本征函数。这种展开实际上就是傅里叶变换！</p>
+
+                    <div id="fourierUncertaintyAnimation" class="animation-container"></div>
+                    <div class="controls">
+                        <button id="fuToggleRepresentation">切换位置/动量表示</button>
+                        <label for="fuWavePacketWidth">波包宽度:</label>
+                        <input type="range" id="fuWavePacketWidth" min="10" max="100" value="50" step="5">
+                        <span id="fuWidthValue">50</span>
+                        <button id="fuShowUncertainty">显示不确定性</button>
+                    </div>
+
+                    <p>根据统计诠释，|φ(k)|²代表测量动量后得到动量值k的概率密度。因此，一个在位置上局域化的波包，在动量空间必然是展宽的，反之亦然。</p>
+
+                    <p>设波函数在动量空间的主要分布集中在k₀±Δk范围内，则可以写成：</p>
+
+                    <p class="formula">ψ(x) = e^(ik₀x) × [fourier transform of localized function]</p>
+
+                    <p>傅里叶变换的数学性质告诉我们，一个函数越局域化，它的傅里叶变换就越展宽。这直接导致了<span class="concept">不确定性原理</span>：</p>
+
+                    <p class="formula">Δx · Δp ≥ ℏ/2</p>
+
+                    <p>这个不等式不是测量技术的限制，而是波函数数学性质的必然结果。它反映了<strong class="highlight">自然界的基本对称性</strong>：位置和动量是一对"共轭变量"，它们不能同时被精确确定。</p>
+
+                    <p>有趣的是，傅里叶变换的概念在量子力学诞生前就已存在100多年，但只有结合德布罗意关系p = ℏk和波函数的统计诠释，才能得出不确定性原理这一深刻的物理洞察。</p>
+                </section>
+
+                <section id="group-velocity">
+                    <h2>第六章：波包的群速度——经典粒子速度的量子起源</h2>
+                    <p>在量子力学中，真实的粒子不是以平面波的形式存在，而是以<span class="concept">波包</span>的形式传播。波包是多个不同频率平面波的叠加，具有一定的空间局域性。</p>
+
+                    <p>对于平面波，相速度为v_phase = ω/k = p/(2m)，这只是粒子实际速度的一半！真正代表粒子运动的是波包的<span class="concept">群速度</span>：</p>
+
+                    <p class="formula">v_group = dω/dk = d/dk [p²/(2mℏ)] = p/m</p>
+
+                    <p>这正是经典力学中的粒子速度！这个结果说明了量子力学与经典力学在宏观极限下的一致性。</p>
+
+                    <div id="groupVelocityAnimation" class="animation-container"></div>
+                    <div class="controls">
+                        <button id="gvStartWavePacket">启动波包演示</button>
+                        <button id="gvCompareVelocities">比较相速度/群速度</button>
+                        <label for="gvDispersion">色散程度:</label>
+                        <input type="range" id="gvDispersion" min="0" max="50" value="10" step="1">
+                        <span id="gvDispersionValue">10</span>
+                    </div>
+
+                    <p>波包的传播还展现了另一个重要现象：<span class="concept">波包扩散</span>。由于不同频率成分的相速度不同，波包在传播过程中会逐渐展宽。这种扩散直接体现了不确定性原理：随着时间推移，粒子的位置变得越来越不确定。</p>
+
+                    <p>波包的数学描述为：</p>
+                    <p class="formula">ψ(x,t) = ∫ A(k) e^(i(kx - ω(k)t)) dk</p>
+
+                    <p>其中A(k)是波包的频谱分布，ω(k)是色散关系。通过分析这个积分，我们可以精确计算波包的中心位置、宽度随时间的演化，以及群速度的物理意义。</p>
+
+                    <p>这种波包图像不仅解释了粒子的经典运动，还预测了纯量子效应如<span class="concept">隧道效应</span>和<span class="concept">共振散射</span>等现象，展现了量子力学描述的丰富性和准确性。</p>
+                </section>
+
+                <section id="hilbert-space">
+                    <h2>第七章：希尔伯特空间——量子力学的数学舞台</h2>
+                    <p>量子力学的数学基础建立在<span class="concept">希尔伯特空间</span>的概念之上。波函数不仅仅是普通的函数，它们构成了一个具有特殊结构的无穷维向量空间。</p>
+
+                    <p>就像三维空间中的矢量可以用基矢{i, j, k}展开一样，任何波函数都可以用完备的正交基展开。特别重要的是，每个物理量对应的算符都是<span class="concept">厄米算符</span>，其本征函数构成希尔伯特空间的一组完备正交基。</p>
+
+                    <p>例如，动量算符的本征函数满足：</p>
+                    <p class="formula">p̂ ψ_p = p ψ_p</p>
+
+                    <p>其中ψ_p = e^(ipx/ℏ)。任何波函数都可以按动量本征态展开：</p>
+
+                    <div id="hilbertSpaceAnimation" class="animation-container"></div>
+                    <div class="controls">
+                        <button id="hsShowBasisExpansion">显示基矢展开</button>
+                        <button id="hsToggleBasis">切换基底(位置/动量)</button>
+                        <label for="hsCoefficients">展开系数:</label>
+                        <input type="range" id="hsCoefficients" min="1" max="10" value="5" step="1">
+                        <span id="hsCoefficientValue">5</span>
+                    </div>
+
+                    <p class="formula">ψ(x) = ∫ φ(p) ψ_p(x) dp</p>
+
+                    <p>这里φ(p)是展开系数，其模方|φ(p)|²表示测量动量得到值p的概率密度。这正是傅里叶变换的物理意义！</p>
+
+                    <p>希尔伯特空间的内积定义为：</p>
+                    <p class="formula">⟨ψ₁|ψ₂⟩ = ∫ ψ₁*(x) ψ₂(x) dx</p>
+
+                    <p>任何物理量的期望值都可以通过内积计算：</p>
+                    <p class="formula">⟨A⟩ = ⟨ψ|Â|ψ⟩ = ∫ ψ*(x) Â ψ(x) dx</p>
+
+                    <p>这种数学框架的优雅性在于：<strong class="highlight">物理问题转化为希尔伯特空间中的线性代数问题</strong>。测量过程对应于态矢量向本征子空间的投影，演化过程对应于幺正变换。整个量子力学的形式化体系都建立在这个坚实的数学基础之上。</p>
+                </section>
+
+                <section id="conclusion">
+                    <h2>结语：薛定谔方程的永恒意义</h2>
+                    <p>薛定谔方程的发现标志着量子力学理论体系的正式诞生。这个"猜出来"的方程，经过近一个世纪的实验验证，已经成为描述微观世界最精确的理论工具。从原子结构到激光器，从半导体到量子计算机，几乎所有现代技术都建立在对薛定谔方程的深刻理解之上。</p>
+
+                    <p>通过张朝朝先生的物理课，我们重新审视了这个伟大方程的诞生过程。从经典波动方程的类比，到德布罗意关系的巧妙运用，再到分离变量法的数学技巧，每一步都体现了物理学家的深刻洞察和数学美感。</p>
+
+                    <p>更重要的是，薛定谔方程揭示了自然界的深层结构：</p>
+
+                    <ul>
+                        <li><strong>波粒二象性</strong>：统一了粒子和波动的描述</li>
+                        <li><strong>概率性质</strong>：引入了本质上的随机性</li>
+                        <li><strong>量子化现象</strong>：解释了能级的分立性</li>
+                        <li><strong>不确定性原理</strong>：揭示了测量的根本限制</li>
+                        <li><strong>线性叠加</strong>：导致了量子干涉和纠缠</li>
+                    </ul>
+
+                    <p>正如张朝朝先生所言，<strong class="highlight">薛定谔方程不仅是量子力学的核心，更是人类理解自然界的伟大成就</strong>。它告诉我们，在原子尺度下，世界遵循着与宏观经验截然不同的法则——一个充满概率、叠加和纠缠的奇妙世界。</p>
+
+                    <p>虽然量子力学在诠释上仍有争议，但薛定谔方程的数学形式和预测能力已经得到了无数次验证。它不仅推动了基础科学的发展，更为21世纪的量子技术革命奠定了理论基石。在这个意义上，薛定谔方程确实当得起"量子力学的牛顿定律"这一美誉。</p>
+                </section>
+            </article>
+        </main>
+
+        <footer>
+            <p>&copy; 2025 薛定谔方程解读。内容灵感与核心思想源自张朝朝先生《张朝朝的物理课》。</p>
+            <p>本页面所有动画均为概念性、简化性演示，旨在辅助理解量子力学基本概念和数学结构。</p>
+        </footer>
+    </div>
+
+    <script>
+        // --- 全局背景量子波动画 ---
+        let sketchBackground = function(p) {
+            let quantumWaves = [];
+            const numWaves = 80;
+            
+            p.setup = function() {
+                let canvas = p.createCanvas(p.windowWidth, p.windowHeight);
+                canvas.parent('backgroundCanvasContainer');
+                
+                for (let i = 0; i < numWaves; i++) {
+                    quantumWaves.push({
+                        x: p.random(p.width),
+                        y: p.random(p.height),
+                        size: p.random(2, 5),
+                        phase: p.random(p.TWO_PI),
+                        alpha: p.random(20, 60),
+                        frequency: p.random(0.01, 0.03),
+                        amplitude: p.random(10, 30)
+                    });
+                }
+                p.noStroke();
+            };
+            
+            p.draw = function() {
+                p.clear();
+                for (let wave of quantumWaves) {
+                    let waveAlpha = wave.alpha * (p.sin(p.frameCount * wave.frequency + wave.phase) * 0.4 + 0.6);
+                    p.fill(80, 120, 255, waveAlpha);
+                    
+                    let waveY = wave.y + p.sin(p.frameCount * wave.frequency + wave.phase) * wave.amplitude;
+                    p.ellipse(wave.x, waveY, wave.size, wave.size);
+                    
+                    wave.x += 0.3;
+                    if (wave.x > p.width) {
+                        wave.x = -10;
+                        wave.y = p.random(p.height);
+                    }
+                }
+            };
+            
+            p.windowResized = function() {
+                p.resizeCanvas(p.windowWidth, p.windowHeight);
+            };
+        };
+        new p5(sketchBackground);
+
+        // --- 动画1: 经典到量子的推导过程 ---
+        let sketchClassicalToQuantum = function(p) {
+            let step = 0;
+            let maxSteps = 4;
+            let showWave = false;
+            let showMatter = false;
+            
+            p.setup = function() {
+                let container = p.select('#classicalToQuantumAnimation');
+                let canvas = p.createCanvas(container.width, container.height);
+                canvas.parent('classicalToQuantumAnimation');
+                
+                canvas.canvas.style.width = '100%';
+                canvas.canvas.style.height = '100%';
+                
+                p.select('#ctqStartDeduction').mousePressed(() => {
+                    step = (step + 1) % (maxSteps + 1);
+                    p.redraw();
+                });
+                
+                p.select('#ctqShowWave').mousePressed(() => {
+                    showWave = !showWave;
+                    p.redraw();
+                });
+                
+                p.select('#ctqShowMatter').mousePressed(() => {
+                    showMatter = !showMatter;
+                    p.redraw();
+                });
+                
+                p.select('#ctqReset').mousePressed(() => {
+                    step = 0;
+                    showWave = false;
+                    showMatter = false;
+                    p.redraw();
+                });
+                
+                p.noLoop();
+                p.redraw();
+            };
+            
+            p.draw = function() {
+                p.background(1, 4, 9);
+                
+                let centerY = p.height / 2;
+                let time = p.millis() * 0.003;
+                
+                // 显示经典波动
+                if (showWave || step >= 1) {
+                    p.stroke(255, 200, 0);
+                    p.strokeWeight(2);
+                    p.noFill();
+                    
+                    p.beginShape();
+                    for (let x = 0; x < p.width; x++) {
+                        let y = centerY + 30 * p.sin(x * 0.02 - time);
+                        p.vertex(x, y);
+                    }
+                    p.endShape();
+                    
+                    p.fill(255, 200, 0);
+                    p.noStroke();
+                    p.textAlign(p.LEFT);
+                    p.text('经典电磁波: E ∝ cos(kx - ωt)', 20, 30);
+                }
+                
+                // 显示物质波
+                if (showMatter || step >= 2) {
+                    p.stroke(0, 255, 150);
+                    p.strokeWeight(2);
+                    p.noFill();
+                    
+                    p.beginShape();
+                    for (let x = 0; x < p.width; x++) {
+                        let envelope = p.exp(-p.pow((x - p.width/2)/80, 2));
+                        let y = centerY + 80 + envelope * 40 * p.sin(x * 0.05 - time * 2);
+                        p.vertex(x, y);
+                    }
+                    p.endShape();
+                    
+                    p.fill(0, 255, 150);
+                    p.noStroke();
+                    p.text('德布罗意物质波: ψ ∝ e^(i(kx-ωt))', 20, 50);
+                }
+                
+                // 显示推导步骤
+                p.fill(255);
+                p.textAlign(p.LEFT);
+                p.textSize(14);
+                
+                if (step >= 1) {
+                    p.text('步骤1: 德布罗意关系 E = ℏω, p = ℏk', 20, p.height - 120);
+                }
+                if (step >= 2) {
+                    p.text('步骤2: 对ψ求时间偏导 → iℏ ∂ψ/∂t = Eψ', 20, p.height - 100);
+                }
+                if (step >= 3) {
+                    p.text('步骤3: 对ψ求空间偏导 → -iℏ ∂ψ/∂x = pψ', 20, p.height - 80);
+                }
+                if (step >= 4) {
+                    p.text('步骤4: 结合E = p²/(2m) → 薛定谔方程!', 20, p.height - 60);
+                    p.fill(255, 100, 100);
+                    p.text('iℏ ∂ψ/∂t = -ℏ²/(2m) ∂²ψ/∂x² + U(x)ψ', 20, p.height - 40);
+                }
+            };
+        };
+        new p5(sketchClassicalToQuantum);
+
+        // --- 动画2: 分离变量法演示 ---
+        let sketchSeparationVariables = function(p) {
+            let energyLevel = 1;
+            let showSeparation = false;
+            let time = 0;
+            
+            p.setup = function() {
+                let container = p.select('#separationVariablesAnimation');
+                let canvas = p.createCanvas(container.width, container.height);
+                canvas.parent('separationVariablesAnimation');
+                
+                canvas.canvas.style.width = '100%';
+                canvas.canvas.style.height = '100%';
+                
+                p.select('#svStartSeparation').mousePressed(() => {
+                    showSeparation = !showSeparation;
+                    if (showSeparation) {
+                        p.loop();
+                    } else {
+                        p.noLoop();
+                        p.redraw();
+                    }
+                });
+                
+                p.select('#svEnergyLevel').input(() => {
+                    energyLevel = parseInt(p.select('#svEnergyLevel').value());
+                    p.select('#svEnergyValue').html(`E${energyLevel}`);
+                    if (!showSeparation) p.redraw();
+                });
+                
+                p.noLoop();
+                p.redraw();
+            };
+            
+            p.draw = function() {
+                p.background(1, 4, 9);
+                time += 0.05;
+                
+                let centerY = p.height / 2;
+                
+                if (showSeparation) {
+                    // 显示时间演化
+                    p.stroke(255, 150, 0);
+                    p.strokeWeight(3);
+                    p.noFill();
+                    
+                    let timePhase = p.cos(-energyLevel * time); // e^(-iEt/ℏ)的实部
+                    
+                    p.beginShape();
+                    for (let x = 0; x < p.width; x++) {
+                        let spatialPart = p.sin(energyLevel * p.PI * x / p.width);
+                        let y = centerY + spatialPart * 50 * timePhase;
+                        p.vertex(x, y);
+                    }
+                    p.endShape();
+                    
+                    p.fill(255, 150, 0);
+                    p.noStroke();
+                    p.textAlign(p.LEFT);
+                    p.text(`完整波函数: ψ(x,t) = ψ(x) × e^(-iE${energyLevel}t/ℏ)`, 20, 30);
+                } else {
+                    // 显示空间部分
+                    p.stroke(0, 255, 255);
+                    p.strokeWeight(3);
+                    p.noFill();
+                    
+                    p.beginShape();
+                    for (let x = 0; x < p.width; x++) {
+                        let y = centerY + p.sin(energyLevel * p.PI * x / p.width) * 50;
+                        p.vertex(x, y);
+                    }
+                    p.endShape();
+                    
+                    p.fill(0, 255, 255);
+                    p.noStroke();
+                    p.textAlign(p.LEFT);
+                    p.text(`空间波函数: ψ${energyLevel}(x) = sin(${energyLevel}πx/a)`, 20, 30);
+                }
+                
+                // 显示分离后的方程
+                p.fill(255);
+                p.textSize(12);
+                p.text('分离变量: ψ(x,t) = ψ(x)f(t)', 20, p.height - 80);
+                p.text('时间方程: iℏ df/dt = Ef', 20, p.height - 60);
+                p.text('空间方程: Ĥψ = Eψ (定态薛定谔方程)', 20, p.height - 40);
+                
+                if (!showSeparation) {
+                    p.noLoop();
+                }
+            };
+        };
+        new p5(sketchSeparationVariables);
+
+        // --- 动画3: 无限深方势阱 ---
+        let sketchInfiniteWell = function(p) {
+            let quantumNumber = 1;
+            let showProbability = false;
+            let showStates = true;
+            
+            p.setup = function() {
+                let container = p.select('#infiniteWellAnimation');
+                let canvas = p.createCanvas(container.width, container.height);
+                canvas.parent('infiniteWellAnimation');
+                
+                canvas.canvas.style.width = '100%';
+                canvas.canvas.style.height = '100%';
+                
+                p.select('#iwToggleStates').mousePressed(() => {
+                    showStates = !showStates;
+                    p.redraw();
+                });
+                
+                p.select('#iwQuantumNumber').input(() => {
+                    quantumNumber = parseInt(p.select('#iwQuantumNumber').value());
+                    p.select('#iwQuantumValue').html(`n=${quantumNumber}`);
+                    p.redraw();
+                });
+                
+                p.select('#iwShowProbability').mousePressed(() => {
+                    showProbability = !showProbability;
+                    p.redraw();
+                });
+                
+                p.noLoop();
+                p.redraw();
+            };
+            
+            p.draw = function() {
+                p.background(1, 4, 9);
+                
+                let wellLeft = p.width * 0.2;
+                let wellRight = p.width * 0.8;
+                let wellWidth = wellRight - wellLeft;
+                let centerY = p.height / 2;
+                
+                // 绘制势阱
+                p.stroke(255);
+                p.strokeWeight(4);
+                p.line(wellLeft, 0, wellLeft, p.height);
+                p.line(wellRight, 0, wellRight, p.height);
+                
+                p.fill(255);
+                p.noStroke();
+                p.textAlign(p.CENTER);
+                p.text('U = ∞', wellLeft / 2, centerY);
+                p.text('U = ∞', (wellRight + p.width) / 2, centerY);
+                p.text('U = 0', (wellLeft + wellRight) / 2, centerY + 100);
+                
+                if (showStates) {
+                    // 绘制波函数
+                    if (!showProbability) {
+                        p.stroke(0, 255, 255);
+                        p.strokeWeight(3);
+                        p.noFill();
+                        
+                        p.beginShape();
+                        for (let x = wellLeft; x <= wellRight; x++) {
+                            let relativeX = (x - wellLeft) / wellWidth;
+                            let waveValue = p.sqrt(2) * p.sin(quantumNumber * p.PI * relativeX);
+                            let y = centerY - waveValue * 40;
+                            p.vertex(x, y);
+                        }
+                        p.endShape();
+                        
+                        p.fill(0, 255, 255);
+                        p.noStroke();
+                        p.textAlign(p.LEFT);
+                        p.text(`ψ${quantumNumber}(x) = √(2/a) sin(${quantumNumber}πx/a)`, 20, 30);
+                    } else {
+                        // 绘制概率密度
+                        p.stroke(255, 100, 100);
+                        p.strokeWeight(3);
+                        p.noFill();
+                        
+                        p.beginShape();
+                        for (let x = wellLeft; x <= wellRight; x++) {
+                            let relativeX = (x - wellLeft) / wellWidth;
+                            let waveValue = p.sqrt(2) * p.sin(quantumNumber * p.PI * relativeX);
+                            let probability = waveValue * waveValue;
+                            let y = centerY - probability * 40;
+                            p.vertex(x, y);
+                        }
+                        p.endShape();
+                        
+                        p.fill(255, 100, 100);
+                        p.noStroke();
+                        p.textAlign(p.LEFT);
+                        p.text(`|ψ${quantumNumber}(x)|² = (2/a) sin²(${quantumNumber}πx/a)`, 20, 30);
+                    }
+                }
+                
+                // 显示能级信息
+                p.fill(255, 255, 0);
+                p.textAlign(p.LEFT);
+                p.text(`能级: E${quantumNumber} = ${quantumNumber}²π²ℏ²/(2ma²)`, 20, 50);
+                p.text(`E${quantumNumber} = ${(quantumNumber * quantumNumber).toFixed(1)} × (π²ℏ²/2ma²)`, 20, 70);
+                
+                // 绘制能级图
+                let energyScale = 20;
+                for (let n = 1; n <= 5; n++) {
+                    let energy = n * n;
+                    let y = p.height - 20 - energy * energyScale;
+                    
+                    if (n === quantumNumber) {
+                        p.stroke(255, 255, 0);
+                        p.strokeWeight(3);
+                    } else {
+                        p.stroke(150);
+                        p.strokeWeight(1);
+                    }
+                    
+                    p.line(p.width - 100, y, p.width - 50, y);
+                    
+                    p.fill(n === quantumNumber ? 255 : 150);
+                    p.noStroke();
+                    p.textAlign(p.LEFT);
+                    p.textSize(10);
+                    p.text(`n=${n}`, p.width - 45, y + 3);
+                }
+                
+                p.fill(255);
+                p.textSize(12);
+                p.text('能级', p.width - 100, p.height - 10);
+            };
+        };
+        new p5(sketchInfiniteWell);
+
+        // --- 动画4: 统计诠释演示 ---
+        let sketchStatisticalInterpretation = function(p) {
+            let measurements = 100;
+            let measurementData = [];
+            let showDoubleSlits = false;
+            let measurementMode = false;
+            let slits = [];
+            
+            p.setup = function() {
+                let container = p.select('#statisticalInterpretationAnimation');
+                let canvas = p.createCanvas(container.width, container.height);
+                canvas.parent('statisticalInterpretationAnimation');
+                
+                canvas.canvas.style.width = '100%';
+                canvas.canvas.style.height = '100%';
+                
+                p.select('#siStartMeasurement').mousePressed(startMeasurement);
+                p.select('#siShowDoubleSlits').mousePressed(() => {
+                    showDoubleSlits = !showDoubleSlits;
+                    slits = [];
+                    p.redraw();
+                });
+                
+                p.select('#siMeasurements').input(() => {
+                    measurements = parseInt(p.select('#siMeasurements').value());
+                    p.select('#siMeasurementValue').html(measurements.toString());
+                });
+                
+                generateSlits();
+                p.noLoop();
+                p.redraw();
+            };
+            
+            function startMeasurement() {
+                measurementData = [];
+                measurementMode = true;
+                
+                // 生成测量数据
+                for (let i = 0; i < measurements; i++) {
+                    // 模拟高斯波包的测量结果
+                    let position = p.randomGaussian(p.width/2, 50);
+                    measurementData.push({
+                        x: position,
+                        y: p.height/2 + p.randomGaussian(0, 10),
+                        time: p.millis() + i * 50
+                    });
+                }
+                
+                p.loop();
+            }
+            
+            function generateSlits() {
+                slits = [];
+                if (showDoubleSlits) {
+                    let slitX = p.width * 0.3;
+                    let centerY = p.height / 2;
+                    let slitSeparation = 60;
+                    
+                    // 模拟双缝干涉的检测点
+                    for (let i = 0; i < measurements; i++) {
+                        let screenX = p.width * 0.8;
+                        let angle = p.random(-0.3, 0.3);
+                        let interference = p.sin(10 * angle) * p.sin(10 * angle); // 简化的干涉图样
+                        
+                        if (p.random() < interference) {
+                            slits.push({
+                                x: screenX,
+                                y: centerY + angle * 200,
+                                intensity: interference
+                            });
+                        }
+                    }
+                }
+            }
+            
+            p.draw = function() {
+                p.background(1, 4, 9);
+                
+                if (!showDoubleSlits) {
+                    // 单粒子测量演示
+                    let centerY = p.height / 2;
+                    
+                    // 绘制理论波函数
+                    p.stroke(100, 255, 100);
+                    p.strokeWeight(2);
+                    p.noFill();
+                    
+                    p.beginShape();
+                    for (let x = 0; x < p.width; x++) {
+                        let waveValue = p.exp(-p.pow((x - p.width/2)/100, 2));
+                        let y = centerY + 100 + waveValue * 60;
+                        p.vertex(x, y);
+                    }
+                    p.endShape();
+                    
+                    // 绘制概率密度
+                    p.stroke(255, 200, 0);
+                    p.strokeWeight(2);
+                    p.beginShape();
+                    for (let x = 0; x < p.width; x++) {
+                        let probability = p.exp(-p.pow((x - p.width/2)/100, 2));
+                        let y = centerY - 100 + probability * 60;
+                        p.vertex(x, y);
+                    }
+                    p.endShape();
+                    
+                    // 绘制测量结果
+                    if (measurementMode) {
+                        let currentTime = p.millis();
+                        p.fill(255, 100, 100);
+                        p.noStroke();
+                        
+                        for (let data of measurementData) {
+                            if (currentTime >= data.time) {
+                                p.ellipse(data.x, data.y, 4, 4);
+                            }
+                        }
+                        
+                        if (currentTime > measurementData[measurementData.length - 1].time + 1000) {
+                            measurementMode = false;
+                            p.noLoop();
+                        }
+                    }
+                    
+                    p.fill(255);
+                    p.noStroke();
+                    p.textAlign(p.LEFT);
+                    p.text('理论波函数 ψ(x)', 20, 30);
+                    p.fill(255, 200, 0);
+                    p.text('概率密度 |ψ(x)|²', 20, 50);
+                    p.fill(255, 100, 100);
+                    p.text('实际测量结果', 20, 70);
+                    
+                } else {
+                    // 双缝干涉演示
+                    let slitX = p.width * 0.3;
+                    let screenX = p.width * 0.8;
+                    let centerY = p.height / 2;
+                    
+                    // 绘制双缝装置
+                    p.stroke(255);
+                    p.strokeWeight(3);
+                    p.line(slitX, 0, slitX, centerY - 30);
+                    p.line(slitX, centerY - 15, slitX, centerY + 15);
+                    p.line(slitX, centerY + 30, slitX, p.height);
+                    
+                    // 绘制屏幕
+                    p.line(screenX, 0, screenX, p.height);
+                    
+                    // 绘制干涉图样
+                    p.fill(255, 255, 0, 150);
+                    p.noStroke();
+                    for (let slit of slits) {
+                        let size = slit.intensity * 8;
+                        p.ellipse(slit.x, slit.y, size, size);
+                    }
+                    
+                    // 绘制理论干涉图样
+                    p.stroke(255, 100, 100);
+                    p.strokeWeight(2);
+                    p.beginShape();
+                    for (let y = 0; y < p.height; y++) {
+                        let angle = (y - centerY) / 200;
+                        let intensity = p.pow(p.sin(10 * angle), 2);
+                        let x = screenX + 10 + intensity * 30;
+                        p.vertex(x, y);
+                    }
+                    p.endShape();
+                    
+                    p.fill(255);
+                    p.noStroke();
+                    p.textAlign(p.LEFT);
+                    p.text('双缝干涉：粒子与自身干涉', 20, 30);
+                    p.text('每个粒子都产生完整的干涉图样', 20, 50);
+                }
+            };
+        };
+        new p5(sketchStatisticalInterpretation);
+
+        // --- 动画5: 傅里叶变换与不确定性原理 ---
+        let sketchFourierUncertainty = function(p) {
+            let wavePacketWidth = 50;
+            let showMomentum = false;
+            let showUncertainty = false;
+            
+            p.setup = function() {
+                let container = p.select('#fourierUncertaintyAnimation');
+                let canvas = p.createCanvas(container.width, container.height);
+                canvas.parent('fourierUncertaintyAnimation');
+                
+                canvas.canvas.style.width = '100%';
+                canvas.canvas.style.height = '100%';
+                
+                p.select('#fuToggleRepresentation').mousePressed(() => {
+                    showMomentum = !showMomentum;
+                    p.redraw();
+                });
+                
+                p.select('#fuWavePacketWidth').input(() => {
+                    wavePacketWidth = parseFloat(p.select('#fuWavePacketWidth').value());
+                    p.select('#fuWidthValue').html(wavePacketWidth.toString());
+                    p.redraw();
+                });
+                
+                p.select('#fuShowUncertainty').mousePressed(() => {
+                    showUncertainty = !showUncertainty;
+                    p.redraw();
+                });
+                
+                p.noLoop();
+                p.redraw();
+            };
+            
+            p.draw = function() {
+                p.background(1, 4, 9);
+                
+                let centerX = p.width / 2;
+                let centerY = p.height / 2;
+                
+                if (!showMomentum) {
+                    // 位置表示
+                    p.stroke(100, 255, 100);
+                    p.strokeWeight(3);
+                    p.noFill();
+                    
+                    // 波包包络
+                    p.beginShape();
+                    for (let x = 0; x < p.width; x++) {
+                        let envelope = p.exp(-p.pow((x - centerX) / wavePacketWidth, 2));
+                        let y = centerY + envelope * 60;
+                        p.vertex(x, y);
+                    }
+                    p.endShape();
+                    
+                    p.beginShape();
+                    for (let x = 0; x < p.width; x++) {
+                        let envelope = p.exp(-p.pow((x - centerX) / wavePacketWidth, 2));
+                        let y = centerY - envelope * 60;
+                        p.vertex(x, y);
+                    }
+                    p.endShape();
+                    
+                    // 波包内的振荡
+                    p.stroke(0, 255, 255);
+                    p.strokeWeight(2);
+                    p.beginShape();
+                    for (let x = 0; x < p.width; x++) {
+                        let envelope = p.exp(-p.pow((x - centerX) / wavePacketWidth, 2));
+                        let wave = envelope * p.sin(x * 0.1) * 40;
+                        let y = centerY + wave;
+                        p.vertex(x, y);
+                    }
+                    p.endShape();
+                    
+                    p.fill(100, 255, 100);
+                    p.noStroke();
+                    p.textAlign(p.LEFT);
+                    p.text('位置表示: ψ(x)', 20, 30);
+                    p.text(`位置不确定度 Δx ≈ ${(wavePacketWidth * 0.1).toFixed(1)}`, 20, 50);
+                    
+                } else {
+                    // 动量表示（傅里叶变换）
+                    let momentumWidth = 300 / wavePacketWidth; // 反比关系
+                    
+                    p.stroke(255, 100, 100);
+                    p.strokeWeight(3);
+                    p.noFill();
+                    
+                    p.beginShape();
+                    for (let k = 0; k < p.width; k++) {
+                        let momentumAmp = p.exp(-p.pow((k - centerX) / momentumWidth, 2));
+                        let y = centerY + momentumAmp * 60;
+                        p.vertex(k, y);
+                    }
+                    p.endShape();
+                    
+                    p.beginShape();
+                    for (let k = 0; k < p.width; k++) {
+                        let momentumAmp = p.exp(-p.pow((k - centerX) / momentumWidth, 2));
+                        let y = centerY - momentumAmp * 60;
+                        p.vertex(k, y);
+                    }
+                    p.endShape();
+                    
+                    p.fill(255, 100, 100);
+                    p.noStroke();
+                    p.textAlign(p.LEFT);
+                    p.text('动量表示: φ(p) = FT[ψ(x)]', 20, 30);
+                    p.text(`动量不确定度 Δp ≈ ${(300 / wavePacketWidth * 0.1).toFixed(1)}`, 20, 50);
+                }
+                
+                // 显示不确定性原理
+                if (showUncertainty) {
+                    let deltaX = wavePacketWidth * 0.1;
+                    let deltaP = 300 / wavePacketWidth * 0.1;
+                    let product = deltaX * deltaP;
+                    
+                    p.fill(255, 255, 0);
+                    p.textAlign(p.CENTER);
+                    p.textSize(16);
+                    p.text(`Δx · Δp = ${product.toFixed(2)}`, centerX, p.height - 60);
+                    p.text(`≥ ℏ/2 ≈ 0.5 (相对单位)`, centerX, p.height - 40);
+                    
+                    if (product >= 0.5) {
+                        p.fill(0, 255, 0);
+                        p.text('✓ 满足不确定性原理', centerX, p.height - 20);
+                    } else {
+                        p.fill(255, 0, 0);
+                        p.text('✗ 违反不确定性原理', centerX, p.height - 20);
+                    }
+                }
+                
+                // 标题
+                p.fill(255);
+                p.textAlign(p.CENTER);
+                p.textSize(14);
+                p.text('傅里叶变换: 位置 ↔ 动量', centerX, p.height - 100);
+            };
+        };
+        new p5(sketchFourierUncertainty);
+
+        // --- 动画6: 群速度演示 ---
+        let sketchGroupVelocity = function(p) {
+            let dispersion = 10;
+            let showPhase = false;
+            let time = 0;
+            let wavePacket = [];
+            let phaseMarkers = [];
+            
+            p.setup = function() {
+                let container = p.select('#groupVelocityAnimation');
+                let canvas = p.createCanvas(container.width, container.height);
+                canvas.parent('groupVelocityAnimation');
+                
+                canvas.canvas.style.width = '100%';
+                canvas.canvas.style.height = '100%';
+                
+                p.select('#gvStartWavePacket').mousePressed(() => {
+                    time = 0;
+                    generateWavePacket();
+                    p.loop();
+                });
+                
+                p.select('#gvCompareVelocities').mousePressed(() => {
+                    showPhase = !showPhase;
+                    p.redraw();
+                });
+                
+                p.select('#gvDispersion').input(() => {
+                    dispersion = parseFloat(p.select('#gvDispersion').value());
+                    p.select('#gvDispersionValue').html(dispersion.toString());
+                    generateWavePacket();
+                    if (time === 0) p.redraw();
+                });
+                
+                generateWavePacket();
+                p.noLoop();
+                p.redraw();
+            };
+            
+            function generateWavePacket() {
+                wavePacket = [];
+                phaseMarkers = [];
+                
+                let centerK = 0.1;
+                let deltaK = dispersion * 0.001;
+                
+                for (let i = 0; i < 50; i++) {
+                    let k = centerK + (i - 25) * deltaK;
+                    let omega = k * k / 0.1; // 简化色散关系
+                    
+                    wavePacket.push({
+                        k: k,
+                        omega: omega,
+                        amplitude: p.exp(-p.pow((i - 25) * deltaK / (deltaK * 10), 2))
+                    });
+                }
+                
+                // 相速度标记点
+                for (let i = 0; i < 5; i++) {
+                    phaseMarkers.push({
+                        x: i * p.width / 4,
+                        phase: 0
+                    });
+                }
+            }
+            
+            p.draw = function() {
+                p.background(1, 4, 9);
+                time += 0.5;
+                
+                let centerY = p.height / 2;
+                
+                // 计算波包
+                let wavePacketValues = new Array(p.width).fill(0);
+                let groupCenter = 0;
+                
+                for (let x = 0; x < p.width; x++) {
+                    let totalAmp = 0;
+                    
+                    for (let component of wavePacket) {
+                        let phase = component.k * x - component.omega * time;
+                        totalAmp += component.amplitude * p.cos(phase);
+                    }
+                    
+                    wavePacketValues[x] = totalAmp;
+                    
+                    if (Math.abs(totalAmp) > Math.abs(wavePacketValues[groupCenter])) {
+                        groupCenter = x;
+                    }
+                }
+                
+                // 绘制波包
+                p.stroke(0, 255, 255);
+                p.strokeWeight(3);
+                p.noFill();
+                
+                p.beginShape();
+                for (let x = 0; x < p.width; x++) {
+                    let y = centerY + wavePacketValues[x] * 50;
+                    p.vertex(x, y);
+                }
+                p.endShape();
+                
+                // 绘制包络
+                p.stroke(255, 200, 0, 150);
+                p.strokeWeight(2);
+                p.beginShape();
+                for (let x = 0; x < p.width; x++) {
+                    let envelope = p.exp(-p.pow((x - groupCenter) / 80, 2));
+                    let y = centerY + envelope * 50;
+                    p.vertex(x, y);
+                }
+                p.endShape();
+                
+                p.beginShape();
+                for (let x = 0; x < p.width; x++) {
+                    let envelope = p.exp(-p.pow((x - groupCenter) / 80, 2));
+                    let y = centerY - envelope * 50;
+                    p.vertex(x, y);
+                }
+                p.endShape();
+                
+                // 群速度标记
+                p.fill(255, 200, 0);
+                p.noStroke();
+                p.ellipse(groupCenter, centerY, 10, 10);
+                p.text('群速度 v_g', groupCenter + 15, centerY - 10);
+                
+                if (showPhase) {
+                    // 相速度标记
+                    p.fill(255, 100, 100);
+                    for (let marker of phaseMarkers) {
+                        let phaseX = (marker.x + time * 2) % p.width; // 相速度比群速度快
+                        p.ellipse(phaseX, centerY, 6, 6);
+                    }
+                    p.text('相速度 v_p', 20, centerY - 30);
+                }
+                
+                // 信息显示
+                p.fill(255);
+                p.textAlign(p.LEFT);
+                p.text('群速度: v_g = dω/dk = p/m (粒子速度)', 20, 30);
+                p.text('相速度: v_p = ω/k = p/(2m) (波相位传播)', 20, 50);
+                p.text(`色散程度: ${dispersion}`, 20, 70);
+                
+                if (time > 0 && time % 200 === 0) {
+                    // 自动停止
+                    p.noLoop();
+                }
+            };
+        };
+        new p5(sketchGroupVelocity);
+
+        // --- 动画7: 希尔伯特空间展示 ---
+        let sketchHilbertSpace = function(p) {
+            let coefficients = 5;
+            let showPosition = true;
+            let basisFunctions = [];
+            let expandedFunction = [];
+            
+            p.setup = function() {
+                let container = p.select('#hilbertSpaceAnimation');
+                let canvas = p.createCanvas(container.width, container.height);
+                canvas.parent('hilbertSpaceAnimation');
+                
+                canvas.canvas.style.width = '100%';
+                canvas.canvas.style.height = '100%';
+                
+                p.select('#hsShowBasisExpansion').mousePressed(() => {
+                    generateBasisExpansion();
+                    p.redraw();
+                });
+                
+                p.select('#hsToggleBasis').mousePressed(() => {
+                    showPosition = !showPosition;
+                    generateBasisFunctions();
+                    generateBasisExpansion();
+                    p.redraw();
+                });
+                
+                p.select('#hsCoefficients').input(() => {
+                    coefficients = parseInt(p.select('#hsCoefficients').value());
+                    p.select('#hsCoefficientValue').html(coefficients.toString());
+                    generateBasisExpansion();
+                    p.redraw();
+                });
+                
+                generateBasisFunctions();
+                generateBasisExpansion();
+                p.noLoop();
+                p.redraw();
+            };
+            
+            function generateBasisFunctions() {
+                basisFunctions = [];
+                let centerY = p.height / 2;
+                let amplitude = 30;
+                
+                if (showPosition) {
+                    // 位置基底 (delta functions - 简化为高斯峰)
+                    for (let i = 0; i < 5; i++) {
+                        let xPos = p.map(i, 0, 4, p.width * 0.2, p.width * 0.8);
+                        basisFunctions.push(x => {
+                            return p.exp(-p.pow((x - xPos) / 20, 2)) * amplitude;
+                        });
+                    }
+                } else {
+                    // 动量基底 (plane waves)
+                    for (let i = 0; i < 5; i++) {
+                        let k = p.map(i, 0, 4, -0.1, 0.1);
+                        basisFunctions.push(x => {
+                            return p.sin(k * x * 50 + p.frameCount * 0.05) * amplitude;
+                        });
+                    }
+                }
+            }
+            
+            function generateBasisExpansion() {
+                expandedFunction = new Array(p.width).fill(0);
+                let centerY = p.height / 2;
+                
+                for (let x = 0; x < p.width; x++) {
+                    let sum = 0;
+                    for (let i = 0; i < Math.min(coefficients, basisFunctions.length); i++) {
+                        sum += basisFunctions[i](x);
+                    }
+                    expandedFunction[x] = sum;
+                }
+            }
+            
+            p.draw = function() {
+                p.background(1, 4, 9);
+                
+                let centerY = p.height / 2;
+                
+                // 绘制基底函数
+                p.stroke(150, 150, 255, 100);
+                p.strokeWeight(1);
+                p.noFill();
+                
+                for (let i = 0; i < Math.min(coefficients, basisFunctions.length); i++) {
+                    p.beginShape();
+                    for (let x = 0; x < p.width; x++) {
+                        let y = centerY + basisFunctions[i](x);
+                        p.vertex(x, y);
+                    }
+                    p.endShape();
+                }
+                
+                // 绘制展开后的函数
+                p.stroke(0, 255, 255);
+                p.strokeWeight(3);
+                p.noFill();
+                
+                p.beginShape();
+                for (let x = 0; x < p.width; x++) {
+                    let y = centerY + expandedFunction[x];
+                    p.vertex(x, y);
+                }
+                p.endShape();
+                
+                // 标题和信息
+                p.fill(255);
+                p.textAlign(p.LEFT);
+                p.textSize(14);
+                p.text(`基底: ${showPosition ? '位置本征态' : '动量本征态'}`, 20, 30);
+                p.text(`展开项数: ${coefficients}`, 20, 50);
+                p.text('蓝色: 展开后的波函数', 20, 70);
+                p.text('浅蓝: 基底函数', 20, 90);
+                
+                p.fill(255, 255, 0);
+                p.textAlign(p.CENTER);
+                p.textSize(16);
+                p.text('希尔伯特空间: 波函数的线性叠加', p.width/2, p.height - 40);
+            };
+        };
+        new p5(sketchHilbertSpace);
+    </script>
+</body>
+</html>

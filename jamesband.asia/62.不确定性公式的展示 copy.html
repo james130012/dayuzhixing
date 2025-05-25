@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>海森堡不确定性原理交互演示</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .container {
+            background: rgba(255,255,255,0.1);
+            border-radius: 15px;
+            padding: 30px;
+            backdrop-filter: blur(10px);
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+        }
+        .controls {
+            background: rgba(255,255,255,0.2);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        .control-group {
+            margin: 15px 0;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        label {
+            min-width: 120px;
+            font-weight: bold;
+        }
+        input[type="range"] {
+            flex: 1;
+            margin: 0 10px;
+        }
+        .value-display {
+            min-width: 80px;
+            text-align: right;
+            font-family: monospace;
+            font-size: 1.1em;
+        }
+        .canvas-container {
+            display: flex;
+            gap: 20px;
+            margin: 20px 0;
+        }
+        canvas {
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 10px;
+            background: rgba(0,0,0,0.3);
+        }
+        .uncertainty-display {
+            background: rgba(255,255,255,0.2);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        .uncertainty-value {
+            font-size: 2em;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        .explanation {
+            background: rgba(255,255,255,0.15);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            line-height: 1.6;
+        }
+        .preset-buttons {
+            display: flex;
+            gap: 10px;
+            margin: 15px 0;
+        }
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        button:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🌊 海森堡不确定性原理交互演示</h1>
+        
+        <div class="controls">
+            <h3>波函数参数控制</h3>
+            
+            <div class="control-group">
+                <label>波包宽度 (σ):</label>
+                <input type="range" id="sigma" min="0.5" max="3" step="0.1" value="1">
+                <span class="value-display" id="sigmaValue">1.0</span>
+            </div>
+            
+            <div class="control-group">
+                <label>中心动量 (k₀):</label>
+                <input type="range" id="k0" min="0" max="5" step="0.1" value="2">
+                <span class="value-display" id="k0Value">2.0</span>
+            </div>
+            
+            <div class="control-group">
+                <label>粒子质量 (m):</label>
+                <input type="range" id="mass" min="0.1" max="10" step="0.1" value="1">
+                <span class="value-display" id="massValue">1.0</span>
+            </div>
+            
+            <div class="control-group">
+                <label>波函数类型:</label>
+                <select id="waveType" style="padding: 5px; border-radius: 5px;">
+                    <option value="gaussian">高斯波包 (最小不确定态)</option>
+                    <option value="rect">矩形波包</option>
+                    <option value="triangle">三角波包</option>
+                    <option value="exponential">指数衰减</option>
+                </select>
+            </div>
+            
+            <div class="preset-buttons">
+                <button onclick="setPreset('narrow')">窄波包</button>
+                <button onclick="setPreset('wide')">宽波包</button>
+                <button onclick="setPreset('optimal')">最优态</button>
+                <button id="animateButton" onclick="toggleAnimation()">开始动画</button>
+                <button onclick="resetSimulation()">重置</button>
+            </div>
+        </div>
+
+        <div class="canvas-container">
+            <div>
+                <h3>位置空间 ψ(x)</h3>
+                <canvas id="positionCanvas" width="400" height="300"></canvas>
+            </div>
+            <div>
+                <h3>动量空间 φ(p)</h3>
+                <canvas id="momentumCanvas" width="400" height="300"></canvas>
+            </div>
+        </div>
+
+        <div class="uncertainty-display">
+            <div>位置不确定度: <span id="deltaX" class="uncertainty-value">--</span></div>
+            <div>动量不确定度: <span id="deltaP" class="uncertainty-value">--</span></div>
+            <div>不确定性乘积: <span id="product" class="uncertainty-value">--</span></div>
+            <div>与理论下界比较: <span id="ratio" class="uncertainty-value">--</span></div>
+            <div id="inequalityStatus" style="font-size: 1.5em; margin-top: 10px;"></div>
+        </div>
+
+        <div class="explanation">
+            <h3>🔍 为什么是不等号？</h3>
+            <div id="explanationText">
+                <p><strong>Δx · Δp ≥ ℏ/2</strong> 是不等号的原因：</p>
+                <ul>
+                    <li><strong>等号条件</strong>：只有高斯波包能达到等号（最小不确定态）</li>
+                    <li><strong>物理限制</strong>：ℏ/2 是量子力学的理论下界，无法突破</li>
+                    <li><strong>数学基础</strong>：来自柯西-施瓦茨不等式，大多数函数都是严格大于</li>
+                    <li><strong>实验意义</strong>：尝试不同波函数形状，观察不确定性乘积的变化！</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 获取画布和控制元素
+        const posCanvas = document.getElementById('positionCanvas');
+        const momCanvas = document.getElementById('momentumCanvas');
+        const posCtx = posCanvas.getContext('2d');
+        const momCtx = momCanvas.getContext('2d');
+        
+        let animationId;
+        let time = 0;
+        let isPlaying = false; // 新增标志
+
+        // 数学常数
+        const hbar = 1; // 设为1简化计算
+        const theoretical_limit = hbar / 2;
+
+        // 更新控制值显示
+        function updateControls() {
+            document.getElementById('sigmaValue').textContent = 
+                parseFloat(document.getElementById('sigma').value).toFixed(1);
+            document.getElementById('k0Value').textContent = 
+                parseFloat(document.getElementById('k0').value).toFixed(1);
+            document.getElementById('massValue').textContent = 
+                parseFloat(document.getElementById('mass').value).toFixed(1);
+        }
+
+        // 计算概率密度
+        function calculateProbability(waveFunction) {
+            return waveFunction.real * waveFunction.real + 
+                   waveFunction.imag * waveFunction.imag;
+        }
+
+        // 复数类
+        class Complex {
+            constructor(real, imag) {
+                this.real = real;
+                this.imag = imag;
+            }
+            
+            multiply(other) {
+                return new Complex(
+                    this.real * other.real - this.imag * other.imag,
+                    this.real * other.imag + this.imag * other.real
+                );
+            }
+            
+            magnitude() {
+                return Math.sqrt(this.real * this.real + this.imag * this.imag);
+            }
+        }
+
+        // 生成复数波函数
+        function generateComplexWaveFunction(x, sigma_current, k0, type, x0_offset = 0, initialSigma = sigma_current, t = 0, mass = 1) { // 添加 initialSigma, t, mass
+            const x_relative = x - x0_offset; // 使用相对坐标
+            let amplitude = 0;
+            let current_sigma = sigma_current;
+
+            if (type === 'gaussian' && t > 0) {
+                // 高斯波包扩散公式
+                // sigma(t) = sigma_0 * sqrt(1 + (hbar * t / (2 * m * sigma_0^2))^2)
+                const term = (hbar * t) / (2 * mass * initialSigma * initialSigma);
+                current_sigma = initialSigma * Math.sqrt(1 + term * term);
+            }
+            
+            switch(type) {
+                case 'gaussian':
+                    amplitude = Math.exp(-x_relative*x_relative/(2*current_sigma*current_sigma));
+                    break;
+                case 'rect':
+                    amplitude = Math.abs(x_relative) <= sigma_current ? 1 : 0; // 矩形波包不扩散
+                    break;
+                case 'triangle':
+                    amplitude = Math.abs(x_relative) <= sigma_current ? (1 - Math.abs(x_relative)/sigma_current) : 0; // 三角波包不扩散
+                    break;
+                case 'exponential':
+                    amplitude = Math.exp(-Math.abs(x_relative)/sigma_current); // 指数衰减不扩散
+                    break;
+            }
+            
+            return new Complex(
+                amplitude * Math.cos(k0 * x_relative), // 相位也与相对坐标相关
+                amplitude * Math.sin(k0 * x_relative)
+            );
+        }
+
+        // 简单的离散傅立叶变换
+        function discreteFT(positionData, dx) {
+            const N = positionData.length;
+            const momentumData = [];
+            const dk = 2 * Math.PI / (N * dx);
+            
+            for (let n = 0; n < N; n++) {
+                let real = 0, imag = 0;
+                const k = (n - N/2) * dk;
+                
+                for (let m = 0; m < N; m++) {
+                    const x = (m - N/2) * dx;
+                    const phase = -k * x;
+                    real += positionData[m].real * Math.cos(phase) - 
+                           positionData[m].imag * Math.sin(phase);
+                    imag += positionData[m].real * Math.sin(phase) + 
+                           positionData[m].imag * Math.cos(phase);
+                }
+                
+                momentumData.push(new Complex(real * dx, imag * dx));
+            }
+            
+            return momentumData;
+        }
+
+        // 计算不确定度
+        function calculateUncertainties(posData, momData, dx, dk) {
+            const N = posData.length;
+            
+            // 计算归一化因子
+            let norm = 0;
+            for (let i = 0; i < N; i++) {
+                norm += posData[i].magnitude() * posData[i].magnitude() * dx;
+            }
+            
+            // 计算位置期望值和不确定度
+            let x_mean = 0, x2_mean = 0;
+            for (let i = 0; i < N; i++) {
+                const x = (i - N/2) * dx;
+                const prob = posData[i].magnitude() * posData[i].magnitude() / norm;
+                x_mean += x * prob * dx;
+                x2_mean += x * x * prob * dx;
+            }
+            const deltaX = Math.sqrt(x2_mean - x_mean * x_mean);
+            
+            // 计算动量期望值和不确定度
+            let p_mean = 0, p2_mean = 0;
+            let mom_norm = 0;
+            for (let i = 0; i < N; i++) {
+                mom_norm += momData[i].magnitude() * momData[i].magnitude() * dk;
+            }
+            
+            for (let i = 0; i < N; i++) {
+                const p = (i - N/2) * dk * hbar;
+                const prob = momData[i].magnitude() * momData[i].magnitude() / mom_norm;
+                p_mean += p * prob * dk;
+                p2_mean += p * p * prob * dk;
+            }
+            const deltaP = Math.sqrt(p2_mean - p_mean * p_mean);
+            
+            return { deltaX, deltaP };
+        }
+
+        // 绘制函数
+        function drawGraph(ctx, data, color, label, minPhysicalX, maxPhysicalX, dxOrDk, N, isMomentum = false) {
+            ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+            
+            // 绘制坐标轴
+            ctx.strokeStyle = 'rgba(255,255,255,0.3)';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(0, ctx.canvas.height/2); // X轴
+            ctx.lineTo(ctx.canvas.width, ctx.canvas.height/2);
+            ctx.moveTo(ctx.canvas.width/2, 0); // Y轴
+            ctx.lineTo(ctx.canvas.width/2, ctx.canvas.height);
+            ctx.stroke();
+
+            // 绘制刻度
+            ctx.fillStyle = 'white';
+            ctx.font = '10px Arial';
+            const tickLength = 5;
+
+            // X轴刻度
+            const numTicksX = 5; // 刻度数量
+            for (let i = 0; i <= numTicksX; i++) {
+                const physicalValue = minPhysicalX + (maxPhysicalX - minPhysicalX) * (i / numTicksX);
+                const x_canvas = mapPhysicalToCanvasX(physicalValue, minPhysicalX, maxPhysicalX, ctx.canvas.width);
+                ctx.beginPath();
+                ctx.moveTo(x_canvas, ctx.canvas.height/2 - tickLength);
+                ctx.lineTo(x_canvas, ctx.canvas.height/2 + tickLength);
+                ctx.stroke();
+                ctx.fillText(physicalValue.toFixed(1), x_canvas - 10, ctx.canvas.height/2 + 20);
+            }
+
+            // Y轴刻度 (只绘制中心线，因为概率密度是正的)
+            ctx.fillText('0', ctx.canvas.width/2 + 10, ctx.canvas.height/2 + 10);
+            
+            // 绘制概率密度
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            
+            const maxProb = Math.max(...data.map(d => d.magnitude() * d.magnitude()));
+            const scaleY = ctx.canvas.height * 0.4 / maxProb; // Y轴缩放
+            
+            for (let i = 0; i < data.length; i++) {
+                let physicalX;
+                if (isMomentum) {
+                    physicalX = (i - N/2) * dxOrDk * hbar; // 动量空间是 p = k * hbar
+                } else {
+                    physicalX = (i - N/2) * dxOrDk; // 位置空间是 x
+                }
+                
+                const x_canvas = mapPhysicalToCanvasX(physicalX, minPhysicalX, maxPhysicalX, ctx.canvas.width);
+                
+                const prob = data[i].magnitude() * data[i].magnitude();
+                const y_canvas = ctx.canvas.height/2 - prob * scaleY;
+                
+                if (i === 0) ctx.moveTo(x_canvas, y_canvas);
+                else ctx.lineTo(x_canvas, y_canvas);
+            }
+            ctx.stroke();
+            
+            // 绘制标签
+            ctx.fillStyle = 'white';
+            ctx.font = '14px Arial';
+            ctx.fillText(label, 10, 25);
+        }
+
+        // 辅助函数：将物理坐标映射到画布坐标
+        function mapPhysicalToCanvasX(physicalX, minPhysical, maxPhysical, canvasWidth) {
+            const rangePhysical = maxPhysical - minPhysical;
+            return (physicalX - minPhysical) * (canvasWidth / rangePhysical);
+        }
+
+        // 主更新函数
+        function update() {
+            const sigma = parseFloat(document.getElementById('sigma').value);
+            const k0 = parseFloat(document.getElementById('k0').value);
+            const waveType = document.getElementById('waveType').value;
+            const mass = parseFloat(document.getElementById('mass').value); // 获取质量
+            
+            const v_group = k0 * hbar / mass; // 计算群速度
+            const x0_offset = v_group * time; // 计算波包中心偏移
+            
+            // 生成位置空间数据
+            const N = 256;
+            const dx = 0.1;
+            const positionData = [];
+            
+            // 初始sigma用于扩散计算，只在高斯波包时有效
+            const initialSigma = parseFloat(document.getElementById('sigma').value); 
+
+            for (let i = 0; i < N; i++) {
+                const x = (i - N/2) * dx; // 物理 x 坐标
+                positionData.push(generateComplexWaveFunction(x, sigma, k0, waveType, x0_offset, initialSigma, time, mass));
+            }
+            
+            // 计算动量空间数据（傅立叶变换）
+            const momentumData = discreteFT(positionData, dx);
+            const dk = 2 * Math.PI / (N * dx);
+            
+            // 计算不确定度
+            const { deltaX, deltaP } = calculateUncertainties(positionData, momentumData, dx, dk);
+            const product = deltaX * deltaP;
+            const ratio = product / theoretical_limit;
+            
+            // 更新显示
+            document.getElementById('deltaX').textContent = deltaX.toFixed(3);
+            document.getElementById('deltaP').textContent = deltaP.toFixed(3);
+            document.getElementById('product').textContent = product.toFixed(3);
+            document.getElementById('ratio').textContent = ratio.toFixed(2) + '倍';
+            
+            const statusElement = document.getElementById('inequalityStatus');
+            if (ratio >= 1) {
+                statusElement.textContent = '✅ 满足不确定性原理';
+                statusElement.style.color = '#4CAF50';
+            } else {
+                statusElement.textContent = '❌ 违反不确定性原理（计算误差）';
+                statusElement.style.color = '#f44336';
+            }
+            
+            // 定义物理 x 和 p 的绘图范围
+            const X_MIN_PHYSICAL = -20;
+            const X_MAX_PHYSICAL = 20;
+            const P_MIN_PHYSICAL = (-N/2) * dk * hbar;
+            const P_MAX_PHYSICAL = (N/2) * dk * hbar;
+
+            // 绘制图形
+            drawGraph(posCtx, positionData, '#FF6B6B', 'ψ(x)', X_MIN_PHYSICAL, X_MAX_PHYSICAL, dx, N, false);
+            drawGraph(momCtx, momentumData, '#4ECDC4', 'φ(p)', P_MIN_PHYSICAL, P_MAX_PHYSICAL, dk, N, true);
+        }
+
+        // 预设函数
+        function setPreset(type) {
+            switch(type) {
+                case 'narrow':
+                    document.getElementById('sigma').value = 0.5;
+                    document.getElementById('k0').value = 3;
+                    break;
+                case 'wide':
+                    document.getElementById('sigma').value = 2.5;
+                    document.getElementById('k0').value = 1;
+                    break;
+                case 'optimal':
+                    document.getElementById('sigma').value = 1;
+                    document.getElementById('k0').value = 2;
+                    document.getElementById('waveType').value = 'gaussian';
+                    break;
+            }
+            updateControls();
+            update();
+        }
+
+        // 动画函数
+        function animate() {
+            if (isPlaying) {
+                time += 0.05;
+                update();
+                animationId = requestAnimationFrame(animate);
+            }
+        }
+
+        // 播放/暂停按钮逻辑
+        function toggleAnimation() {
+            isPlaying = !isPlaying;
+            const animateButton = document.getElementById('animateButton');
+            if (isPlaying) {
+                animateButton.textContent = '暂停动画';
+                animate(); // 开始动画循环
+            } else {
+                animateButton.textContent = '开始动画';
+                cancelAnimationFrame(animationId); // 停止动画循环
+            }
+        }
+
+        // 重置按钮逻辑
+        function resetSimulation() {
+            cancelAnimationFrame(animationId);
+            isPlaying = false;
+            time = 0;
+            document.getElementById('sigma').value = 1;
+            document.getElementById('k0').value = 2;
+            document.getElementById('mass').value = 1;
+            document.getElementById('waveType').value = 'gaussian';
+            updateControls();
+            update();
+            document.getElementById('animateButton').textContent = '开始动画';
+        }
+
+        // 事件监听器
+        document.getElementById('sigma').addEventListener('input', () => {
+            updateControls();
+            update();
+        });
+        
+        document.getElementById('k0').addEventListener('input', () => {
+            updateControls();
+            update();
+        });
+        
+        document.getElementById('mass').addEventListener('input', () => {
+            updateControls();
+            update();
+        });
+        
+        document.getElementById('waveType').addEventListener('change', update);
+
+        // 初始化
+        updateControls();
+        update();
+    </script>
+</body>
+</html>

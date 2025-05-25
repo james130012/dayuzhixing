@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>电磁波参数关系可视化</title>
+    <script src="https://unpkg.com/three@0.128.0/build/three.min.js"></script>
+    <script src="https://unpkg.com/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background: #000;
+            font-family: Arial, sans-serif;
+        }
+        #controls {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 15px;
+            border-radius: 5px;
+            z-index: 100;
+        }
+        .slider-container {
+            margin: 10px 0;
+        }
+        .slider-container label {
+            display: inline-block;
+            width: 100px;
+        }
+        .slider-container input {
+            width: 200px;
+            margin: 0 10px;
+        }
+        .slider-container span {
+            display: inline-block;
+            width: 60px;
+            text-align: right;
+        }
+        #formula {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 15px;
+            border-radius: 5px;
+            z-index: 100;
+            font-size: 16px;
+            line-height: 1.6;
+        }
+        #loading {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 20px;
+            z-index: 1000;
+        }
+    </style>
+</head>
+<body>
+    <div id="loading">加载中...</div>
+    <div id="controls">
+        <h2>参数控制</h2>
+        <div class="slider-container">
+            <label>波长 λ:</label>
+            <input type="range" id="wavelength" min="0.5" max="4" step="0.1" value="2">
+            <span id="wavelength-value">2.0</span>
+        </div>
+        <div class="slider-container">
+            <label>频率 f:</label>
+            <input type="range" id="frequency" min="0.1" max="2" step="0.1" value="1">
+            <span id="frequency-value">1.0</span>
+        </div>
+        <div class="slider-container">
+            <label>波数 k:</label>
+            <span id="k-value">π</span>
+        </div>
+        <div class="slider-container">
+            <label>角频率 ω:</label>
+            <span id="omega-value">2π</span>
+        </div>
+    </div>
+    <div id="formula">
+        <h3>参数关系</h3>
+        <p>k = 2π/λ</p>
+        <p>ω = 2πf</p>
+        <p>v = λf = ω/k</p>
+    </div>
+    <script>
+        // 检查Three.js是否正确加载
+        if (typeof THREE === 'undefined') {
+            document.getElementById('loading').innerHTML = 'Three.js加载失败，请刷新页面重试';
+            throw new Error('Three.js not loaded');
+        }
+
+        // 创建场景
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x000000);
+        
+        // 创建相机
+        const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.set(15, 15, 15);
+        camera.lookAt(0, 0, 0);
+        
+        // 创建渲染器
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(window.devicePixelRatio);
+        document.body.appendChild(renderer.domElement);
+        
+        // 添加轨道控制器
+        const controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.05;
+        controls.screenSpacePanning = true;
+        controls.minDistance = 5;
+        controls.maxDistance = 50;
+        
+        // 添加环境光
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
+        scene.add(ambientLight);
+        
+        // 添加方向光
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
+        directionalLight.position.set(10, 10, 10);
+        scene.add(directionalLight);
+        
+        // 创建波形
+        let wave;
+        function createWave() {
+            if (wave) scene.remove(wave);
+            
+            const geometry = new THREE.BufferGeometry();
+            const points = [];
+            const colors = [];
+            
+            const wavelength = parseFloat(document.getElementById('wavelength').value);
+            const frequency = parseFloat(document.getElementById('frequency').value);
+            const k = 2 * Math.PI / wavelength;
+            const omega = 2 * Math.PI * frequency;
+            
+            // 更新显示值
+            document.getElementById('wavelength-value').textContent = wavelength.toFixed(1);
+            document.getElementById('frequency-value').textContent = frequency.toFixed(1);
+            document.getElementById('k-value').textContent = k.toFixed(2) + 'π';
+            document.getElementById('omega-value').textContent = omega.toFixed(2) + 'π';
+            
+            // 创建波形点
+            for (let x = -10; x <= 10; x += 0.1) {
+                for (let t = 0; t <= 2 * Math.PI; t += 0.1) {
+                    const y = Math.sin(k * x - omega * t);
+                    points.push(x, y, t);
+                    
+                    // 添加颜色渐变
+                    const hue = (t / (2 * Math.PI)) * 0.8;
+                    colors.push(hue, 1, 1);
+                }
+            }
+            
+            geometry.setAttribute('position', new THREE.Float32BufferAttribute(points, 3));
+            geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+            
+            const material = new THREE.PointsMaterial({
+                size: 0.1,
+                vertexColors: true,
+                transparent: true,
+                opacity: 0.8
+            });
+            
+            wave = new THREE.Points(geometry, material);
+            scene.add(wave);
+        }
+        
+        // 添加坐标轴
+        const axesHelper = new THREE.AxesHelper(10);
+        scene.add(axesHelper);
+        
+        // 添加网格
+        const gridHelper = new THREE.GridHelper(20, 20);
+        scene.add(gridHelper);
+        
+        // 添加参考线
+        function createReferenceLine(start, end, color) {
+            const geometry = new THREE.BufferGeometry().setFromPoints([start, end]);
+            const material = new THREE.LineBasicMaterial({ color: color });
+            return new THREE.Line(geometry, material);
+        }
+        
+        // 创建波长标记
+        function createWavelengthMarker() {
+            const wavelength = parseFloat(document.getElementById('wavelength').value);
+            const marker = createReferenceLine(
+                new THREE.Vector3(0, -0.5, 0),
+                new THREE.Vector3(wavelength, -0.5, 0),
+                0xffff00
+            );
+            return marker;
+        }
+        
+        // 创建周期标记
+        function createPeriodMarker() {
+            const frequency = parseFloat(document.getElementById('frequency').value);
+            const period = 2 * Math.PI / (2 * Math.PI * frequency);
+            const marker = createReferenceLine(
+                new THREE.Vector3(-10.5, -0.5, 0),
+                new THREE.Vector3(-10.5, -0.5, period),
+                0x00ffff
+            );
+            return marker;
+        }
+        
+        let wavelengthMarker = createWavelengthMarker();
+        let periodMarker = createPeriodMarker();
+        scene.add(wavelengthMarker);
+        scene.add(periodMarker);
+        
+        // 添加事件监听器
+        document.getElementById('wavelength').addEventListener('input', function() {
+            scene.remove(wavelengthMarker);
+            wavelengthMarker = createWavelengthMarker();
+            scene.add(wavelengthMarker);
+            createWave();
+        });
+        
+        document.getElementById('frequency').addEventListener('input', function() {
+            scene.remove(periodMarker);
+            periodMarker = createPeriodMarker();
+            scene.add(periodMarker);
+            createWave();
+        });
+        
+        // 创建初始波形
+        createWave();
+        
+        // 动画循环
+        function animate() {
+            requestAnimationFrame(animate);
+            controls.update();
+            renderer.render(scene, camera);
+        }
+        
+        // 处理窗口大小变化
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+        
+        // 移除加载提示
+        document.getElementById('loading').style.display = 'none';
+        
+        // 开始动画
+        animate();
+    </script>
+</body>
+</html> 

@@ -1,0 +1,1006 @@
+我看了你的代码，发现了几个主要的问题，这些问题可能导致"播放问题"。让我帮你修复：
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>万有吸力之虹 - 3D交互空间</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.7.0/p5.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: #0a0a0a;
+            font-family: 'Arial', sans-serif;
+            overflow: hidden;
+            touch-action: none;
+            user-select: none;
+        }
+        
+        #info {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: #fff;
+            font-size: 14px;
+            z-index: 1000;
+            background: rgba(0,0,0,0.7);
+            padding: 10px;
+            border-radius: 5px;
+            max-width: 300px;
+            opacity: 0;
+            animation: fadeIn 1s ease-in forwards;
+        }
+        
+        @keyframes fadeIn {
+            to { opacity: 1; }
+        }
+        
+        #controls {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+            z-index: 1000;
+            opacity: 0;
+            animation: slideUp 1s ease-in 0.5s forwards;
+        }
+        
+        @keyframes slideUp {
+            from { 
+                opacity: 0;
+                transform: translateX(-50%) translateY(20px);
+            }
+            to { 
+                opacity: 1;
+                transform: translateX(-50%) translateY(0);
+            }
+        }
+        
+        .control-btn {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.3);
+            color: white;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 12px;
+        }
+        
+        .control-btn:hover {
+            background: rgba(255,255,255,0.2);
+            transform: translateY(-2px);
+        }
+        
+        .control-btn.active {
+            background: rgba(255,0,150,0.5);
+            box-shadow: 0 0 20px rgba(255,0,150,0.3);
+        }
+        
+        @media (max-width: 768px) {
+            #info {
+                font-size: 12px;
+                max-width: 250px;
+                top: 10px;
+                left: 10px;
+            }
+            
+            #controls {
+                bottom: 10px;
+                flex-wrap: wrap;
+                max-width: 90%;
+            }
+            
+            .control-btn {
+                padding: 8px 12px;
+                font-size: 11px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="info">
+        <h3>🌈 万有吸力之虹</h3>
+        <p>• 拖拽旋转 • 滚轮缩放</p>
+        <p>• 触摸设备支持手势</p>
+        <p>• 数字键1-7切换模式</p>
+    </div>
+    
+    <div id="controls">
+        <button class="control-btn active" onclick="setMode('rainbow')">🌈彩虹</button>
+        <button class="control-btn" onclick="setMode('gravity')">🌍重力</button>
+        <button class="control-btn" onclick="setMode('rocket')">🚀火箭</button>
+        <button class="control-btn" onclick="setMode('entropy')">⚡熵增</button>
+        <button class="control-btn" onclick="setMode('paranoia')">🌀偏执</button>
+        <button class="control-btn" onclick="setMode('history')">⏳历史</button>
+        <button class="control-btn" onclick="setMode('connection')">🔗连接</button>
+    </div>
+
+    <script>
+        // 全局变量
+        let particles = [];
+        let rockets = [];
+        let rainbows = [];
+        let mode = 'rainbow';
+        let time = 0;
+        let isPressed = false;
+        let lastX = 0, lastY = 0;
+        let rotX = 0, rotY = 0;
+        let zoom = 1;
+        
+        // 新增全局变量
+        let textFragments = [];
+        let connections = [];
+        let historyEvents = []; // 用于历史模式
+        let observerPosition; // 观察者位置
+        
+        // 优化的常量
+        const GRAVITY = 0.08;
+        const MAX_PARTICLES = 300; // 减少粒子数量以提高性能
+        const MAX_ROCKETS = 15; // 减少火箭数量
+        const MAX_TEXT_FRAGMENTS = 20; // 减少文本碎片数量
+        const MAX_CONNECTIONS = 50; // 减少连接数量
+        const PARTICLE_INTERACTION_RADIUS = 50;
+        const TEXT_FRAGMENT_ACTIVATION_RADIUS = 80;
+        
+        // 彩虹色彩
+        const rainbowColors = [
+            [255, 0, 0], [255, 127, 0], [255, 255, 0],
+            [127, 255, 0], [0, 255, 0], [0, 255, 127],
+            [0, 255, 255], [0, 127, 255], [0, 0, 255],
+            [127, 0, 255], [255, 0, 255], [255, 0, 127]
+        ];
+        
+        const modeColors = {
+            rainbow: rainbowColors,
+            gravity: [[100, 150, 255], [150, 200, 255], [200, 220, 255]],
+            rocket: [[255, 100, 0], [255, 200, 0], [255, 255, 100]],
+            entropy: [[255, 255, 255], [200, 200, 200], [150, 150, 150]],
+            paranoia: [[255, 0, 100], [200, 0, 200], [100, 0, 255]],
+            history: [[150, 100, 50], [200, 150, 100], [250, 200, 150]],
+            connection: [[0, 200, 255], [100, 255, 255], [200, 255, 255]]
+        };
+        
+        // 粒子类
+        class Particle {
+            constructor(x, y, z, type = 'normal') {
+                this.x = x || random(-200, 200);
+                this.y = y || random(-200, 200);
+                this.z = z || random(-200, 200);
+                this.vx = random(-1, 1);
+                this.vy = random(-1, 1);
+                this.vz = random(-1, 1);
+                this.life = 255;
+                this.size = random(3, 8);
+                this.color = random(modeColors[mode]);
+                this.type = type;
+                this.decayRate = random(0.5, 2);
+                this.target = null;
+                this.connectionStrength = 0;
+            }
+            
+            update() {
+                // 应用模式特定的力
+                switch(mode) {
+                    case 'gravity':
+                        this.vy += GRAVITY;
+                        // 模拟多个引力源
+                        for (let i = 0; i < historyEvents.length; i++) {
+                            let event = historyEvents[i];
+                            let distSq = (this.x - event.x)**2 + (this.y - event.y)**2 + (this.z - event.z)**2;
+                            if (distSq < 10000) {
+                                let force = event.strength / (distSq + 100);
+                                this.vx -= (this.x - event.x) * force;
+                                this.vy -= (this.y - event.y) * force;
+                                this.vz -= (this.z - event.z) * force;
+                            }
+                        }
+                        break;
+                    case 'rocket':
+                        this.vy -= 0.02;
+                        break;
+                    case 'entropy':
+                        this.vx += random(-0.05, 0.05);
+                        this.vy += random(-0.05, 0.05);
+                        this.vz += random(-0.05, 0.05);
+                        this.life -= this.decayRate;
+                        break;
+                    case 'paranoia':
+                        const centerForce = 0.001;
+                        this.vx -= this.x * centerForce;
+                        this.vy -= this.y * centerForce;
+                        this.vz -= this.z * centerForce;
+                        // 粒子之间相互排斥
+                        for (let other of particles) {
+                            if (other !== this) {
+                                let d = dist(this.x, this.y, this.z, other.x, other.y, other.z);
+                                if (d < PARTICLE_INTERACTION_RADIUS && d > 0) {
+                                    let repulsionForce = 0.5 / (d * d);
+                                    this.vx += (this.x - other.x) * repulsionForce;
+                                    this.vy += (this.y - other.y) * repulsionForce;
+                                    this.vz += (this.z - other.z) * repulsionForce;
+                                }
+                            }
+                        }
+                        break;
+                    case 'connection':
+                        // 粒子尝试连接到最近的粒子
+                        let closestParticle = null;
+                        let minDist = Infinity;
+                        for (let other of particles) {
+                            if (other !== this) {
+                                let d = dist(this.x, this.y, this.z, other.x, other.y, other.z);
+                                if (d < minDist) {
+                                    minDist = d;
+                                    closestParticle = other;
+                                }
+                            }
+                        }
+                        if (closestParticle && minDist < 150) {
+                            let attractionForce = 0.0005;
+                            this.vx += (closestParticle.x - this.x) * attractionForce;
+                            this.vy += (closestParticle.y - this.y) * attractionForce;
+                            this.vz += (closestParticle.z - this.z) * attractionForce;
+                            this.connectionStrength = map(minDist, 0, 150, 1, 0);
+                        } else {
+                            this.connectionStrength = 0;
+                        }
+                        break;
+                    case 'history':
+                        // 粒子被历史事件吸引或排斥
+                        if (this.target) {
+                            let targetDist = dist(this.x, this.y, this.z, this.target.x, this.target.y, this.target.z);
+                            if (targetDist < 10) {
+                                this.target = null;
+                            } else {
+                                let steerForce = 0.01;
+                                this.vx += (this.target.x - this.x) * steerForce;
+                                this.vy += (this.target.y - this.y) * steerForce;
+                                this.vz += (this.target.z - this.z) * steerForce;
+                            }
+                        } else if (historyEvents.length > 0) {
+                            this.target = random(historyEvents);
+                        }
+                        break;
+                }
+                
+                this.x += this.vx;
+                this.y += this.vy;
+                this.z += this.vz;
+                
+                this.life -= 1;
+                
+                // 边界反弹
+                if (abs(this.x) > 300) this.vx *= -0.8;
+                if (abs(this.y) > 300) this.vy *= -0.8;
+                if (abs(this.z) > 300) this.vz *= -0.8;
+            }
+            
+            draw() {
+                push();
+                translate(this.x, this.y, this.z);
+                
+                let displayColor = [...this.color];
+                if (mode === 'entropy') {
+                    displayColor[3] = this.life;
+                } else if (mode === 'connection') {
+                    displayColor[3] = map(this.connectionStrength, 0, 1, 50, 255);
+                } else {
+                    displayColor[3] = this.life;
+                }
+                
+                fill(displayColor[0], displayColor[1], displayColor[2], displayColor[3]);
+                noStroke();
+                
+                // 根据模式绘制不同形状
+                if (mode === 'gravity') {
+                    box(this.size);
+                } else if (mode === 'rocket') {
+                    rotateX(HALF_PI);
+                    cone(this.size * 0.5, this.size * 1.5);
+                } else if (mode === 'entropy') {
+                    if (this.type === 'decay') {
+                        torus(this.size * 0.8, this.size * 0.3);
+                    } else {
+                        sphere(this.size);
+                    }
+                } else if (mode === 'paranoia') {
+                    if (this.type === 'key') {
+                        box(this.size * 1.2);
+                    } else {
+                        sphere(this.size);
+                    }
+                } else if (mode === 'history') {
+                    cylinder(this.size * 0.5, this.size * 1.5);
+                } else if (mode === 'connection') {
+                    sphere(this.size * 0.8);
+                } else {
+                    sphere(this.size);
+                }
+                pop();
+            }
+            
+            isDead() {
+                return this.life <= 0;
+            }
+        }
+        
+        // 火箭类 - 修复了vx和vz未定义的问题
+        class Rocket {
+            constructor() {
+                this.x = random(-200, 200);
+                this.y = 250;
+                this.z = random(-200, 200);
+                this.vx = 0; // 初始化vx
+                this.vy = random(-5, -8);
+                this.vz = 0; // 初始化vz
+                this.life = 100;
+                this.trail = [];
+                this.targetX = random(-200, 200);
+                this.targetZ = random(-200, 200);
+                this.explosionParticles = [];
+            }
+            
+            update() {
+                // 追踪目标
+                let dx = this.targetX - this.x;
+                let dz = this.targetZ - this.z;
+                let angle = atan2(dx, dz);
+                
+                this.vx = sin(angle) * 2;
+                this.vz = cos(angle) * 2;
+                
+                this.x += this.vx;
+                this.y += this.vy;
+                this.z += this.vz;
+                
+                this.vy += GRAVITY * 0.3;
+                
+                this.trail.push({x: this.x, y: this.y, z: this.z});
+                if (this.trail.length > 20) this.trail.shift();
+                
+                // 接近目标或达到最高点时爆炸
+                if (this.vy > 0 || dist(this.x, this.y, this.z, this.targetX, 0, this.targetZ) < 50) {
+                    this.explode();
+                }
+                
+                this.life--;
+                
+                // 更新爆炸粒子
+                for (let i = this.explosionParticles.length - 1; i >= 0; i--) {
+                    this.explosionParticles[i].update();
+                    if (this.explosionParticles[i].isDead()) {
+                        this.explosionParticles.splice(i, 1);
+                    }
+                }
+            }
+            
+            explode() {
+                if (this.explosionParticles.length === 0) {
+                    for (let i = 0; i < 30; i++) {
+                        this.explosionParticles.push(new Particle(
+                            this.x + random(-30, 30),
+                            this.y + random(-30, 30),
+                            this.z + random(-30, 30),
+                            'explosion'
+                        ));
+                    }
+                }
+                this.life = 0;
+            }
+            
+            draw() {
+                if (this.life > 0) {
+                    // 绘制火箭
+                    push();
+                    translate(this.x, this.y, this.z);
+                    fill(255, 100, 0);
+                    rotateX(HALF_PI);
+                    cone(4, 15);
+                    pop();
+                    
+                    // 绘制轨迹
+                    if (this.trail.length > 1) {
+                        stroke(255, 200, 0, 150);
+                        strokeWeight(3);
+                        noFill();
+                        beginShape();
+                        for (let p of this.trail) {
+                            vertex(p.x, p.y, p.z);
+                        }
+                        endShape();
+                    }
+                }
+                
+                // 绘制爆炸粒子
+                for (let p of this.explosionParticles) {
+                    p.draw();
+                }
+            }
+            
+            isDead() {
+                return this.life <= 0 && this.explosionParticles.length === 0;
+            }
+        }
+        
+        // TextFragment类 - 简化了screenToWorld的使用
+        class TextFragment {
+            constructor(text, x, y, z) {
+                this.text = text;
+                this.x = x || random(-250, 250);
+                this.y = y || random(-250, 250);
+                this.z = z || random(-250, 250);
+                this.vx = random(-0.5, 0.5);
+                this.vy = random(-0.5, 0.5);
+                this.vz = random(-0.5, 0.5);
+                this.life = 255;
+                this.alpha = 0;
+                this.activated = false;
+                this.size = 16;
+            }
+            
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                this.z += this.vz;
+                
+                // 边界反弹
+                if (abs(this.x) > 280) this.vx *= -1;
+                if (abs(this.y) > 280) this.vy *= -1;
+                if (abs(this.z) > 280) this.vz *= -1;
+                
+                // 简化激活逻辑：基于距离中心点的距离
+                let d = dist(this.x, this.y, this.z, 0, 0, 0);
+                
+                if (d < TEXT_FRAGMENT_ACTIVATION_RADIUS) {
+                    this.activated = true;
+                    this.alpha = min(this.alpha + 5, 255);
+                    this.size = min(this.size + 0.5, 24);
+                } else {
+                    this.activated = false;
+                    this.alpha = max(this.alpha - 5, 0);
+                    this.size = max(this.size - 0.5, 16);
+                }
+            }
+            
+            draw() {
+                if (this.alpha > 0) {
+                    push();
+                    translate(this.x, this.y, this.z);
+                    
+                    // 简化朝向相机的计算
+                    rotateY(-rotY);
+                    rotateX(-rotX);
+                    
+                    fill(255, 255, 255, this.alpha);
+                    textAlign(CENTER, CENTER);
+                    textSize(this.size);
+                    text(this.text, 0, 0);
+                    pop();
+                }
+            }
+            
+            isDead() {
+                return this.life <= 0;
+            }
+        }
+        
+        // Connection类
+        class Connection {
+            constructor(p1, p2) {
+                this.p1 = p1;
+                this.p2 = p2;
+                this.life = 255;
+            }
+            
+            update() {
+                let d = dist(this.p1.x, this.p1.y, this.p1.z, this.p2.x, this.p2.y, this.p2.z);
+                if (d > 150) {
+                    this.life -= 5;
+                } else {
+                    this.life = min(255, this.life + 5);
+                }
+            }
+            
+            draw() {
+                stroke(0, 200, 255, this.life * 0.8);
+                strokeWeight(map(this.life, 0, 255, 0.5, 2));
+                line(this.p1.x, this.p1.y, this.p1.z, this.p2.x, this.p2.y, this.p2.z);
+            }
+            
+            isDead() {
+                return this.life <= 0 || this.p1.isDead() || this.p2.isDead();
+            }
+        }
+        
+        // HistoryEvent类
+        class HistoryEvent {
+            constructor(text, x, y, z, strength = 1) {
+                this.text = text;
+                this.x = x;
+                this.y = y;
+                this.z = z;
+                this.strength = strength;
+                this.life = 255;
+                this.radius = 10;
+                this.pulse = 0;
+            }
+            
+            update() {
+                this.pulse = (sin(time * 0.1) + 1) * 0.5;
+                this.life -= 0.5;
+            }
+            
+            draw() {
+                push();
+                translate(this.x, this.y, this.z);
+                
+                // 绘制事件核心
+                fill(150, 100, 50, this.life);
+                noStroke();
+                sphere(this.radius + this.pulse * 5);
+                
+                // 绘制事件影响范围
+                stroke(200, 150, 100, this.life * 0.5);
+                noFill();
+                sphere(this.radius * 3 + this.pulse * 10);
+                
+                // 绘制文本
+                fill(255, 255, 255, this.life);
+                textAlign(CENTER, CENTER);
+                textSize(14);
+                text(this.text, 0, this.radius * 4);
+                pop();
+            }
+            
+            isDead() {
+                return this.life <= 0;
+            }
+        }
+        
+        // p5.js 主函数
+        function setup() {
+            createCanvas(windowWidth, windowHeight, WEBGL);
+            
+            // 立即创建少量粒子
+            for (let i = 0; i < 100; i++) {
+                particles.push(new Particle());
+            }
+            
+            // 初始化文本碎片
+            const coreConcepts = [
+                "熵", "控制", "偏执", "概率", "火箭", "弹道", "命运", "无序",
+                "引力", "虹", "V-2", "普罗佐恩", "斯洛思洛普", "格拉维蒂", "历史", "连接"
+            ];
+            for (let i = 0; i < MAX_TEXT_FRAGMENTS; i++) {
+                textFragments.push(new TextFragment(random(coreConcepts)));
+            }
+            
+            // 初始化历史事件
+            historyEvents.push(new HistoryEvent("柏林", -150, 0, 100, 2));
+            historyEvents.push(new HistoryEvent("伦敦", 100, 0, -150, 1.5));
+            historyEvents.push(new HistoryEvent("佩内明德", 0, 100, 0, 2.5));
+            
+            observerPosition = createVector(0, 0, 500);
+            
+            console.log('🌈 万有吸力之虹已就绪！');
+        }
+        
+        function draw() {
+            background(5, 5, 15);
+            time++;
+            
+            // 简化的光照
+            ambientLight(50);
+            directionalLight(100, 100, 150, 0, -1, 0);
+            pointLight(255, 255, 255, 0, 0, 500);
+            
+            // 相机控制
+            rotateX(rotX);
+            rotateY(rotY);
+            scale(zoom);
+            
+            // 绘制网格
+            drawGrid();
+            
+            // 绘制特效
+            drawModeEffects();
+            
+            // 更新粒子
+            updateParticles();
+            
+            // 更新火箭
+            if (mode === 'rocket' && frameCount % 60 === 0 && rockets.length < MAX_ROCKETS) {
+                rockets.push(new Rocket());
+            }
+            updateRockets();
+            
+            // 更新文本碎片
+            updateTextFragments();
+            
+            // 更新连接 (仅在连接模式下)
+            if (mode === 'connection') {
+                updateConnections();
+            }
+            
+            // 更新历史事件 (仅在历史模式下)
+            if (mode === 'history') {
+                updateHistoryEvents();
+            }
+        }
+        
+        function drawGrid() {
+            stroke(30, 30, 60, 80);
+            strokeWeight(1);
+            
+            for (let i = -300; i <= 300; i += 60) {
+                line(i, -300, 0, i, 300, 0);
+                line(-300, i, 0, 300, i, 0);
+            }
+            
+            // 增加Z轴网格线
+            for (let i = -300; i <= 300; i += 60) {
+                line(-300, 0, i, 300, 0, i);
+                line(0, -300, i, 0, 300, i);
+            }
+        }
+        
+        function drawModeEffects() {
+            switch(mode) {
+                case 'rainbow':
+                    drawRainbow();
+                    break;
+                case 'gravity':
+                    drawGravityField();
+                    break;
+                case 'paranoia':
+                    drawParanoiaStructure();
+                    break;
+                case 'entropy':
+                    drawEntropyField();
+                    break;
+                case 'history':
+                    drawHistoryTimeline();
+                    break;
+                case 'connection':
+                    drawConnections();
+                    break;
+            }
+            drawTextFragments();
+        }
+        
+        function drawRainbow() {
+            push();
+            rotateY(time * 0.01);
+            
+            for (let band = 0; band < rainbowColors.length; band++) {
+                stroke(rainbowColors[band][0], rainbowColors[band][1], rainbowColors[band][2], 120);
+                strokeWeight(5);
+                noFill();
+                
+                beginShape();
+                for (let a = 0; a <= PI; a += 0.05) {
+                    const r = 180 + band * 8;
+                    const x = cos(a) * r;
+                    const y = sin(a) * r - 50;
+                    const z = sin(a * 5 + time * 0.08) * 30;
+                    vertex(x, y, z);
+                }
+                endShape();
+                
+                // 增加彩虹的"虹吸"效果
+                if (band % 2 === 0) {
+                    stroke(rainbowColors[band][0], rainbowColors[band][1], rainbowColors[band][2], 50);
+                    strokeWeight(2);
+                    beginShape();
+                    for (let a = 0; a <= PI; a += 0.1) {
+                        const r = 180 + band * 8 + sin(time * 0.1 + a) * 10;
+                        const x = cos(a) * r;
+                        const y = sin(a) * r - 50;
+                        const z = cos(a * 2 + time * 0.03) * 15;
+                        vertex(x, y, z);
+                    }
+                    endShape();
+                }
+            }
+            pop();
+        }
+        
+        function drawGravityField() {
+            stroke(100, 150, 255, 60);
+            strokeWeight(1);
+            noFill();
+            
+            for (let r = 60; r < 240; r += 40) {
+                for (let i = 0; i < 12; i++) {
+                    const a = i * TWO_PI / 12;
+                    const x = cos(a) * r;
+                    const z = sin(a) * r;
+                    line(0, 0, 0, x, 0, z);
+                }
+                
+                push();
+                rotateX(HALF_PI);
+                ellipse(0, 0, r * 2);
+                pop();
+            }
+            
+            // 绘制引力源
+            for (let event of historyEvents) {
+                push();
+                translate(event.x, event.y, event.z);
+                fill(50, 100, 200, 150);
+                noStroke();
+                sphere(event.strength * 10);
+                pop();
+            }
+        }
+        
+        function drawParanoiaStructure() {
+            push();
+            for (let i = 0; i < 6; i++) {
+                push();
+                rotateY(i * PI / 3 + time * 0.02);
+                translate(120, 0, 0);
+                rotateX(sin(time * 0.03 + i) * 0.8);
+                
+                fill(255, 0, 100, 100);
+                stroke(255, 0, 200);
+                strokeWeight(2);
+                box(20, 80, 20);
+                pop();
+            }
+            
+            // 增加偏执模式下的"监视"效果
+            stroke(255, 200, 0, 50);
+            strokeWeight(1);
+            noFill();
+            
+            for (let i = 0; i < min(particles.length, 20); i++) { // 限制连接数量提高性能
+                for (let j = i + 1; j < min(particles.length, 20); j++) {
+                    let p1 = particles[i];
+                    let p2 = particles[j];
+                    let d = dist(p1.x, p1.y, p1.z, p2.x, p2.y, p2.z);
+                    if (d < 100) {
+                        line(p1.x, p1.y, p1.z, p2.x, p2.y, p2.z);
+                    }
+                }
+            }
+            pop();
+        }
+        
+        function drawEntropyField() {
+            stroke(255, 255, 255, 50);
+            strokeWeight(0.5);
+            noFill();
+            
+            // 绘制随机的"噪声"线
+            for (let i = 0; i < 50; i++) {
+                let x1 = random(-300, 300);
+                let y1 = random(-300, 300);
+                let z1 = random(-300, 300);
+                let x2 = random(-300, 300);
+                let y2 = random(-300, 300);
+                let z2 = random(-300, 300);
+                line(x1, y1, z1, x2, y2, z2);
+            }
+            
+            // 绘制逐渐消散的能量场
+            push();
+            rotateX(time * 0.005);
+            rotateY(time * 0.007);
+            fill(255, 255, 255, map(sin(time * 0.02), -1, 1, 10, 50));
+            sphere(200);
+            pop();
+        }
+        
+        function drawHistoryTimeline() {
+            stroke(150, 100, 50, 100);
+            strokeWeight(2);
+            
+            // 绘制时间轴
+            line(-300, 0, 0, 300, 0, 0);
+            
+            // 绘制历史事件
+            for (let event of historyEvents) {
+                event.draw();
+            }
+            
+            // 绘制连接历史事件的"因果链"
+            stroke(200, 150, 100, 80);
+            strokeWeight(1);
+            noFill();
+            beginShape();
+            for (let event of historyEvents) {
+                vertex(event.x, event.y, event.z);
+            }
+            endShape();
+        }
+        
+        function drawConnections() {
+            for (let conn of connections) {
+                conn.draw();
+            }
+            
+            // 绘制粒子之间的潜在连接
+            stroke(0, 255, 255, 30);
+            strokeWeight(0.5);
+            for (let i = 0; i < min(particles.length, 30); i++) { // 限制连接数量
+                for (let j = i + 1; j < min(particles.length, 30); j++) {
+                    let p1 = particles[i];
+                    let p2 = particles[j];
+                    let d = dist(p1.x, p1.y, p1.z, p2.x, p2.y, p2.z);
+                    if (d < 150) {
+                        line(p1.x, p1.y, p1.z, p2.x, p2.y, p2.z);
+                    }
+                }
+            }
+        }
+        
+        function updateParticles() {
+            // 添加新粒子
+            if (particles.length < MAX_PARTICLES && frameCount % 5 === 0) { // 降低生成频率
+                particles.push(new Particle());
+            }
+            
+            for (let i = particles.length - 1; i >= 0; i--) {
+                particles[i].update();
+                particles[i].draw();
+                
+                if (particles[i].isDead()) {
+                    particles.splice(i, 1);
+                }
+            }
+        }
+        
+        function updateRockets() {
+            for (let i = rockets.length - 1; i >= 0; i--) {
+                rockets[i].update();
+                rockets[i].draw();
+                
+                if (rockets[i].isDead()) {
+                    rockets.splice(i, 1);
+                }
+            }
+        }
+        
+        function updateTextFragments() {
+            for (let i = textFragments.length - 1; i >= 0; i--) {
+                textFragments[i].update();
+            }
+        }
+        
+        function drawTextFragments() {
+            for (let tf of textFragments) {
+                tf.draw();
+            }
+        }
+        
+        function updateConnections() {
+            // 清除旧连接
+            connections = [];
+            
+            // 基于粒子距离创建新连接 - 限制数量提高性能
+            for (let i = 0; i < min(particles.length, 20); i++) {
+                for (let j = i + 1; j < min(particles.length, 20); j++) {
+                    let p1 = particles[i];
+                    let p2 = particles[j];
+                    let d = dist(p1.x, p1.y, p1.z, p2.x, p2.y, p2.z);
+                    if (d < 100) {
+                        connections.push(new Connection(p1, p2));
+                    }
+                }
+            }
+            
+            for (let i = connections.length - 1; i >= 0; i--) {
+                connections[i].update();
+                if (connections[i].isDead()) {
+                    connections.splice(i, 1);
+                }
+            }
+        }
+        
+        function updateHistoryEvents() {
+            for (let i = historyEvents.length - 1; i >= 0; i--) {
+                historyEvents[i].update();
+                if (historyEvents[i].isDead()) {
+                    historyEvents.splice(i, 1);
+                    // 重新生成历史事件
+                    const newEvents = [
+                        "V-2", "熵", "控制", "偏执", "概率", "命运", "无序", "引力", "虹", "普罗佐恩", "斯洛思洛普", "格拉维蒂", "历史", "连接"
+                    ];
+                    historyEvents.push(new HistoryEvent(random(newEvents), random(-200, 200), random(-200, 200), random(-200, 200), random(1, 3)));
+                }
+            }
+        }
+        
+        // 交互控制
+        function mousePressed() {
+            isPressed = true;
+            lastX = mouseX;
+            lastY = mouseY;
+        }
+        
+        function mouseDragged() {
+            if (isPressed) {
+                rotY += (mouseX - lastX) * 0.01;
+                rotX -= (mouseY - lastY) * 0.01;
+                rotX = constrain(rotX, -PI/2, PI/2);
+                lastX = mouseX;
+                lastY = mouseY;
+            }
+        }
+        
+        function mouseReleased() {
+            isPressed = false;
+        }
+        
+        function mouseWheel(event) {
+            zoom *= (1 - event.delta * 0.001);
+            zoom = constrain(zoom, 0.3, 2.5);
+            return false;
+        }
+        
+        function touchStarted() {
+            mousePressed();
+            return false;
+        }
+        
+        function touchMoved() {
+            mouseDragged();
+            return false;
+        }
+        
+        function touchEnded() {
+            mouseReleased();
+            return false;
+        }
+        
+        function keyPressed() {
+            const modes = ['rainbow', 'gravity', 'rocket', 'entropy', 'paranoia', 'history', 'connection'];
+            const num = parseInt(key);
+            if (num >= 1 && num <= modes.length) {
+                setMode(modes[num - 1]);
+            }
+        }
+        
+        function windowResized() {
+            resizeCanvas(windowWidth, windowHeight);
+        }
+        
+        // 模式切换
+        function setMode(newMode) {
+            mode = newMode;
+            
+            // 更新按钮状态
+            document.querySelectorAll('.control-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // 找到对应的按钮并激活
+            const buttons = document.getElementById('controls').children;
+            for (let i = 0; i < buttons.length; i++) {
+                if (buttons[i].getAttribute('onclick') === `setMode('${newMode}')`) {
+                    buttons[i].classList.add('active');
+                    break;
+                }
+            }
+            
+            // 更新现有粒子颜色
+            particles.forEach(p => {
+                p.color = random(modeColors[mode]);
+            });
+            
+            console.log(`🎮 切换到模式: ${newMode}`);
+        }
+    </script>
+</body>
+</html>

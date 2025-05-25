@@ -1,3 +1,5 @@
+好的！我来重新设计，让场景更震撼和谐，移除突兀的防护罩，让飞船更明显，并增加更多视觉效果：
+
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -52,6 +54,111 @@
     <meta name="twitter:image" content="<?php echo htmlspecialchars($image_url); ?>">
 
     <meta name="description" content="见证、记录、储存人类点点滴的灵性。" />
+
+    <!-- P5.js 库引入 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.7.0/p5.min.js"></script>
+    
+    <!-- Three.js 库引入 -->
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "https://cdn.jsdelivr.net/npm/three@0.164.1/build/three.module.js",
+            "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.164.1/examples/jsm/"
+        }
+    }
+    </script>
+    <script type="module">
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+        import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+
+        let scene, camera, renderer, controls, helmet;
+        let isHelmetLoaded = false;
+
+        function initThreeJS() {
+            // 创建场景
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x000000);
+
+            // 创建相机
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.set(0, 0, 500);
+
+            // 创建渲染器
+            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(window.devicePixelRatio);
+            renderer.shadowMap.enabled = true;
+            document.getElementById('starfield').appendChild(renderer.domElement);
+
+            // 添加轨道控制器
+            controls = new OrbitControls(camera, renderer.domElement);
+            controls.target.set(0, 0, 0);
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.05;
+            controls.update();
+
+            // 添加光源
+            const ambientLight = new THREE.AmbientLight(0x404040, 0.5);
+            scene.add(ambientLight);
+            
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+            directionalLight.position.set(5, 5, 5);
+            directionalLight.castShadow = true;
+            scene.add(directionalLight);
+            
+            const pointLight = new THREE.PointLight(0xffffff, 0.5, 100);
+            pointLight.position.set(-5, 5, 5);
+            scene.add(pointLight);
+
+            // 加载头盔模型
+            const loader = new GLTFLoader();
+            loader.load(
+                'https://threejs.org/examples/models/gltf/DamagedHelmet/gLTF/DamagedHelmet.gltf',
+                (gltf) => {
+                    helmet = gltf.scene;
+                    helmet.scale.set(50, 50, 50);
+                    helmet.position.set(0, 0, 0);
+                    helmet.rotation.y = Math.PI;
+                    helmet.castShadow = true;
+                    helmet.receiveShadow = true;
+                    scene.add(helmet);
+                    isHelmetLoaded = true;
+                    console.log('Helmet loaded successfully');
+                },
+                (xhr) => {
+                    console.log(`Loading ${xhr.loaded / xhr.total * 100}%`);
+                },
+                (error) => {
+                    console.error('Error loading GLTF model:', error);
+                }
+            );
+
+            // 开始动画循环
+            animate();
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            
+            if (isHelmetLoaded) {
+                helmet.rotation.y += 0.005;
+            }
+            
+            controls.update();
+            renderer.render(scene, camera);
+        }
+
+        // 窗口大小调整
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        // 初始化Three.js
+        initThreeJS();
+    </script>
 
     <style>
         /* 全局样式和字体导入 */
@@ -313,10 +420,22 @@
                 font-size: 0.9em;
             }
         }
+
+        /* 添加Three.js画布样式 */
+        #starfield canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 1;
+        }
+        
+        #starfield canvas:last-child {
+            z-index: 2;
+        }
     </style>
 </head>
 <body>
-    <canvas id="starfield"></canvas>
+    <div id="starfield"></div>
 
     <div class="container">
         <header>
@@ -337,7 +456,7 @@
     </div>
 
     <footer>
-        <p>&copy; <?php echo date("Y"); ?> ・ 所有权归skywalker</p>
+        <p>&copy; <?php echo date("Y"); ?> ・ 所有权归jamesband</p>
     </footer>
 
     <script src="https://res.wx.qq.com/open/js/jweixin-1.6.0.js"></script>
@@ -420,405 +539,989 @@
     </script>
 
     <script>
-        // Starfield animation script
-        const canvas = document.getElementById('starfield');
-        const ctx = canvas.getContext('2d');
-
+        // P5.js 3D星空动画 - 震撼和谐版
         let stars = [];
-        const numStars = 150;
-        const connectionDistance = 40; 
-        const mouseInteractionRadius = 150; 
-        let mouse = { x: null, y: null };
-
-        let spaceships = []; 
-        const numSpaceships = 3; 
-        const spaceshipSize = 40; 
-        const SVG_SPACESHIP_STRING = '<svg width="40" height="60" viewBox="0 0 40 60" xmlns="http://www.w3.org/2000/svg"><path d="M20,0 L10,25 L10,50 Q20,60 30,50 L30,25 Z" fill="#cccccc" stroke="#999999" stroke-width="1"/><path d="M20,0 L15,10 L25,10 Z" fill="#aaaaaa"/><path d="M10,40 L5,55 L10,50 Z" fill="#bbbbbb"/><path d="M30,40 L35,55 L30,50 Z" fill="#bbbbbb"/></svg>';
-        const starToSpaceshipShieldFactor = 1.8; 
-        const spaceshipToSpaceshipShieldFactor = 1.6; 
-
-        function resizeCanvas() {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-        }
-        window.addEventListener('resize', resizeCanvas);
-        resizeCanvas();
-
-        class Vector {
-            constructor(x, y) {
-                this.x = x || 0;
-                this.y = y || 0;
+        let comets = [];
+        let asteroids = [];
+        let blackHoles = [];
+        let nebulaClouds = [];
+        let cosmicDust = [];
+        let mechHelmet = {
+            x: 0,
+            y: 0,
+            z: 0,
+            rotation: 0,
+            rotationSpeed: 0.005,
+            scale: 150,
+            energyLevel: 0,
+            energyParticles: [],
+            visorGlow: 0,
+            details: {
+                visor: { color: [0, 200, 255], alpha: 180 },
+                energy: { color: [255, 100, 0], alpha: 150 },
+                metal: { color: [180, 180, 200], alpha: 255 }
             }
-            add(v) { this.x += v.x; this.y += v.y; return this; }
-            subtract(v) { this.x -= v.x; this.y -= v.y; return this; }
-            multiply(s) { this.x *= s; this.y *= s; return this; }
-            divide(s) { if (s !== 0) { this.x /= s; this.y /= s; } return this; }
-            magnitude() { return Math.sqrt(this.x * this.x + this.y * this.y); }
-            normalize() { let m = this.magnitude(); if (m > 0) { this.divide(m); } return this; }
-            limit(max) { if (this.magnitude() > max) { this.normalize(); this.multiply(max); } return this; }
-            setMagnitude(len) { this.normalize(); this.multiply(len); return this; }
-            dot(v) { return this.x * v.x + this.y * v.y; }
-            clone() { return new Vector(this.x, this.y); }
+        };
+        let camera3D = {
+            x: 0,
+            y: 0,
+            z: 500,
+            rotationX: 0,
+            rotationY: 0,
+            autoRotate: true,
+            speed: 0.002
+        };
+        
+        const numStars = 500;
+        const numComets = 8;
+        const numAsteroids = 200;
+        const numBlackHoles = 2;
+        const numNebulaClouds = 12;
+        const numCosmicDust = 800;
+        const connectionDistance = 150;
+        const spaceSize = 4000;
+        
+        let mousePos = { x: 0, y: 0 };
+        
+        // P5.js 主函数
+        function setup() {
+            let canvas = createCanvas(windowWidth, windowHeight, WEBGL);
+            canvas.parent('starfield');
+            
+            // 初始化所有元素
+            initStars3D();
+            initComets3D();
+            initAsteroids3D();
+            initBlackHoles3D();
+            initNebulaClouds3D();
+            initCosmicDust3D();
+            initMechHelmet3D();
+        }
+        
+        function draw() {
+            // 深邃的宇宙背景
+            background(0, 0, 5);
+            
+            // 设置3D光照系统
+            setupLighting3D();
+            
+            // 相机控制
+            updateCamera3D();
+            
+            // 绘制星云背景
+            drawNebulaClouds3D();
+            
+            // 绘制宇宙尘埃
+            drawCosmicDust3D();
+            
+            // 更新和绘制星星
+            updateStars3D();
+            drawStars3D();
+            
+            // 绘制星星连接线
+            drawConnections3D();
+            
+            // 更新和绘制彗星
+            updateComets3D();
+            drawComets3D();
+            
+            // 更新和绘制小行星
+            updateAsteroids3D();
+            drawAsteroids3D();
+            
+            // 更新和绘制黑洞
+            updateBlackHoles3D();
+            drawBlackHoles3D();
+
+            // 更新和绘制机甲头盔
+            updateMechHelmet3D();
+            drawMechHelmet3D();
+        }
+        
+        function setupLighting3D() {
+            // 环境光
+            ambientLight(15, 20, 35);
+            
+            // 主要点光源（模拟远程恒星）
+            pointLight(80, 120, 200, 0, -500, 1000);
+            pointLight(120, 80, 150, 500, 0, -500);
+            pointLight(150, 100, 80, -800, 300, 200);
+            
+            // 方向光（模拟银河系光芒）
+            directionalLight(30, 50, 80, -1, 0.5, -1);
+        }
+        
+        function initStars3D() {
+            stars = [];
+            for (let i = 0; i < numStars; i++) {
+                let starType = random(['main', 'giant', 'dwarf', 'pulsar', 'binary']);
+                let star = {
+                    x: random(-spaceSize, spaceSize),
+                    y: random(-spaceSize, spaceSize),
+                    z: random(-spaceSize, spaceSize),
+                    vx: random(-0.2, 0.2),
+                    vy: random(-0.2, 0.2),
+                    vz: random(-0.2, 0.2),
+                    type: starType,
+                    size: getStarSize(starType),
+                    color: getStarColor(starType),
+                    brightness: random(0.6, 1.0),
+                    pulsate: random(0.001, 0.005),
+                    pulseOffset: random(TWO_PI),
+                    maxSpeed: random(0.2, 0.8),
+                    mass: random(1, 4),
+                    twinkle: random(0.001, 0.003),
+                    glow: random(0.5, 1.0),
+                    trail: []
+                };
+                stars.push(star);
+            }
+        }
+        
+        function getStarSize(type) {
+            switch(type) {
+                case 'giant': return random(10, 18);
+                case 'main': return random(4, 10);
+                case 'dwarf': return random(2, 5);
+                case 'pulsar': return random(3, 8);
+                case 'binary': return random(3, 8);
+                default: return random(3, 8);
+            }
+        }
+        
+        function getStarColor(type) {
+            switch(type) {
+                case 'giant': return [255, 150, 150];
+                case 'main': return [255, 255, 220];
+                case 'dwarf': return [220, 220, 255];
+                case 'pulsar': return [150, 255, 255];
+                case 'binary': return [255, 220, 150];
+                default: return [255, 255, 255];
+            }
+        }
+        
+        function initComets3D() {
+            comets = [];
+            for (let i = 0; i < numComets; i++) {
+                comets.push({
+                    x: random(-spaceSize/2, spaceSize/2),
+                    y: random(-spaceSize/2, spaceSize/2),
+                    z: random(-spaceSize/2, spaceSize/2),
+                    vx: random(-0.8, 0.8),
+                    vy: random(-0.8, 0.8),
+                    vz: random(-0.8, 0.8),
+                    size: random(30, 60),
+                    tailLength: random(100, 200),
+                    color: [random(200, 255), random(200, 255), random(200, 255)],
+                    particles: [],
+                    rotation: random(TWO_PI),
+                    rotationSpeed: random(0.01, 0.03)
+                });
+            }
         }
 
-        function distance(x1, y1, x2, y2) {
-            const dx = x1 - x2;
-            const dy = y1 - y2;
-            return Math.sqrt(dx * dx + dy * dy);
+        function initAsteroids3D() {
+            asteroids = [];
+            for (let i = 0; i < numAsteroids; i++) {
+                asteroids.push({
+                    x: random(-spaceSize/2, spaceSize/2),
+                    y: random(-spaceSize/2, spaceSize/2),
+                    z: random(-spaceSize/2, spaceSize/2),
+                    vx: random(-0.2, 0.2),
+                    vy: random(-0.2, 0.2),
+                    vz: random(-0.2, 0.2),
+                    size: random(5, 15),
+                    rotation: {
+                        x: random(TWO_PI),
+                        y: random(TWO_PI),
+                        z: random(TWO_PI)
+                    },
+                    rotationSpeed: {
+                        x: random(0.01, 0.03),
+                        y: random(0.01, 0.03),
+                        z: random(0.01, 0.03)
+                    },
+                    color: [random(100, 150), random(100, 150), random(100, 150)]
+                });
+            }
         }
 
-        class Star {
-            constructor() {
-                this.pos = new Vector(Math.random() * canvas.width, Math.random() * canvas.height);
-                this.baseRadius = Math.random() * 1.5 + 0.5;
-                this.radius = this.baseRadius * (1.5 + Math.random() * 1.5); 
-                this.color = `rgba(255, 255, 255, ${Math.random() * 0.4 + 0.3})`;
-                this.mass = Math.PI * this.radius * this.radius; 
-                if (this.mass === 0) this.mass = 0.001;
-                // 修改：星星初始速度减半
-                this.vel = new Vector((Math.random() - 0.5) * 0.4, (Math.random() - 0.5) * 0.4); 
-                // 修改：星星最大速度减半
-                this.maxSpeed = (0.6 + Math.random() * 0.4) / 2; 
-                this.maxForce = 0.02 + Math.random() * 0.01; // Max force remains, affects acceleration not top speed directly
-                this.wanderAngle = Math.random() * Math.PI * 2; 
+        function initBlackHoles3D() {
+            blackHoles = [];
+            for (let i = 0; i < numBlackHoles; i++) {
+                blackHoles.push({
+                    x: random(-spaceSize/3, spaceSize/3),
+                    y: random(-spaceSize/3, spaceSize/3),
+                    z: random(-spaceSize/3, spaceSize/3),
+                    size: random(100, 200),
+                    accretionDisk: {
+                        size: random(150, 300),
+                        rotation: 0,
+                        rotationSpeed: random(0.005, 0.01)
+                    },
+                    particles: []
+                });
             }
-
-            draw() {
-                ctx.beginPath();
-                ctx.arc(this.pos.x, this.pos.y, this.radius, 0, Math.PI * 2, false);
-                ctx.fillStyle = this.color;
-                ctx.fill();
+        }
+        
+        function initNebulaClouds3D() {
+            nebulaClouds = [];
+            for (let i = 0; i < numNebulaClouds; i++) {
+                nebulaClouds.push({
+                    x: random(-spaceSize*2, spaceSize*2),
+                    y: random(-spaceSize*2, spaceSize*2),
+                    z: random(-spaceSize*2, spaceSize*2),
+                    size: random(400, 1200),
+                    density: random(0.1, 0.3),
+                    color: [
+                        random(100, 255),
+                        random(50, 200),
+                        random(150, 255)
+                    ],
+                    drift: {
+                        x: random(-0.1, 0.1),
+                        y: random(-0.1, 0.1),
+                        z: random(-0.1, 0.1)
+                    }
+                });
             }
-
-            applyBoids(starsArray, currentSpaceships) { 
-                let separation = this.separate(starsArray);
-                let alignment = this.align(starsArray); 
-                let cohesion = this.cohesion(starsArray); 
-                let wander = this.wander();
-                let mouseAvoid = this.avoidMouse();
-
-                separation = separation.multiply(2.0);
-                alignment = alignment.multiply(0.3); 
-                cohesion = cohesion.multiply(0.2);
-                wander = wander.multiply(0.8);
-                mouseAvoid = mouseAvoid.multiply(2.0);
-
-                this.applyForce(separation);
-                this.applyForce(alignment);
-                this.applyForce(cohesion);
-                this.applyForce(wander);
-                this.applyForce(mouseAvoid);
+        }
+        
+        function initCosmicDust3D() {
+            cosmicDust = [];
+            for (let i = 0; i < numCosmicDust; i++) {
+                cosmicDust.push({
+                    x: random(-spaceSize*1.5, spaceSize*1.5),
+                    y: random(-spaceSize*1.5, spaceSize*1.5),
+                    z: random(-spaceSize*1.5, spaceSize*1.5),
+                    vx: random(-0.1, 0.1),
+                    vy: random(-0.1, 0.1),
+                    vz: random(-0.1, 0.1),
+                    size: random(0.5, 2),
+                    opacity: random(0.1, 0.6)
+                });
+            }
+        }
+        
+        function initMechHelmet3D() {
+            mechHelmet.x = 0;
+            mechHelmet.y = 0;
+            mechHelmet.z = 0;
+            mechHelmet.rotation = 0;
+            mechHelmet.energyLevel = 0;
+            mechHelmet.visorGlow = 0;
+            mechHelmet.energyParticles = [];
+        }
+        
+        function updateCamera3D() {
+            if (camera3D.autoRotate) {
+                camera3D.rotationY += camera3D.speed;
+                camera3D.rotationX = sin(millis() * 0.0008) * 0.15;
+                camera3D.z = 500 + sin(millis() * 0.0005) * 200;
+            }
+            
+            // 鼠标交互相机
+            if (mouseX > 0 && mouseX < width && mouseY > 0 && mouseY < height) {
+                let targetRotY = map(mouseX, 0, width, -PI/3, PI/3);
+                let targetRotX = map(mouseY, 0, height, -PI/4, PI/4);
+                camera3D.rotationY = lerp(camera3D.rotationY, targetRotY, 0.02);
+                camera3D.rotationX = lerp(camera3D.rotationX, targetRotX, 0.02);
+                camera3D.autoRotate = false;
+            } else {
+                camera3D.autoRotate = true;
+            }
+            
+            // 应用相机变换
+            rotateX(camera3D.rotationX);
+            rotateY(camera3D.rotationY);
+            translate(camera3D.x, camera3D.y, camera3D.z);
+        }
+        
+        function drawNebulaClouds3D() {
+            for (let cloud of nebulaClouds) {
+                cloud.x += cloud.drift.x;
+                cloud.y += cloud.drift.y;
+                cloud.z += cloud.drift.z;
                 
-                this.interactWithSpaceshipShields(currentSpaceships);
-            }
-
-            update() {
-                this.pos.add(this.vel); 
-                if (this.pos.x + this.radius > canvas.width) {
-                    this.pos.x = canvas.width - this.radius;
-                    this.vel.x *= -0.8; 
-                } else if (this.pos.x - this.radius < 0) {
-                    this.pos.x = this.radius;
-                    this.vel.x *= -0.8;
+                push();
+                translate(cloud.x, cloud.y, cloud.z);
+                
+                fill(cloud.color[0], cloud.color[1], cloud.color[2], cloud.density * 30);
+                noStroke();
+                
+                // 多层云效果
+                for (let i = 0; i < 3; i++) {
+                    let layerSize = cloud.size * (1 - i * 0.2);
+                    let layerOpacity = cloud.density * (50 - i * 15);
+                    fill(cloud.color[0], cloud.color[1], cloud.color[2], layerOpacity);
+                    sphere(layerSize);
                 }
-                if (this.pos.y + this.radius > canvas.height) {
-                    this.pos.y = canvas.height - this.radius;
-                    this.vel.y *= -0.8;
-                } else if (this.pos.y - this.radius < 0) {
-                    this.pos.y = this.radius;
-                    this.vel.y *= -0.8;
+                
+                pop();
+            }
+        }
+        
+        function drawCosmicDust3D() {
+            for (let dust of cosmicDust) {
+                dust.x += dust.vx;
+                dust.y += dust.vy;
+                dust.z += dust.vz;
+                
+                // 边界检测
+                if (dust.x > spaceSize*1.5) dust.x = -spaceSize*1.5;
+                if (dust.x < -spaceSize*1.5) dust.x = spaceSize*1.5;
+                if (dust.y > spaceSize*1.5) dust.y = -spaceSize*1.5;
+                if (dust.y < -spaceSize*1.5) dust.y = spaceSize*1.5;
+                if (dust.z > spaceSize*1.5) dust.z = -spaceSize*1.5;
+                if (dust.z < -spaceSize*1.5) dust.z = spaceSize*1.5;
+                
+                push();
+                translate(dust.x, dust.y, dust.z);
+                fill(200, 200, 255, dust.opacity * 255);
+                noStroke();
+                sphere(dust.size);
+                pop();
+            }
+        }
+        
+        function updateStars3D() {
+            for (let star of stars) {
+                // 更新位置
+                star.x += star.vx;
+                star.y += star.vy;
+                star.z += star.vz;
+                
+                // 边界检测 - 平滑过渡
+                if (star.x > spaceSize) star.x = -spaceSize;
+                if (star.x < -spaceSize) star.x = spaceSize;
+                if (star.y > spaceSize) star.y = -spaceSize;
+                if (star.y < -spaceSize) star.y = spaceSize;
+                if (star.z > spaceSize) star.z = -spaceSize;
+                if (star.z < -spaceSize) star.z = spaceSize;
+                
+                // 更新尾迹
+                star.trail.push({x: star.x, y: star.y, z: star.z});
+                if (star.trail.length > 5) star.trail.shift();
+                
+                // 群体行为
+                applyBoids3D(star);
+                
+                // 更新脉动和闪烁效果 - 更缓慢的变化
+                star.brightness = 0.6 + 0.4 * sin(millis() * star.pulsate + star.pulseOffset);
+                if (star.type === 'pulsar') {
+                    star.brightness = 0.4 + 0.6 * sin(millis() * star.pulsate * 2 + star.pulseOffset);
                 }
-                this.draw();
+                
+                // 双星系统特殊效果
+                if (star.type === 'binary') {
+                    star.brightness = 0.6 + 0.4 * sin(millis() * star.pulsate + star.pulseOffset);
+                }
             }
-
-            applyForce(force) {
-                let acc = force.clone().divide(this.mass); 
-                this.vel.add(acc);
-                this.vel.limit(this.maxSpeed);
+        }
+        
+        function applyBoids3D(star) {
+            let sep = separate3D(star);
+            let align = align3D(star);
+            let cohesion = cohesion3D(star);
+            let wander = wander3D(star);
+            
+            // 应用力
+            star.vx += sep.x * 1.2 + align.x * 0.3 + cohesion.x * 0.2 + wander.x * 0.5;
+            star.vy += sep.y * 1.2 + align.y * 0.3 + cohesion.y * 0.2 + wander.y * 0.5;
+            star.vz += sep.z * 1.2 + align.z * 0.3 + cohesion.z * 0.2 + wander.z * 0.5;
+            
+            // 限制速度
+            let speed = sqrt(star.vx*star.vx + star.vy*star.vy + star.vz*star.vz);
+            if (speed > star.maxSpeed) {
+                star.vx = (star.vx / speed) * star.maxSpeed;
+                star.vy = (star.vy / speed) * star.maxSpeed;
+                star.vz = (star.vz / speed) * star.maxSpeed;
             }
-
-            separate(others) {
-                let desiredSeparation = this.radius * 2.0; 
-                let steer = new Vector(0, 0);
-                let count = 0;
-                for (let other of others) {
-                    if (other === this) continue;
-                    let d = distance(this.pos.x, this.pos.y, other.pos.x, other.pos.y);
-                    if (d > 0 && d < desiredSeparation && d < this.radius + other.radius + 5) {
-                        let diff = this.pos.clone().subtract(other.pos);
-                        diff.normalize();
-                        diff.divide(d * 0.5); 
-                        steer.add(diff);
+        }
+        
+        function separate3D(star) {
+            let desiredSeparation = 60;
+            let steer = {x: 0, y: 0, z: 0};
+            let count = 0;
+            
+            for (let other of stars) {
+                if (other === star) continue;
+                let d = dist3D(star, other);
+                if (d > 0 && d < desiredSeparation) {
+                    let diff = {
+                        x: star.x - other.x,
+                        y: star.y - other.y,
+                        z: star.z - other.z
+                    };
+                    let len = sqrt(diff.x*diff.x + diff.y*diff.y + diff.z*diff.z);
+                    if (len > 0) {
+                        diff.x /= len;
+                        diff.y /= len;
+                        diff.z /= len;
+                        diff.x /= d;
+                        diff.y /= d;
+                        diff.z /= d;
+                        steer.x += diff.x;
+                        steer.y += diff.y;
+                        steer.z += diff.z;
                         count++;
                     }
                 }
-                if (count > 0) steer.divide(count); 
-                if (steer.magnitude() > 0) {
-                    steer.setMagnitude(this.maxSpeed);
-                    steer.subtract(this.vel);
-                    steer.limit(this.maxForce * 0.5); 
-                }
-                return steer;
             }
-
-            align(others) { return new Vector(); } 
-            cohesion(others) { return new Vector(); }
-
-            wander() {
-                let wanderRadius = 8;       
-                let wanderDistance = 15;    
-                let wanderChange = 0.2;     
-                this.wanderAngle += (Math.random() * wanderChange) - (wanderChange * 0.5); 
-
-                let circlePos = this.vel.clone();
-                circlePos.normalize();
-                circlePos.multiply(wanderDistance);
-                circlePos.add(this.pos);
-
-                let h = Math.atan2(this.vel.y, this.vel.x); 
-                let wanderX = wanderRadius * Math.cos(this.wanderAngle + h);
-                let wanderY = wanderRadius * Math.sin(this.wanderAngle + h);
+            
+            if (count > 0) {
+                steer.x /= count;
+                steer.y /= count;
+                steer.z /= count;
+            }
+            return steer;
+        }
+        
+        function align3D(star) {
+            let neighborDist = 100;
+            let sum = {x: 0, y: 0, z: 0};
+            let count = 0;
+            
+            for (let other of stars) {
+                if (other === star) continue;
+                let d = dist3D(star, other);
+                if (d > 0 && d < neighborDist) {
+                    sum.x += other.vx;
+                    sum.y += other.vy;
+                    sum.z += other.vz;
+                    count++;
+                }
+            }
+            
+            if (count > 0) {
+                sum.x /= count;
+                sum.y /= count;
+                sum.z /= count;
+                return {x: sum.x * 0.1, y: sum.y * 0.1, z: sum.z * 0.1};
+            }
+            return {x: 0, y: 0, z: 0};
+        }
+        
+        function cohesion3D(star) {
+            let neighborDist = 100;
+            let sum = {x: 0, y: 0, z: 0};
+            let count = 0;
+            
+            for (let other of stars) {
+                if (other === star) continue;
+                let d = dist3D(star, other);
+                if (d > 0 && d < neighborDist) {
+                    sum.x += other.x;
+                    sum.y += other.y;
+                    sum.z += other.z;
+                    count++;
+                }
+            }
+            
+            if (count > 0) {
+                sum.x /= count;
+                sum.y /= count;
+                sum.z /= count;
+                return {
+                    x: (sum.x - star.x) * 0.005,
+                    y: (sum.y - star.y) * 0.005,
+                    z: (sum.z - star.z) * 0.005
+                };
+            }
+            return {x: 0, y: 0, z: 0};
+        }
+        
+        function wander3D(star) {
+            return {
+                x: random(-0.01, 0.01),
+                y: random(-0.01, 0.01),
+                z: random(-0.01, 0.01)
+            };
+        }
+        
+        function updateComets3D() {
+            for (let comet of comets) {
+                // 更新位置
+                comet.x += comet.vx;
+                comet.y += comet.vy;
+                comet.z += comet.vz;
                 
-                let target = circlePos.add(new Vector(wanderX, wanderY));
-                return this.seek(target);
-            }
-
-            seek(target) {
-                let desired = target.clone().subtract(this.pos); 
-                desired.setMagnitude(this.maxSpeed);
-                let steer = desired.subtract(this.vel); 
-                steer.limit(this.maxForce);
-                return steer;
-            }
-
-            avoidMouse() {
-                if (mouse.x === null || mouse.y === null) return new Vector(0,0);
-                let d = distance(this.pos.x, this.pos.y, mouse.x, mouse.y);
-                if (d < mouseInteractionRadius) { 
-                    let desired = this.pos.clone().subtract(new Vector(mouse.x, mouse.y)); 
-                    desired.setMagnitude(this.maxSpeed);
-                    let steer = desired.subtract(this.vel);
-                    steer.limit(this.maxForce * 1.5); 
-                    return steer;
+                // 边界检测
+                if (comet.x > spaceSize/2) comet.x = -spaceSize/2;
+                if (comet.x < -spaceSize/2) comet.x = spaceSize/2;
+                if (comet.y > spaceSize/2) comet.y = -spaceSize/2;
+                if (comet.y < -spaceSize/2) comet.y = spaceSize/2;
+                if (comet.z > spaceSize/2) comet.z = -spaceSize/2;
+                if (comet.z < -spaceSize/2) comet.z = spaceSize/2;
+                
+                // 更新旋转
+                comet.rotation += comet.rotationSpeed;
+                
+                // 添加尾迹粒子
+                if (frameCount % 2 === 0) {
+                    comet.particles.push({
+                        x: comet.x,
+                        y: comet.y,
+                        z: comet.z,
+                        life: 255,
+                        size: random(2, 5)
+                    });
                 }
-                return new Vector(0,0);
-            }
-
-            interactWithSpaceshipShields(currentSpaceships) {
-                if (!currentSpaceships || currentSpaceships.length === 0) return;
-                const shieldFactor = starToSpaceshipShieldFactor; 
-                for (let ship of currentSpaceships) {
-                    const actualShieldRadius = ship.size * shieldFactor; 
-                    let distToShipCenter = distance(this.pos.x, this.pos.y, ship.pos.x, ship.pos.y);
-                    if (distToShipCenter < actualShieldRadius + this.radius) {
-                        let normal = this.pos.clone().subtract(ship.pos);
-                        normal.normalize(); 
-                        let dotProduct = this.vel.dot(normal);
-                        this.vel.x -= 2 * dotProduct * normal.x;
-                        this.vel.y -= 2 * dotProduct * normal.y;
-                        let overlap = (actualShieldRadius + this.radius) - distToShipCenter;
-                        if (overlap > 0) { 
-                           this.pos.add(normal.clone().multiply(overlap + 0.1)); 
-                        }
+                
+                // 更新粒子
+                for (let i = comet.particles.length - 1; i >= 0; i--) {
+                    let particle = comet.particles[i];
+                    particle.life -= 5;
+                    particle.size *= 0.95;
+                    if (particle.life <= 0) {
+                        comet.particles.splice(i, 1);
                     }
                 }
             }
         }
 
-        class Spaceship {
-            constructor(x, y, size) { 
-                this.pos = new Vector(x, y);
-                this.vel = new Vector(Math.random() * 2 - 1, Math.random() * 2 - 1);
-                // 修改：飞船初始速度减半
-                this.vel.setMagnitude((Math.random() * 1 + 0.5) / 2); 
-                this.size = size; 
-                this.svgImage = new Image();
-                this.svgLoaded = false;
-                this.rotation = 0; 
-                const svgDataUri = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(SVG_SPACESHIP_STRING);
-                this.svgImage.onload = () => { this.svgLoaded = true; };
-                this.svgImage.src = svgDataUri;
-                this.flameBaseLength = this.size * 0.8; 
-                this.flameAnimationTimer = Math.random() * 100;
-                this.flameColor1 = 'rgba(255, 220, 180, 0.7)';
-                this.flameColor2 = 'rgba(255, 165, 0, 0.6)';
-                this.flameColor3 = 'rgba(255, 69, 0, 0.4)';
-            }
-
-            update(canvasInstance) { 
-                this.pos.add(this.vel); 
-                if (this.pos.x > canvasInstance.width + this.size) this.pos.x = -this.size;
-                if (this.pos.x < -this.size) this.pos.x = canvasInstance.width + this.size;
-                if (this.pos.y > canvasInstance.height + this.size) this.pos.y = -this.size;
-                if (this.pos.y < -this.size) this.pos.y = canvasInstance.height + this.size;
-                this.rotation = Math.atan2(this.vel.y, this.vel.x) + Math.PI / 2; 
-                this.flameAnimationTimer += 0.2;
-            }
-
-            draw(ctxInstance) { 
-                const aspectRatio = 40 / 60; 
-                const drawHeight = this.size; 
-                const drawWidth = drawHeight * aspectRatio;
-                if (this.svgLoaded) {
-                    ctxInstance.save();
-                    ctxInstance.translate(this.pos.x, this.pos.y);
-                    ctxInstance.rotate(this.rotation);
-                    ctxInstance.drawImage(this.svgImage, -drawWidth / 2, -drawHeight / 2, drawWidth, drawHeight);
-                    ctxInstance.restore();
-                }
-                ctxInstance.save();
-                ctxInstance.translate(this.pos.x, this.pos.y);
-                ctxInstance.rotate(this.rotation); 
-                let flameBaseYOffset = drawHeight * 0.5; 
-                let currentFlameLength = this.flameBaseLength + Math.sin(this.flameAnimationTimer) * this.flameBaseLength * 0.2;
-                let flickerWidthFactor = 0.3 + (Math.sin(this.flameAnimationTimer * 1.5) + 1) * 0.15;
-                ctxInstance.fillStyle = this.flameColor3;
-                ctxInstance.beginPath();
-                ctxInstance.moveTo(0, flameBaseYOffset);
-                let outerWidth = drawWidth * flickerWidthFactor * 0.8; 
-                let outerLength = currentFlameLength * 0.9;
-                ctxInstance.lineTo(-outerWidth / 2, flameBaseYOffset + outerLength);
-                ctxInstance.lineTo(outerWidth / 2, flameBaseYOffset + outerLength);
-                ctxInstance.closePath();
-                ctxInstance.fill();
-                ctxInstance.fillStyle = this.flameColor2;
-                ctxInstance.beginPath();
-                ctxInstance.moveTo(0, flameBaseYOffset);
-                let midWidth = outerWidth * 0.75;
-                let midLength = currentFlameLength;
-                ctxInstance.lineTo(-midWidth / 2, flameBaseYOffset + midLength);
-                ctxInstance.lineTo(midWidth / 2, flameBaseYOffset + midLength);
-                ctxInstance.closePath();
-                ctxInstance.fill();
-                ctxInstance.fillStyle = this.flameColor1;
-                ctxInstance.beginPath();
-                ctxInstance.moveTo(0, flameBaseYOffset);
-                let coreWidth = outerWidth * 0.5;
-                let coreLength = currentFlameLength * 0.8;
-                ctxInstance.lineTo(-coreWidth / 2, flameBaseYOffset + coreLength);
-                ctxInstance.lineTo(coreWidth / 2, flameBaseYOffset + coreLength);
-                ctxInstance.closePath();
-                ctxInstance.fill();
-                ctxInstance.restore();
+        function updateAsteroids3D() {
+            for (let asteroid of asteroids) {
+                // 更新位置
+                asteroid.x += asteroid.vx;
+                asteroid.y += asteroid.vy;
+                asteroid.z += asteroid.vz;
+                
+                // 边界检测
+                if (asteroid.x > spaceSize/2) asteroid.x = -spaceSize/2;
+                if (asteroid.x < -spaceSize/2) asteroid.x = spaceSize/2;
+                if (asteroid.y > spaceSize/2) asteroid.y = -spaceSize/2;
+                if (asteroid.y < -spaceSize/2) asteroid.y = spaceSize/2;
+                if (asteroid.z > spaceSize/2) asteroid.z = -spaceSize/2;
+                if (asteroid.z < -spaceSize/2) asteroid.z = spaceSize/2;
+                
+                // 更新旋转
+                asteroid.rotation.x += asteroid.rotationSpeed.x;
+                asteroid.rotation.y += asteroid.rotationSpeed.y;
+                asteroid.rotation.z += asteroid.rotationSpeed.z;
             }
         }
 
-        function resolveCollision(s1, s2) {
-            const xVelDiff = s1.vel.x - s2.vel.x;
-            const yVelDiff = s1.vel.y - s2.vel.y;
-            const xDist = s2.pos.x - s1.pos.x;
-            const yDist = s2.pos.y - s1.pos.y;
-            if (xVelDiff * xDist + yVelDiff * yDist >= 0) {
-                const angle = -Math.atan2(yDist, xDist);
-                const m1 = s1.mass;
-                const m2 = s2.mass;
-                const u1 = rotate(s1.vel, angle); 
-                const u2 = rotate(s2.vel, angle);
-                const v1 = new Vector(u1.x * (m1 - m2) / (m1 + m2) + u2.x * 2 * m2 / (m1 + m2), u1.y);
-                const v2 = new Vector(u2.x * (m2 - m1) / (m1 + m2) + u1.x * 2 * m1 / (m1 + m2), u2.y);
-                const vFinal1 = rotate(v1, -angle); 
-                const vFinal2 = rotate(v2, -angle);
-                s1.vel.x = vFinal1.x; s1.vel.y = vFinal1.y;
-                s2.vel.x = vFinal2.x; s2.vel.y = vFinal2.y;
-                const overlap = (s1.radius + s2.radius) - distance(s1.pos.x, s1.pos.y, s2.pos.x, s2.pos.y);
-                if (overlap > 0) {
-                    const correctionNormal = s1.pos.clone().subtract(s2.pos).normalize();
-                    const correction1 = correctionNormal.clone().multiply(overlap * (s2.mass / (s1.mass + s2.mass)));
-                    const correction2 = correctionNormal.clone().multiply(-overlap * (s1.mass / (s1.mass + s2.mass)));
-                    s1.pos.add(correction1); s2.pos.add(correction2);
+        function updateBlackHoles3D() {
+            for (let blackHole of blackHoles) {
+                // 更新吸积盘旋转
+                blackHole.accretionDisk.rotation += blackHole.accretionDisk.rotationSpeed;
+                
+                // 添加粒子
+                if (frameCount % 2 === 0) {
+                    let angle = random(TWO_PI);
+                    let distance = random(blackHole.size, blackHole.accretionDisk.size);
+                    blackHole.particles.push({
+                        x: blackHole.x + cos(angle) * distance,
+                        y: blackHole.y + sin(angle) * distance,
+                        z: blackHole.z,
+                        angle: angle,
+                        distance: distance,
+                        life: 255,
+                        size: random(2, 4)
+                    });
+                }
+                
+                // 更新粒子
+                for (let i = blackHole.particles.length - 1; i >= 0; i--) {
+                    let particle = blackHole.particles[i];
+                    particle.angle += 0.02;
+                    particle.distance *= 0.99;
+                    particle.life -= 2;
+                    particle.size *= 0.98;
+                    
+                    particle.x = blackHole.x + cos(particle.angle) * particle.distance;
+                    particle.y = blackHole.y + sin(particle.angle) * particle.distance;
+                    
+                    if (particle.life <= 0 || particle.distance < blackHole.size) {
+                        blackHole.particles.splice(i, 1);
+                    }
                 }
             }
         }
         
-        function resolveSpaceshipShieldCollision(shipA, shipB, shieldFactor) {
-            const shieldARadius = shipA.size * shieldFactor; 
-            const shieldBRadius = shipB.size * shieldFactor; 
-            const distBetweenShips = distance(shipA.pos.x, shipA.pos.y, shipB.pos.x, shipB.pos.y);
-            if (distBetweenShips < shieldARadius + shieldBRadius && distBetweenShips > 0) { 
-                let normalBtoA = shipA.pos.clone().subtract(shipB.pos);
-                normalBtoA.normalize(); 
-                const overlap = (shieldARadius + shieldBRadius) - distBetweenShips;
-                shipA.pos.add(normalBtoA.clone().multiply(overlap / 2 + 0.05)); 
-                shipB.pos.subtract(normalBtoA.clone().multiply(overlap / 2 + 0.05)); 
-                let dotProductA = shipA.vel.dot(normalBtoA);
-                shipA.vel.x -= 2 * dotProductA * normalBtoA.x;
-                shipA.vel.y -= 2 * dotProductA * normalBtoA.y;
-                let normalAtoB = normalBtoA.clone().multiply(-1);
-                let dotProductB = shipB.vel.dot(normalAtoB);
-                shipB.vel.x -= 2 * dotProductB * normalAtoB.x;
-                shipB.vel.y -= 2 * dotProductB * normalAtoB.y;
+        function drawStars3D() {
+            for (let star of stars) {
+                push();
+                
+                // 绘制尾迹
+                if (star.trail.length > 1) {
+                    noFill();
+                    stroke(star.color[0], star.color[1], star.color[2], 30);
+                    strokeWeight(0.5);
+                    beginShape();
+                    for (let pos of star.trail) {
+                        vertex(pos.x, pos.y, pos.z);
+                    }
+                    endShape();
+                }
+                
+                translate(star.x, star.y, star.z);
+                
+                // 星星主体
+                fill(star.color[0], star.color[1], star.color[2], star.brightness * 255);
+                noStroke();
+                
+                // 根据距离调整大小
+                let distToCamera = sqrt(star.x*star.x + star.y*star.y + star.z*star.z);
+                let scaleFactor = map(distToCamera, 0, spaceSize*2, 1.5, 0.3);
+                scaleFactor = constrain(scaleFactor, 0.2, 2);
+                
+                // 发光效果 - 增强发光
+                if (star.glow > 0) {
+                    fill(star.color[0], star.color[1], star.color[2], star.brightness * star.glow * 150);
+                    sphere(star.size * scaleFactor * 2.5);
+                }
+                
+                sphere(star.size * scaleFactor);
+                
+                // 特殊星体效果
+                if (star.type === 'giant') {
+                    // 红巨星光环
+                    fill(255, 150, 150, star.brightness * 40);
+                    sphere(star.size * scaleFactor * 3.5);
+                } else if (star.type === 'pulsar') {
+                    // 脉冲星射线
+                    stroke(150, 255, 255, star.brightness * 150);
+                    strokeWeight(1);
+                    line(0, -star.size*10, 0, 0, star.size*10, 0);
+                    line(-star.size*10, 0, 0, star.size*10, 0, 0);
+                } else if (star.type === 'binary') {
+                    // 双星系统
+                    push();
+                    rotateY(millis() * 0.001);
+                    translate(star.size * 2, 0, 0);
+                    sphere(star.size * scaleFactor * 0.8);
+                    pop();
+                }
+                
+                pop();
             }
-        }
-
-        function rotate(velocity, angle) {
-            return new Vector(
-                velocity.x * Math.cos(angle) - velocity.y * Math.sin(angle),
-                velocity.x * Math.sin(angle) + velocity.y * Math.cos(angle)
-            );
-        }
-
-        window.addEventListener('mousemove', (event) => { mouse.x = event.clientX; mouse.y = event.clientY; });
-        window.addEventListener('mouseout', () => { mouse.x = null; mouse.y = null; });
-
-        function initStars() {
-            stars = [];
-            for (let i = 0; i < numStars; i++) { stars.push(new Star()); }
         }
         
-        function initSpaceships() {
-            spaceships = []; 
-            for (let i = 0; i < numSpaceships; i++) {
-                let x = Math.random() * canvas.width;
-                let y = Math.random() * canvas.height;
-                spaceships.push(new Spaceship(x, y, spaceshipSize)); 
-            }
-        }
-
-        initStars();
-        initSpaceships();
-
-        function animate() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height); 
-            stars.forEach(star => { star.applyBoids(stars, spaceships); });
+        function drawConnections3D() {
             for (let i = 0; i < stars.length; i++) {
+                if (random() > 0.03) continue; // 减少连接线密度
+                
                 for (let j = i + 1; j < stars.length; j++) {
-                    const s1 = stars[i]; const s2 = stars[j];
-                    const distVal = distance(s1.pos.x, s1.pos.y, s2.pos.x, s2.pos.y);
-                    if (distVal < s1.radius + s2.radius) { resolveCollision(s1, s2); }
-                }
-            }
-            if (connectionDistance > 0) {
-                for (let i = 0; i < stars.length; i++) {
-                    for (let j = i + 1; j < stars.length; j++) {
-                        if (Math.random() < 0.02) { 
-                            const d = distance(stars[i].pos.x, stars[i].pos.y, stars[j].pos.x, stars[j].pos.y);
-                            if (d < connectionDistance) {
-                                ctx.beginPath();
-                                ctx.moveTo(stars[i].pos.x, stars[i].pos.y);
-                                ctx.lineTo(stars[j].pos.x, stars[j].pos.y);
-                                ctx.strokeStyle = `rgba(255, 255, 255, ${0.5 - (d / connectionDistance) * 0.4})`;
-                                ctx.lineWidth = 0.3;
-                                ctx.stroke();
-                            }
-                        }
+                    let d = dist3D(stars[i], stars[j]);
+                    if (d < connectionDistance) {
+                        let alpha = map(d, 0, connectionDistance, 80, 0);
+                        stroke(200, 220, 255, alpha);
+                        strokeWeight(0.3);
+                        line(stars[i].x, stars[i].y, stars[i].z,
+                             stars[j].x, stars[j].y, stars[j].z);
                     }
                 }
             }
-            stars.forEach(star => { star.update(); });
-            for (let i = 0; i < spaceships.length; i++) {
-                for (let j = i + 1; j < spaceships.length; j++) { 
-                    resolveSpaceshipShieldCollision(spaceships[i], spaceships[j], spaceshipToSpaceshipShieldFactor);
-                }
-            }
-            spaceships.forEach(ship => { ship.update(canvas); ship.draw(ctx); });
-            requestAnimationFrame(animate); 
         }
         
-        window.onload = function () { animate(); }
+        function drawComets3D() {
+            for (let comet of comets) {
+                push();
+                translate(comet.x, comet.y, comet.z);
+                rotateY(comet.rotation);
+                
+                // 绘制彗星尾迹
+                for (let particle of comet.particles) {
+                    push();
+                    translate(particle.x - comet.x, particle.y - comet.y, particle.z - comet.z);
+                    fill(comet.color[0], comet.color[1], comet.color[2], particle.life);
+                    noStroke();
+                    sphere(particle.size);
+                    pop();
+                }
+                
+                // 绘制彗星核心
+                fill(255, 255, 255, 200);
+                noStroke();
+                sphere(comet.size);
+                
+                // 绘制彗星光环
+                push();
+                noFill();
+                stroke(comet.color[0], comet.color[1], comet.color[2], 100);
+                strokeWeight(2);
+                sphere(comet.size * 1.2);
+                pop();
+                
+                pop();
+            }
+        }
+
+        function drawAsteroids3D() {
+            for (let asteroid of asteroids) {
+                push();
+                translate(asteroid.x, asteroid.y, asteroid.z);
+                rotateX(asteroid.rotation.x);
+                rotateY(asteroid.rotation.y);
+                rotateZ(asteroid.rotation.z);
+                
+                // 绘制小行星
+                fill(asteroid.color[0], asteroid.color[1], asteroid.color[2]);
+                stroke(150, 150, 150, 50);
+                strokeWeight(0.5);
+                
+                // 使用不规则形状
+                beginShape();
+                for (let i = 0; i < 8; i++) {
+                    let angle = i * TWO_PI / 8;
+                    let r = asteroid.size * (0.8 + random(0.4));
+                    let x = cos(angle) * r;
+                    let y = sin(angle) * r;
+                    vertex(x, y, 0);
+                }
+                endShape(CLOSE);
+                
+                pop();
+            }
+        }
+
+        function drawBlackHoles3D() {
+            for (let blackHole of blackHoles) {
+                push();
+                translate(blackHole.x, blackHole.y, blackHole.z);
+                
+                // 绘制黑洞核心
+                fill(0);
+                noStroke();
+                sphere(blackHole.size);
+                
+                // 绘制吸积盘
+                push();
+                rotateX(PI/2);
+                rotateZ(blackHole.accretionDisk.rotation);
+                noFill();
+                stroke(255, 100, 100, 100);
+                strokeWeight(2);
+                ellipse(0, 0, blackHole.accretionDisk.size * 2);
+                pop();
+                
+                // 绘制粒子
+                for (let particle of blackHole.particles) {
+                    push();
+                    translate(particle.x - blackHole.x, particle.y - blackHole.y, particle.z - blackHole.z);
+                    fill(255, 100, 100, particle.life);
+                    noStroke();
+                    sphere(particle.size);
+                    pop();
+                }
+                
+                // 绘制引力场效果
+                push();
+                noFill();
+                stroke(100, 100, 255, 30);
+                strokeWeight(1);
+                sphere(blackHole.size * 1.5);
+                pop();
+                
+                pop();
+            }
+        }
         
-        window.addEventListener('resize', () => {
-            resizeCanvas(); initStars(); initSpaceships(); 
-        });
+        function updateMechHelmet3D() {
+            // 更新头盔旋转
+            mechHelmet.rotation += mechHelmet.rotationSpeed;
+            
+            // 更新能量水平
+            mechHelmet.energyLevel = 0.5 + 0.5 * sin(millis() * 0.001);
+            mechHelmet.visorGlow = 0.7 + 0.3 * sin(millis() * 0.002);
+            
+            // 更新能量粒子
+            if (frameCount % 2 === 0) {
+                let angle = random(TWO_PI);
+                let radius = mechHelmet.scale * 0.8;
+                mechHelmet.energyParticles.push({
+                    x: cos(angle) * radius,
+                    y: sin(angle) * radius,
+                    z: 0,
+                    life: 255,
+                    size: random(2, 4)
+                });
+            }
+            
+            // 更新粒子
+            for (let i = mechHelmet.energyParticles.length - 1; i >= 0; i--) {
+                let particle = mechHelmet.energyParticles[i];
+                particle.life -= 5;
+                particle.size *= 0.95;
+                if (particle.life <= 0) {
+                    mechHelmet.energyParticles.splice(i, 1);
+                }
+            }
+        }
+
+        function drawMechHelmet3D() {
+            push();
+            translate(mechHelmet.x, mechHelmet.y, mechHelmet.z);
+            rotateY(mechHelmet.rotation);
+            
+            // 绘制能量光环
+            push();
+            noFill();
+            stroke(mechHelmet.details.energy.color[0], 
+                   mechHelmet.details.energy.color[1], 
+                   mechHelmet.details.energy.color[2], 
+                   mechHelmet.details.energy.alpha * mechHelmet.energyLevel);
+            strokeWeight(2);
+            sphere(mechHelmet.scale * 1.1);
+            pop();
+            
+            // 绘制头盔主体
+            push();
+            // 头盔外壳
+            fill(mechHelmet.details.metal.color[0], 
+                 mechHelmet.details.metal.color[1], 
+                 mechHelmet.details.metal.color[2], 
+                 mechHelmet.details.metal.alpha);
+            stroke(200, 200, 200, 100);
+            strokeWeight(1);
+            
+            // 头盔主体形状
+            push();
+            scale(1, 1.2, 1.2);
+            sphere(mechHelmet.scale);
+            pop();
+            
+            // 头盔顶部
+            push();
+            translate(0, -mechHelmet.scale * 0.3, 0);
+            scale(0.8, 0.4, 0.8);
+            sphere(mechHelmet.scale);
+            pop();
+            
+            // 头盔后部
+            push();
+            translate(0, 0, -mechHelmet.scale * 0.4);
+            scale(1, 1.2, 0.6);
+            sphere(mechHelmet.scale * 0.8);
+            pop();
+            
+            // 面甲
+            push();
+            translate(0, 0, mechHelmet.scale * 0.5);
+            scale(0.9, 0.7, 0.1);
+            fill(mechHelmet.details.visor.color[0], 
+                 mechHelmet.details.visor.color[1], 
+                 mechHelmet.details.visor.color[2], 
+                 mechHelmet.details.visor.alpha * mechHelmet.visorGlow);
+            noStroke();
+            sphere(mechHelmet.scale);
+            pop();
+            
+            // 能量纹路
+            push();
+            noFill();
+            stroke(mechHelmet.details.energy.color[0], 
+                   mechHelmet.details.energy.color[1], 
+                   mechHelmet.details.energy.color[2], 
+                   mechHelmet.details.energy.alpha * mechHelmet.energyLevel);
+            strokeWeight(2);
+            
+            // 顶部能量纹路
+            for (let i = 0; i < 3; i++) {
+                push();
+                rotateY(i * PI / 3);
+                beginShape();
+                for (let angle = 0; angle < PI; angle += 0.1) {
+                    let x = cos(angle) * mechHelmet.scale * 0.8;
+                    let y = sin(angle) * mechHelmet.scale * 0.8;
+                    vertex(x, y, 0);
+                }
+                endShape();
+                pop();
+            }
+            
+            // 侧面能量纹路
+            for (let i = 0; i < 4; i++) {
+                push();
+                rotateY(i * PI / 2);
+                beginShape();
+                for (let angle = -PI/2; angle < PI/2; angle += 0.1) {
+                    let x = cos(angle) * mechHelmet.scale * 0.9;
+                    let z = sin(angle) * mechHelmet.scale * 0.9;
+                    vertex(x, 0, z);
+                }
+                endShape();
+                pop();
+            }
+            pop();
+            
+            // 绘制能量粒子
+            for (let particle of mechHelmet.energyParticles) {
+                push();
+                translate(particle.x, particle.y, particle.z);
+                fill(mechHelmet.details.energy.color[0], 
+                     mechHelmet.details.energy.color[1], 
+                     mechHelmet.details.energy.color[2], 
+                     particle.life);
+                noStroke();
+                sphere(particle.size);
+                pop();
+            }
+            
+            pop();
+            pop();
+        }
+        
+        function dist3D(a, b) {
+            return sqrt((a.x - b.x) * (a.x - b.x) + 
+                       (a.y - b.y) * (a.y - b.y) + 
+                       (a.z - b.z) * (a.z - b.z));
+        }
+        
+        function windowResized() {
+            resizeCanvas(windowWidth, windowHeight);
+        }
+        
+        function mouseMoved() {
+            mousePos.x = mouseX;
+            mousePos.y = mouseY;
+        }
+        
+        // 键盘控制相机
+        function keyPressed() {
+            switch(key) {
+                case 'w':
+                case 'W':
+                    camera3D.z += 100;
+                    break;
+                case 's':
+                case 'S':
+                    camera3D.z -= 100;
+                    break;
+                case 'a':
+                case 'A':
+                    camera3D.x += 100;
+                    break;
+                case 'd':
+                case 'D':
+                    camera3D.x -= 100;
+                    break;
+                case 'q':
+                case 'Q':
+                    camera3D.y += 100;
+                    break;
+                case 'e':
+                case 'E':
+                    camera3D.y -= 100;
+                    break;
+                case 'r':
+                case 'R':
+                    // 重置相机
+                    camera3D.x = 0;
+                    camera3D.y = 0;
+                    camera3D.z = 500;
+                    camera3D.rotationX = 0;
+                    camera3D.rotationY = 0;
+                    camera3D.autoRotate = true;
+                    break;
+                case ' ':
+                    // 空格键切换自动旋转
+                    camera3D.autoRotate = !camera3D.autoRotate;
+                    break;
+            }
+        }
     </script>
 </body>
 </html>

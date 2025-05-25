@@ -1,0 +1,1113 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>谷歌AI革命的物理本质解析</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=ZCOOL+XiaoWei&family=Ma+Shan+Zheng&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'ZCOOL XiaoWei', cursive;
+            background: linear-gradient(135deg, #0c0c0c 0%, #1a1a2e 25%, #16213e 50%, #0f0f23 75%, #000000 100%);
+            color: #e0e0e0;
+            font-size: 16px;
+            line-height: 1.8;
+            overflow-x: hidden;
+            min-height: 100vh;
+            position: relative;
+        }
+        
+        .stars {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            pointer-events: none;
+        }
+        
+        .star {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: #fff;
+            border-radius: 50%;
+            animation: twinkle 3s infinite;
+        }
+        
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.3; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.2); }
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 50px;
+            position: relative;
+        }
+        
+        .main-title {
+            font-family: 'Ma Shan Zheng', cursive;
+            font-size: 3.5em;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4, #ffeaa7);
+            background-size: 300% 300%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: gradientShift 4s ease-in-out infinite;
+            margin-bottom: 20px;
+            text-shadow: 0 0 30px rgba(255, 255, 255, 0.3);
+        }
+        
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+        
+        .subtitle {
+            font-size: 1.4em;
+            color: #a0a0a0;
+            margin-bottom: 10px;
+        }
+        
+        .author-info {
+            font-size: 1.1em;
+            color: #70c0ff;
+            font-weight: bold;
+            margin-top: 15px;
+        }
+        
+        .section {
+            margin-bottom: 60px;
+            padding: 30px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .section::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4);
+            border-radius: 22px;
+            z-index: -1;
+            opacity: 0.3;
+            animation: borderGlow 3s ease-in-out infinite;
+        }
+        
+        @keyframes borderGlow {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 0.6; }
+        }
+        
+        .section-title {
+            font-size: 2.2em;
+            color: #ff6b6b;
+            margin-bottom: 25px;
+            text-align: center;
+            position: relative;
+        }
+        
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 3px;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            border-radius: 2px;
+        }
+        
+        .highlight {
+            background: linear-gradient(120deg, rgba(255, 107, 107, 0.2), rgba(78, 205, 196, 0.2));
+            padding: 3px 8px;
+            border-radius: 5px;
+            font-weight: bold;
+            color: #fff;
+            border: 1px solid rgba(255, 107, 107, 0.3);
+        }
+        
+        .formula {
+            background: rgba(69, 183, 209, 0.2);
+            border: 1px solid rgba(69, 183, 209, 0.5);
+            border-radius: 8px;
+            padding: 15px;
+            margin: 20px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 1.1em;
+            text-align: center;
+            color: #70c0ff;
+        }
+        
+        .animation-container {
+            width: 100%;
+            height: 400px;
+            margin: 30px 0;
+            border-radius: 15px;
+            overflow: hidden;
+            position: relative;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .animation-controls {
+            text-align: center;
+            margin-top: 15px;
+        }
+        
+        .control-btn {
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            margin: 0 10px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: all 0.3s ease;
+            font-family: 'ZCOOL XiaoWei', cursive;
+        }
+        
+        .control-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 107, 107, 0.4);
+        }
+        
+        .physics-insight {
+            background: rgba(150, 206, 180, 0.15);
+            border-left: 4px solid #96ceb4;
+            padding: 20px;
+            margin: 25px 0;
+            border-radius: 0 10px 10px 0;
+        }
+        
+        .physics-insight::before {
+            content: "🔬 物理洞察";
+            font-weight: bold;
+            color: #96ceb4;
+            display: block;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+        
+        .data-point {
+            display: inline-block;
+            background: linear-gradient(45deg, rgba(255, 234, 167, 0.2), rgba(255, 107, 107, 0.2));
+            padding: 5px 12px;
+            border-radius: 20px;
+            margin: 5px;
+            border: 1px solid rgba(255, 234, 167, 0.5);
+            font-weight: bold;
+        }
+        
+        .energy-flow {
+            position: relative;
+            height: 60px;
+            margin: 20px 0;
+            background: linear-gradient(90deg, transparent, rgba(69, 183, 209, 0.3), transparent);
+            border-radius: 30px;
+            overflow: hidden;
+        }
+        
+        .energy-particle {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background: #45b7d1;
+            border-radius: 50%;
+            animation: energyFlow 3s linear infinite;
+            box-shadow: 0 0 10px #45b7d1;
+        }
+        
+        @keyframes energyFlow {
+            0% { left: -10px; opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { left: 100%; opacity: 0; }
+        }
+        
+        .innovation-timeline {
+            position: relative;
+            margin: 40px 0;
+        }
+        
+        .timeline-item {
+            position: relative;
+            padding: 20px 0;
+            border-left: 3px solid rgba(255, 107, 107, 0.3);
+            margin-left: 20px;
+            padding-left: 40px;
+        }
+        
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -8px;
+            top: 25px;
+            width: 12px;
+            height: 12px;
+            background: #ff6b6b;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 107, 107, 0.7); }
+            50% { transform: scale(1.2); box-shadow: 0 0 0 10px rgba(255, 107, 107, 0); }
+        }
+        
+        .neural-network {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+        
+        .neuron {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(78, 205, 196, 0.8), rgba(78, 205, 196, 0.2));
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: white;
+            animation: neuronPulse 2s ease-in-out infinite;
+            position: relative;
+        }
+        
+        @keyframes neuronPulse {
+            0%, 100% { transform: scale(1); box-shadow: 0 0 20px rgba(78, 205, 196, 0.3); }
+            50% { transform: scale(1.1); box-shadow: 0 0 30px rgba(78, 205, 196, 0.6); }
+        }
+        
+        .connection {
+            position: absolute;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #4ecdc4, transparent);
+            top: 50%;
+            left: 100%;
+            width: 100px;
+            animation: dataFlow 1.5s ease-in-out infinite;
+        }
+        
+        @keyframes dataFlow {
+            0% { opacity: 0; transform: scaleX(0); }
+            50% { opacity: 1; transform: scaleX(1); }
+            100% { opacity: 0; transform: scaleX(0); }
+        }
+        
+        @media (max-width: 768px) {
+            .container { padding: 15px; }
+            .main-title { font-size: 2.5em; }
+            .section { padding: 20px; margin-bottom: 40px; }
+            .section-title { font-size: 1.8em; }
+            .animation-container { height: 300px; }
+            .neuron { width: 60px; height: 60px; font-size: 0.9em; }
+        }
+    </style>
+</head>
+<body>
+    <!-- 星空背景 -->
+    <div class="stars" id="starsContainer"></div>
+    
+    <div class="container">
+        <!-- 标题部分 -->
+        <header class="header">
+            <h1 class="main-title">谷歌AI革命的物理本质解析</h1>
+            <p class="subtitle">从Sergey Brin与Logan的I/O对话看AI系统的物理逻辑</p>
+            <p class="author-info">
+                对话者：Sergey Brin (Google联合创始人, Google DeepMind) & Logan (Google产品团队)<br>
+                机构：Google Inc. / Alphabet Inc.
+            </p>
+        </header>
+
+        <!-- 第一部分：AI发展的热力学原理 -->
+        <section class="section">
+            <h2 class="section-title">AI发展的热力学原理</h2>
+            <p>从Sergey Brin在Google I/O上的分享中，我们可以清晰地看到<span class="highlight">AI系统发展遵循着深刻的物理学规律</span>。正如热力学第二定律描述的熵增过程，AI模型的训练过程本质上是一个<span class="highlight">能量转换和信息熵减的过程</span>。</p>
+            
+            <div class="formula">
+                ΔS = ΔS_系统 + ΔS_环境 ≥ 0 (熵增定律)<br>
+                其中AI训练：ΔS_模型 < 0, ΔS_计算环境 > 0
+            </div>
+            
+            <div class="animation-container" id="thermodynamicsAnimation"></div>
+            <div class="animation-controls">
+                <button class="control-btn" onclick="toggleThermodynamics()">开始/暂停热力学演示</button>
+                <button class="control-btn" onclick="resetThermodynamics()">重置</button>
+            </div>
+            
+            <div class="physics-insight">
+                当Sergey提到"从10%训练到20%训练时模型变得更强"，这反映了<span class="highlight">系统有序度的渐进增长</span>。每个训练检查点都代表着模型内部信息结构的重新排列，就像晶体生长过程中原子的有序排列一样。计算资源的消耗（能量耗散）换取了模型参数空间中信息的有序化。
+            </div>
+            
+            <p>特别值得注意的是，Sergey描述的"观看训练过程"现象，从物理角度看是一个<span class="highlight">相变过程的实时监测</span>。正如水在加热过程中从无序的液态分子运动转变为有序的晶体结构，AI模型在训练过程中经历着从随机权重分布到有意义模式识别能力的相变。</p>
+            
+            <div class="energy-flow">
+                <div class="energy-particle" style="animation-delay: 0s;"></div>
+                <div class="energy-particle" style="animation-delay: 0.5s;"></div>
+                <div class="energy-particle" style="animation-delay: 1s;"></div>
+                <div class="energy-particle" style="animation-delay: 1.5s;"></div>
+                <div class="energy-particle" style="animation-delay: 2s;"></div>
+            </div>
+        </section>
+
+        <!-- 第二部分：多模态AI的波粒二象性 -->
+        <section class="section">
+            <h2 class="section-title">多模态AI的波粒二象性</h2>
+            <p>Sergey对Veo视频生成模型的描述揭示了一个深刻的物理类比：<span class="highlight">AI处理不同模态信息的方式类似于光的波粒二象性</span>。文本、图像、音频这些看似离散的数据类型，在AI系统中被统一表示为连续的向量空间，正如量子力学中粒子和波动的统一描述。</p>
+            
+            <div class="animation-container" id="modalityAnimation"></div>
+            <div class="animation-controls">
+                <button class="control-btn" onclick="toggleModality()">启动模态融合演示</button>
+                <button class="control-btn" onclick="switchModalityMode()">切换模式</button>
+            </div>
+            
+            <div class="formula">
+                I_总信息 = α·I_文本 + β·I_视觉 + γ·I_音频 + δ·I_交互<br>
+                其中 α + β + γ + δ = 1 (信息守恒)
+            </div>
+            
+            <div class="physics-insight">
+                当Sergey提到"音频使视频感觉完全不同"时，这体现了<span class="highlight">信息叠加原理</span>。就像两个波的干涉可以产生全新的波形，不同模态信息的融合创造了超越各部分简单相加的整体效应。这种"突现性质"是复杂系统物理学的核心概念。
+            </div>
+            
+            <p>扩散模型的工作原理更是与<span class="highlight">布朗运动的逆过程</span>高度相似。正如布朗运动描述粒子在随机热扰动下的无序运动，扩散模型从噪声开始，通过学习逆向的去噪过程，将无序的随机信号转换为有序的图像或视频内容。</p>
+            
+            <div class="data-point">文本模态: 离散符号</div>
+            <div class="data-point">视觉模态: 连续像素</div>
+            <div class="data-point">音频模态: 振动波形</div>
+            <div class="data-point">融合输出: 多维体验</div>
+        </section>
+
+        <!-- 第三部分：计算资源的能量守恒定律 -->
+        <section class="section">
+            <h2 class="section-title">计算资源的能量守恒定律</h2>
+            <p>Sergey详细讨论的TPU和训练过程，从物理角度展现了<span class="highlight">能量守恒定律在AI计算中的体现</span>。每一次参数更新、每一个前向传播，都涉及电能到信息能的转换过程。</p>
+            
+            <div class="animation-container" id="computeAnimation"></div>
+            <div class="animation-controls">
+                <button class="control-btn" onclick="startCompute()">开始计算演示</button>
+                <button class="control-btn" onclick="pauseCompute()">暂停</button>
+                <button class="control-btn" onclick="speedUpCompute()">加速</button>
+            </div>
+            
+            <div class="formula">
+                E_电能 = E_计算 + E_热损 + E_信息存储<br>
+                其中：E_计算 ∝ N_参数 × N_数据 × N_迭代
+            </div>
+            
+            <div class="neural-network">
+                <div class="neuron">
+                    输入
+                    <div class="connection"></div>
+                </div>
+                <div class="neuron">
+                    隐层1
+                    <div class="connection"></div>
+                </div>
+                <div class="neuron">
+                    隐层2
+                    <div class="connection"></div>
+                </div>
+                <div class="neuron">
+                    输出
+                </div>
+            </div>
+            
+            <div class="physics-insight">
+                Sergey提到的"预训练占90%，后训练占10%"的比例变化，反映了<span class="highlight">系统能效优化的物理原理</span>。正如工程热力学中追求更高的热效率，AI训练正在从粗放型的大规模预训练转向精细化的后训练优化，这种转变符合最小作用量原理。
+            </div>
+            
+            <p>特别值得注意的是，<span class="highlight">推理时计算的扩展</span>（如Deep Think模型）体现了时间-空间权衡的物理原理。通过增加推理时间，模型可以在相同的参数空间中达到更高的性能，这类似于准静态过程中系统通过更长的时间路径达到更优的平衡状态。</p>
+        </section>
+
+        <!-- 第四部分：信息传播的量子特性 -->
+        <section class="section">
+            <h2 class="section-title">信息传播的量子特性</h2>
+            <p>对话中Sergey对"思维模型可解释性"的讨论，揭示了AI系统中<span class="highlight">信息传播类似于量子系统的特性</span>。就像量子态的测量会影响系统本身，对AI思维过程的观察和解释也可能改变其行为模式。</p>
+            
+            <div class="animation-container" id="quantumAnimation"></div>
+            <div class="animation-controls">
+                <button class="control-btn" onclick="startQuantum()">量子态演示</button>
+                <button class="control-btn" onclick="measureQuantum()">测量/观察</button>
+                <button class="control-btn" onclick="resetQuantum()">重置量子态</button>
+            </div>
+            
+            <div class="formula">
+                |ψ⟩_AI = α|思维态1⟩ + β|思维态2⟩ + γ|思维态3⟩<br>
+                其中 |α|² + |β|² + |γ|² = 1 (概率守恒)
+            </div>
+            
+            <div class="physics-insight">
+                当我们"观察"AI的思维过程时，就像进行量子测量一样，会导致<span class="highlight">波函数坍缩</span>。AI原本处于多种可能推理路径的叠加态，一旦被观察和记录，就坍缩到特定的思维链条。这解释了为什么思维模型的可解释性是一把双刃剑。
+            </div>
+            
+            <p>Sergey提到的"15年前的预测与现实的差异"，从量子物理角度看，体现了<span class="highlight">系统演化的非确定性</span>。正如量子系统的演化路径具有概率性质，AI技术的发展轨迹也充满了量子涨落般的不可预测性。</p>
+            
+            <div class="innovation-timeline">
+                <div class="timeline-item">
+                    <h4>2010年代初：深度学习兴起</h4>
+                    <p>神经网络的"量子隧穿效应"突破了传统机器学习的性能障壁</p>
+                </div>
+                <div class="timeline-item">
+                    <h4>2017年：Transformer架构</h4>
+                    <p>注意力机制实现了信息的"远程纠缠"，突破了序列处理的局限</p>
+                </div>
+                <div class="timeline-item">
+                    <h4>2020年代：大语言模型</h4>
+                    <p>规模效应导致的"相变现象"，涌现出前所未有的智能特性</p>
+                </div>
+                <div class="timeline-item">
+                    <h4>2025年：多模态融合</h4>
+                    <p>不同模态信息的"波函数叠加"，创造了统一的智能体验</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- 第五部分：自适应系统的动力学 -->
+        <section class="section">
+            <h2 class="section-title">自适应系统的动力学</h2>
+            <p>Sergey对Google作为"AI公司"本质的认识，体现了<span class="highlight">复杂自适应系统的动力学原理</span>。企业组织就像一个耗散结构，需要持续的能量输入（创新、人才、资源）来维持其有序状态并实现自我进化。</p>
+            
+            <div class="animation-container" id="adaptiveAnimation"></div>
+            <div class="animation-controls">
+                <button class="control-btn" onclick="startAdaptive()">启动自适应演示</button>
+                <button class="control-btn" onclick="addPerturbation()">添加扰动</button>
+                <button class="control-btn" onclick="evolveSystem()">系统进化</button>
+            </div>
+            
+            <div class="formula">
+                dS/dt = P_创新 - D_衰减 + F_外部反馈<br>
+                其中 S 为系统适应性，P 为创新产生率，D 为技术衰减率
+            </div>
+            
+            <div class="physics-insight">
+                从Web搜索到移动互联网，再到AI时代，Google的每次转型都体现了<span class="highlight">系统相变的临界现象</span>。在临界点附近，微小的技术突破可能引发整个行业生态的巨大变化，这正是复杂系统物理学中的"蝴蝶效应"。
+            </div>
+            
+            <p>特别令人深思的是，Sergey提到的"2024年到2025年的加速"现象。这种指数增长不仅仅是技术积累的结果，更体现了<span class="highlight">正反馈回路的非线性动力学</span>。每一个AI能力的提升都会加速下一个突破的到来，形成了技术进步的"核链反应"。</p>
+            
+            <div class="data-point">Gemini 2.5 Pro: 性能跃迁</div>
+            <div class="data-point">2.5 Flash: 效率优化</div>
+            <div class="data-point">Deep Think: 推理扩展</div>
+            <div class="data-point">多模态融合: 能力整合</div>
+        </section>
+
+        <!-- 第六部分：未来展望与物理极限 -->
+        <section class="section">
+            <h2 class="section-title">未来展望与物理极限</h2>
+            <p>从这次深度对话中，我们可以预见AI发展将面临的<span class="highlight">物理极限和突破方向</span>。正如任何物理系统都受到能量、信息和时间的基本约束，AI系统的未来发展也将在这些维度上寻求突破。</p>
+            
+            <div class="animation-container" id="futureAnimation"></div>
+            <div class="animation-controls">
+                <button class="control-btn" onclick="projectFuture()">预测未来发展</button>
+                <button class="control-btn" onclick="showLimits()">显示物理极限</button>
+                <button class="control-btn" onclick="showBreakthroughs()">突破路径</button>
+            </div>
+            
+            <div class="formula">
+                lim(t→∞) AI_能力 ≤ C × log(E_可用) × sqrt(T_计算)<br>
+                受限于：兰道尔原理、光速限制、量子不确定性
+            </div>
+            
+            <div class="physics-insight">
+                Sergey对"无限上下文"和"长时间推理"的展望，实际上指向了<span class="highlight">突破计算的时空限制</span>。这需要从根本上重新思考计算的物理基础，可能涉及量子计算、光子计算甚至生物计算的新范式。
+            </div>
+            
+            <p>最终，AI系统的发展将遵循<span class="highlight">宇宙学尺度的物理规律</span>。从信息理论角度看，智能的终极形态可能是一个能够最大化利用可用能源进行信息处理的系统，这与宇宙演化中熵增和复杂性增长的基本趋势完全一致。</p>
+            
+            <div class="energy-flow">
+                <div class="energy-particle" style="animation-delay: 0s; background: #ff6b6b;"></div>
+                <div class="energy-particle" style="animation-delay: 0.3s; background: #4ecdc4;"></div>
+                <div class="energy-particle" style="animation-delay: 0.6s; background: #45b7d1;"></div>
+                <div class="energy-particle" style="animation-delay: 0.9s; background: #96ceb4;"></div>
+                <div class="energy-particle" style="animation-delay: 1.2s; background: #ffeaa7;"></div>
+            </div>
+            
+            <p>通过这次Google I/O对话的深度解析，我们看到AI技术的发展不仅仅是工程问题，更是对<span class="highlight">物理世界基本规律的深刻理解和创新应用</span>。从热力学的能量转换到量子力学的信息处理，从复杂系统的自组织到宇宙学的演化原理，AI正在成为我们理解和改造世界的新的物理工具。</p>
+        </section>
+    </div>
+
+    <script>
+        // 创建星空背景
+        function createStars() {
+            const container = document.getElementById('starsContainer');
+            for (let i = 0; i < 200; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                star.style.left = Math.random() * 100 + '%';
+                star.style.top = Math.random() * 100 + '%';
+                star.style.animationDelay = Math.random() * 3 + 's';
+                container.appendChild(star);
+            }
+        }
+
+        // 热力学演示动画
+        let thermodynamicsSketch = function(p) {
+            let particles = [];
+            let isRunning = false;
+            
+            p.setup = function() {
+                p.createCanvas(p.select('#thermodynamicsAnimation').width, 400);
+                for(let i = 0; i < 100; i++) {
+                    particles.push({
+                        x: p.random(p.width),
+                        y: p.random(p.height),
+                        vx: p.random(-2, 2),
+                        vy: p.random(-2, 2),
+                        energy: p.random(1, 5),
+                        size: p.random(3, 8)
+                    });
+                }
+                p.noLoop();
+            };
+            
+            p.draw = function() {
+                p.background(10, 10, 30, 50);
+                
+                if(isRunning) {
+                    for(let particle of particles) {
+                        particle.x += particle.vx;
+                        particle.y += particle.vy;
+                        
+                        if(particle.x < 0 || particle.x > p.width) particle.vx *= -1;
+                        if(particle.y < 0 || particle.y > p.height) particle.vy *= -1;
+                        
+                        particle.x = p.constrain(particle.x, 0, p.width);
+                        particle.y = p.constrain(particle.y, 0, p.height);
+                    }
+                }
+                
+                for(let particle of particles) {
+                    p.fill(255, 100 + particle.energy * 30, 100, 150);
+                    p.noStroke();
+                    p.circle(particle.x, particle.y, particle.size);
+                    
+                    p.stroke(255, 50);
+                    p.strokeWeight(1);
+                    p.line(particle.x, particle.y, 
+                           particle.x + particle.vx * 10, 
+                           particle.y + particle.vy * 10);
+                }
+            };
+            
+            window.toggleThermodynamics = function() {
+                isRunning = !isRunning;
+                if(isRunning) p.loop(); else p.noLoop();
+            };
+            
+            window.resetThermodynamics = function() {
+                isRunning = false;
+                p.setup();
+            };
+        };
+
+        // 模态融合演示
+        let modalitySketch = function(p) {
+            let mode = 0;
+            let waves = [];
+            
+            p.setup = function() {
+                p.createCanvas(p.select('#modalityAnimation').width, 400);
+                for(let i = 0; i < 4; i++) {
+                    waves.push({
+                        freq: 0.02 + i * 0.01,
+                        amp: 50 + i * 20,
+                        phase: i * p.PI / 2,
+                        color: [255, 100 + i * 40, 200 - i * 30]
+                    });
+                }
+                p.noLoop();
+            };
+            
+            p.draw = function() {
+                p.background(5, 5, 20);
+                
+                for(let i = 0; i < waves.length; i++) {
+                    let wave = waves[i];
+                    p.stroke(wave.color[0], wave.color[1], wave.color[2], 150);
+                    p.strokeWeight(2);
+                    p.noFill();
+                    
+                    p.beginShape();
+                    for(let x = 0; x < p.width; x += 5) {
+                        let y = p.height/2 + p.sin(x * wave.freq + wave.phase + p.frameCount * 0.1) * wave.amp;
+                        p.vertex(x, y);
+                    }
+                    p.endShape();
+                }
+                
+                // 绘制融合效果
+                if(mode === 1) {
+                    p.stroke(255, 255, 255, 100);
+                    p.strokeWeight(3);
+                    p.beginShape();
+                    for(let x = 0; x < p.width; x += 5) {
+                        let y = p.height/2;
+                        for(let wave of waves) {
+                            y += p.sin(x * wave.freq + wave.phase + p.frameCount * 0.1) * wave.amp * 0.3;
+                        }
+                        p.vertex(x, y);
+                    }
+                    p.endShape();
+                }
+            };
+            
+            window.toggleModality = function() {
+                p.loop();
+            };
+            
+            window.switchModalityMode = function() {
+                mode = (mode + 1) % 2;
+            };
+        };
+
+        // 计算资源演示
+        let computeSketch = function(p) {
+            let nodes = [];
+            let connections = [];
+            let isRunning = false;
+            let speed = 1;
+            
+            p.setup = function() {
+                p.createCanvas(p.select('#computeAnimation').width, 400);
+                
+                // 创建节点网络
+                for(let i = 0; i < 5; i++) {
+                    for(let j = 0; j < 4; j++) {
+                        nodes.push({
+                            x: (i + 1) * p.width / 6,
+                            y: (j + 1) * p.height / 5,
+                            active: false,
+                            energy: 0
+                        });
+                    }
+                }
+                
+                // 创建连接
+                for(let i = 0; i < nodes.length - 4; i++) {
+                    if((i + 1) % 4 !== 0) {
+                        connections.push({
+                            from: i,
+                            to: i + 4,
+                            flow: 0
+                        });
+                    }
+                }
+                
+                p.noLoop();
+            };
+            
+            p.draw = function() {
+                p.background(0, 0, 15);
+                
+                // 绘制连接
+                for(let conn of connections) {
+                    let from = nodes[conn.from];
+                    let to = nodes[conn.to];
+                    
+                    p.stroke(0, 255, 255, conn.flow * 255);
+                    p.strokeWeight(2);
+                    p.line(from.x, from.y, to.x, to.y);
+                }
+                
+                // 绘制节点
+                for(let i = 0; i < nodes.length; i++) {
+                    let node = nodes[i];
+                    
+                    if(isRunning) {
+                        node.energy = p.max(0, node.energy - 0.02 * speed);
+                        if(p.random() < 0.1 * speed) {
+                            node.energy = p.min(1, node.energy + 0.5);
+                        }
+                    }
+                    
+                    p.fill(255, node.energy * 255, node.energy * 100, 200);
+                    p.stroke(255, 255, 255, 100);
+                    p.strokeWeight(1);
+                    p.circle(node.x, node.y, 15 + node.energy * 10);
+                }
+                
+                // 更新连接流动
+                for(let conn of connections) {
+                    if(isRunning) {
+                        conn.flow = p.max(0, conn.flow - 0.05 * speed);
+                        if(nodes[conn.from].energy > 0.5 && p.random() < 0.2 * speed) {
+                            conn.flow = 1;
+                        }
+                    }
+                }
+            };
+            
+            window.startCompute = function() {
+                isRunning = true;
+                p.loop();
+            };
+            
+            window.pauseCompute = function() {
+                isRunning = false;
+                p.noLoop();
+            };
+            
+            window.speedUpCompute = function() {
+                speed = (speed % 3) + 1;
+            };
+        };
+
+        // 量子态演示
+        let quantumSketch = function(p) {
+            let qubits = [];
+            let measured = false;
+            
+            p.setup = function() {
+                p.createCanvas(p.select('#quantumAnimation').width, 400);
+                
+                for(let i = 0; i < 8; i++) {
+                    qubits.push({
+                        x: (i + 1) * p.width / 9,
+                        y: p.height / 2,
+                        state: [p.random(), p.random()],
+                        entangled: false
+                    });
+                }
+                
+                p.noLoop();
+            };
+            
+            p.draw = function() {
+                p.background(10, 0, 30);
+                
+                for(let i = 0; i < qubits.length; i++) {
+                    let qubit = qubits[i];
+                    
+                    if(!measured) {
+                        // 叠加态显示
+                        let alpha = qubit.state[0];
+                        let beta = qubit.state[1];
+                        
+                        p.stroke(255, 100, 255, 150);
+                        p.strokeWeight(2);
+                        p.fill(255, 100, 255, alpha * 100);
+                        p.circle(qubit.x, qubit.y - 30, 20);
+                        
+                        p.fill(100, 255, 255, beta * 100);
+                        p.circle(qubit.x, qubit.y + 30, 20);
+                        
+                        // 连接线表示纠缠
+                        if(i > 0) {
+                            p.stroke(255, 255, 100, 80);
+                            p.line(qubits[i-1].x, qubits[i-1].y, qubit.x, qubit.y);
+                        }
+                    } else {
+                        // 测量后的确定态
+                        let finalState = qubit.state[0] > qubit.state[1] ? 0 : 1;
+                        p.fill(finalState === 0 ? 255 : 0, finalState === 1 ? 255 : 0, 255);
+                        p.stroke(255);
+                        p.strokeWeight(2);
+                        p.circle(qubit.x, qubit.y, 25);
+                    }
+                }
+            };
+            
+            window.startQuantum = function() {
+                measured = false;
+                for(let qubit of qubits) {
+                    qubit.state = [p.random(), p.random()];
+                }
+                p.loop();
+            };
+            
+            window.measureQuantum = function() {
+                measured = !measured;
+                p.redraw();
+            };
+            
+            window.resetQuantum = function() {
+                measured = false;
+                p.setup();
+            };
+        };
+
+        // 自适应系统演示
+        let adaptiveSketch = function(p) {
+            let ecosystem = [];
+            let time = 0;
+            
+            p.setup = function() {
+                p.createCanvas(p.select('#adaptiveAnimation').width, 400);
+                
+                for(let i = 0; i < 50; i++) {
+                    ecosystem.push({
+                        x: p.random(p.width),
+                        y: p.random(p.height),
+                        fitness: p.random(0.5, 1),
+                        age: 0,
+                        type: p.floor(p.random(3))
+                    });
+                }
+                
+                p.noLoop();
+            };
+            
+            p.draw = function() {
+                p.background(0, 20, 40, 30);
+                time += 0.02;
+                
+                for(let i = ecosystem.length - 1; i >= 0; i--) {
+                    let entity = ecosystem[i];
+                    entity.age += 0.01;
+                    
+                    // 自然选择
+                    if(entity.age > entity.fitness * 100 && p.random() < 0.01) {
+                        ecosystem.splice(i, 1);
+                        continue;
+                    }
+                    
+                    // 突变和适应
+                    if(p.random() < 0.005) {
+                        entity.fitness = p.min(1, entity.fitness + p.random(-0.1, 0.2));
+                    }
+                    
+                    // 绘制实体
+                    let colors = [[255, 100, 100], [100, 255, 100], [100, 100, 255]];
+                    let color = colors[entity.type];
+                    
+                    p.fill(color[0], color[1], color[2], entity.fitness * 255);
+                    p.stroke(255, entity.fitness * 255);
+                    p.strokeWeight(1);
+                    
+                    let size = 5 + entity.fitness * 10;
+                    p.circle(entity.x, entity.y, size);
+                    
+                    // 移动
+                    entity.x += p.sin(time + entity.x * 0.01) * entity.fitness;
+                    entity.y += p.cos(time + entity.y * 0.01) * entity.fitness;
+                    
+                    entity.x = (entity.x + p.width) % p.width;
+                    entity.y = (entity.y + p.height) % p.height;
+                }
+                
+                // 繁殖
+                if(ecosystem.length < 100 && p.random() < 0.02) {
+                    let parent = p.random(ecosystem.filter(e => e.fitness > 0.7));
+                    if(parent) {
+                        ecosystem.push({
+                            x: parent.x + p.random(-50, 50),
+                            y: parent.y + p.random(-50, 50),
+                            fitness: parent.fitness + p.random(-0.1, 0.1),
+                            age: 0,
+                            type: parent.type
+                        });
+                    }
+                }
+            };
+            
+            window.startAdaptive = function() {
+                p.loop();
+            };
+            
+            window.addPerturbation = function() {
+                for(let entity of ecosystem) {
+                    if(p.random() < 0.3) {
+                        entity.fitness *= p.random(0.5, 1.5);
+                        entity.fitness = p.constrain(entity.fitness, 0, 1);
+                    }
+                }
+            };
+            
+            window.evolveSystem = function() {
+                ecosystem = ecosystem.filter(e => e.fitness > 0.5);
+                for(let i = 0; i < 20; i++) {
+                    ecosystem.push({
+                        x: p.random(p.width),
+                        y: p.random(p.height),
+                        fitness: p.random(0.7, 1),
+                        age: 0,
+                        type: p.floor(p.random(3))
+                    });
+                }
+            };
+        };
+
+        // 未来预测演示
+        let futureSketch = function(p) {
+            let predictions = [];
+            let limits = [];
+            let breakthroughs = [];
+            let mode = 0;
+            
+            p.setup = function() {
+                p.createCanvas(p.select('#futureAnimation').width, 400);
+                
+                // 预测数据
+                for(let i = 0; i < 50; i++) {
+                    predictions.push({
+                        year: 2025 + i,
+                        capability: Math.log(i + 1) * 20 + p.random(-10, 10),
+                        uncertainty: i * 2
+                    });
+                }
+                
+                // 物理极限
+                limits = [
+                    {name: "兰道尔极限", value: 300},
+                    {name: "光速限制", value: 280},
+                    {name: "量子不确定性", value: 250}
+                ];
+                
+                // 突破点
+                breakthroughs = [
+                    {year: 2027, name: "量子AI芯片"},
+                    {year: 2030, name: "生物-硅融合"},
+                    {year: 2035, name: "光子神经网络"},
+                    {year: 2040, name: "量子意识模拟"}
+                ];
+                
+                p.noLoop();
+            };
+            
+            p.draw = function() {
+                p.background(5, 5, 25);
+                
+                if(mode >= 1) {
+                    // 绘制预测曲线
+                    p.stroke(100, 255, 100, 200);
+                    p.strokeWeight(2);
+                    p.noFill();
+                    
+                    p.beginShape();
+                    for(let i = 0; i < predictions.length; i++) {
+                        let pred = predictions[i];
+                        let x = p.map(pred.year, 2025, 2075, 50, p.width - 50);
+                        let y = p.map(pred.capability, 0, 400, p.height - 50, 50);
+                        p.vertex(x, y);
+                        
+                        // 不确定性范围
+                        if(i % 5 === 0) {
+                            p.stroke(100, 255, 100, 50);
+                            p.line(x, y - pred.uncertainty, x, y + pred.uncertainty);
+                        }
+                    }
+                    p.endShape();
+                }
+                
+                if(mode >= 2) {
+                    // 绘制物理极限
+                    for(let i = 0; i < limits.length; i++) {
+                        let limit = limits[i];
+                        let y = p.map(limit.value, 0, 400, p.height - 50, 50);
+                        
+                        p.stroke(255, 100, 100, 150);
+                        p.strokeWeight(2);
+                        p.line(50, y, p.width - 50, y);
+                        
+                        p.fill(255, 100, 100);
+                        p.noStroke();
+                        p.text(limit.name, 60, y - 5);
+                    }
+                }
+                
+                if(mode >= 3) {
+                    // 绘制突破点
+                    for(let breakthrough of breakthroughs) {
+                        let x = p.map(breakthrough.year, 2025, 2075, 50, p.width - 50);
+                        
+                        p.stroke(255, 255, 100);
+                        p.strokeWeight(3);
+                        p.line(x, 50, x, p.height - 50);
+                        
+                        p.fill(255, 255, 100);
+                        p.noStroke();
+                        p.text(breakthrough.name, x + 5, 70);
+                        
+                        // 突破效应
+                        p.fill(255, 255, 100, 50);
+                        p.circle(x, p.height/2, 30 + p.sin(p.frameCount * 0.1) * 10);
+                    }
+                }
+                
+                // 坐标轴
+                p.stroke(255, 255, 255, 100);
+                p.strokeWeight(1);
+                p.line(50, p.height - 50, p.width - 50, p.height - 50);
+                p.line(50, 50, 50, p.height - 50);
+            };
+            
+            window.projectFuture = function() {
+                mode = 1;
+                p.loop();
+            };
+            
+            window.showLimits = function() {
+                mode = 2;
+                p.redraw();
+            };
+            
+            window.showBreakthroughs = function() {
+                mode = 3;
+                p.redraw();
+            };
+        };
+
+        // 初始化所有动画
+        document.addEventListener('DOMContentLoaded', function() {
+            createStars();
+            
+            new p5(thermodynamicsSketch, 'thermodynamicsAnimation');
+            new p5(modalitySketch, 'modalityAnimation');
+            new p5(computeSketch, 'computeAnimation');
+            new p5(quantumSketch, 'quantumAnimation');
+            new p5(adaptiveSketch, 'adaptiveAnimation');
+            new p5(futureSketch, 'futureAnimation');
+        });
+
+        // 页面滚动视差效果
+        window.addEventListener('scroll', function() {
+            const scrolled = window.pageYOffset;
+            const parallax = document.querySelector('.stars');
+            const speed = scrolled * 0.5;
+            parallax.style.transform = 'translateY(' + speed + 'px)';
+        });
+
+        // 添加页面加载动画
+        window.addEventListener('load', function() {
+            document.body.style.opacity = '0';
+            document.body.style.transition = 'opacity 1s ease-in-out';
+            setTimeout(() => {
+                document.body.style.opacity = '1';
+            }, 100);
+        });
+
+    </script>
+</body>
+</html>
